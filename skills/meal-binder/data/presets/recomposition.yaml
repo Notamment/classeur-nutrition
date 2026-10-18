@@ -1,0 +1,12 @@
+nom: Objectifs protéiques personnels
+description: Reprend les cibles du profil initial du projet ; valeurs à personnaliser, sans recommandation de santé.
+profil:
+  nutrition:
+    mode: cibles
+    fer_vitamine_c: chaque_repas
+  repas:
+    proteines_g_par_portion: [32, 40]
+    poids_servi_g_par_portion: [450, 580]
+  legumineuses:
+    g_cuits_par_portion: [80, 120]
+    consecutives_autorisees: false

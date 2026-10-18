@@ -1,0 +1,104 @@
+{
+  "semaine": "S01",
+  "saison": "Exemples avec pommes de terre et champignons ; pois chiches en conserve et céréales sèches.",
+  "recettes": [
+    {
+      "nom": "Omelette, pommes de terre et sauce au skyr",
+      "ingredients": [
+        {
+          "food": "oeuf",
+          "qte": 8,
+          "unite": "piece"
+        },
+        {
+          "food": "pomme_de_terre",
+          "qte": 500,
+          "unite": "g"
+        },
+        {
+          "food": "skyr",
+          "qte": 100,
+          "unite": "g"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 10,
+          "unite": "ml"
+        },
+        {
+          "food": "huile_olive",
+          "qte": 10,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Couper les pommes de terre en dés de 2 cm. Les couvrir d’eau dans une casserole ; porter à ébullition puis cuire 12 à 15 min, jusqu’à ce qu’une pointe de couteau entre facilement. Égoutter.",
+        "Pendant la cuisson, mélanger le skyr et le jus de citron dans un bol ; garder la sauce à part.",
+        "Battre les œufs. Chauffer l’huile dans une grande poêle antiadhésive à feu moyen. Verser les œufs, couvrir puis cuire 7 à 9 min à feu doux, jusqu’à ce que le centre soit pris.",
+        "Répartir l’omelette et les pommes de terre entre les portions. Servir la sauce séparément."
+      ],
+      "temps_total_min": 30,
+      "temps_actif_min": 15,
+      "appareils": [
+        "plaque"
+      ],
+      "service": "chaud",
+      "sel_ajoute": false,
+      "references": {
+        "culinaire": "Exemple original du projet, sans revendication traditionnelle"
+      },
+      "gamelle": "Réserver une portion au frais après refroidissement rapide ; transporter au froid. Réchauffer omelette et pommes de terre, ajouter la sauce froide ensuite.",
+      "id": "S01-R01",
+      "motif_ordre": "Produits frais à utiliser selon leur date limite ; conserve ouverte lors de la préparation."
+    },
+    {
+      "nom": "Salade de pois chiches, œufs, pommes de terre et cottage cheese",
+      "ingredients": [
+        {
+          "food": "oeuf",
+          "qte": 4,
+          "unite": "piece"
+        },
+        {
+          "food": "pomme_de_terre",
+          "qte": 300,
+          "unite": "g"
+        },
+        {
+          "food": "pois_chiche_egoutte",
+          "qte": 200,
+          "unite": "g"
+        },
+        {
+          "food": "cottage_cheese",
+          "qte": 200,
+          "unite": "g"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 20,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Couper les pommes de terre en dés de 2 cm. Les couvrir d’eau, porter à ébullition puis cuire 12 à 15 min jusqu’à tendreté. Égoutter.",
+        "Dans une seconde casserole, plonger les œufs dans l’eau frémissante. Cuire 10 min, refroidir sous l’eau froide puis écaler et couper en quartiers.",
+        "Rincer les pois chiches puis peser la quantité égouttée. Mélanger le cottage cheese et le jus de citron.",
+        "Mélanger les pommes de terre tiédies et les pois chiches avec la sauce ; ajouter les quartiers d’œuf. Répartir entre les portions."
+      ],
+      "temps_total_min": 30,
+      "temps_actif_min": 15,
+      "appareils": [
+        "plaque"
+      ],
+      "service": "froid",
+      "sel_ajoute": false,
+      "references": {
+        "culinaire": "Exemple original du projet, sans revendication traditionnelle"
+      },
+      "gamelle": "Servir froid ; réserver une portion au réfrigérateur après refroidissement rapide et transporter au froid.",
+      "id": "S01-R02",
+      "motif_ordre": "Produits frais à utiliser selon leur date limite ; conserve ouverte lors de la préparation."
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+semaines:
+- id: S01
+  recettes:
+  - id: S01-R01
+    plat: Boulgour aux champignons et pois chiches
+    categorie: vegetarien
+    legumineuses: true
+    feculent: boulgour
+  - id: S01-R02
+    plat: Salade de pois chiches, œufs, pommes de terre et cottage cheese
+    categorie: vegetarien
+    legumineuses: true
+    feculent: pomme_de_terre
+  theme: Repas simples du quotidien

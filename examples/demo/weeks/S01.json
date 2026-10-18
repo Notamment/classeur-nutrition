@@ -1,0 +1,189 @@
+{
+  "semaine": "S01",
+  "cuisine": "Pologne",
+  "saison": "Sarrasin, champignons, betterave, pomme, chou et pomme de terre : cœur de l'automne polonais. Plats chauds + hareng froid qui se garde.",
+  "ordre": ["S01-R02", "S01-R05", "S01-R01", "S01-R03", "S01-R04"],
+  "recettes": [
+    {
+      "id": "S01-R01",
+      "nom": "Śledź w śmietanie z jabłkiem i ziemniakami",
+      "nom_fr": "Hareng à la crème, pomme et pommes de terre",
+      "origine": "Pologne",
+      "service": "froid",
+      "temps_actif_min": 20,
+      "temps_total_min": 50,
+      "appareils": ["plaque"],
+      "motif_ordre": "Hareng ouvert : à consommer en milieu de semaine au plus tard",
+      "ingredients": [
+        {"food": "hareng_marine", "qte": 260, "unite": "g", "etat": "egoutte"},
+        {"food": "skyr", "qte": 150, "unite": "g", "etat": "net"},
+        {"food": "creme_15", "qte": 60, "unite": "g", "etat": "net"},
+        {"food": "pomme", "qte": 120, "unite": "g", "etat": "cru"},
+        {"food": "oignon", "qte": 100, "unite": "g", "etat": "cru"},
+        {"food": "cornichon_malossol", "qte": 60, "unite": "g", "etat": "egoutte"},
+        {"food": "pomme_de_terre", "qte": 400, "unite": "g", "etat": "cru"},
+        {"food": "beurre", "qte": 10, "unite": "g", "etat": "net"},
+        {"food": "aneth", "qte": 15, "unite": "g", "etat": "cru"},
+        {"food": "poivre", "qte": 1, "unite": "pincee"}
+      ],
+      "eau_retenue_g": 0,
+      "sel_ajoute": true,
+      "etapes": [
+        "Pommes de terre épluchées en quartiers, eau froide salée ; porter à ébullition, 20 min, pointe du couteau sans résistance.",
+        "Pendant ce temps : filets très salés → 10 min dans l'eau froide, égoutter, éponger, tronçons de 3 cm.",
+        "Oignon émincé très fin, pomme en petits dés avec la peau, cornichons en rondelles.",
+        "Mélanger skyr, crème, poivre ; incorporer oignon, pomme, cornichons, puis hareng. Ne pas saler. 30 min au frais minimum.",
+        "Égoutter les pommes de terre, beurre et aneth ciselé. Hareng froid, pommes de terre chaudes."
+      ],
+      "authenticite": "Oignon émincé au plus fin et repos obligatoire : la crème prend le goût du hareng.",
+      "adaptation": "Canonique : śmietana 18 % seule. Ici : skyr + crème 15 % (protéines).",
+      "gamelle": "Hareng froid en boîte fermée ; pommes de terre à part, 1 min au micro-ondes.",
+      "alternatives_poisson": [
+        {"food": "maquereau_fume", "qte": 260, "unite": "g", "etat": "net", "note": "émietté, sans cuisson"},
+        {"food": "truite", "qte": 300, "unite": "g", "etat": "cru", "note": "pochée 8 min, refroidie, effeuillée"}
+      ],
+      "references": {"culinaire": "non consultée"}
+    },
+    {
+      "id": "S01-R02",
+      "nom": "Kasza gryczana z sosem grzybowym i jajkiem sadzonym",
+      "nom_fr": "Sarrasin grillé, sauce aux champignons, œuf au plat",
+      "origine": "Pologne",
+      "service": "chaud",
+      "temps_actif_min": 25,
+      "temps_total_min": 35,
+      "appareils": ["plaque"],
+      "motif_ordre": "Champignons et aneth : produits les plus fragiles, jour 1",
+      "ingredients": [
+        {"food": "kasza_sarrasin", "qte": 130, "unite": "g", "etat": "sec"},
+        {"food": "champignon_paris", "qte": 350, "unite": "g", "etat": "cru"},
+        {"food": "oignon", "qte": 120, "unite": "g", "etat": "cru", "rendement": 0.7},
+        {"food": "creme_15", "qte": 60, "unite": "g", "etat": "net"},
+        {"food": "farine_ble", "qte": 10, "unite": "g", "etat": "sec"},
+        {"food": "beurre", "qte": 15, "unite": "g", "etat": "net"},
+        {"food": "oeuf", "qte": 4, "unite": "piece", "etat": "net"},
+        {"food": "chou_blanc", "qte": 150, "unite": "g", "etat": "cru", "rendement": 0.9},
+        {"food": "skyr", "qte": 100, "unite": "g", "etat": "net"},
+        {"food": "citron_jus", "qte": 10, "unite": "ml", "etat": "net"},
+        {"food": "aneth", "qte": 15, "unite": "g", "etat": "cru"}
+      ],
+      "eau_retenue_g": 80,
+      "sel_ajoute": true,
+      "etapes": [
+        "Kasza rincée, 2 min à sec dans la casserole ; 260 ml d'eau bouillante salée, couvrir, feu minimum 15 min sans remuer, puis 10 min hors du feu sous un torchon.",
+        "Sauce : 10 g de beurre, oignon émincé 5 min feu moyen ; champignons en lamelles feu vif 8 min, jusqu'à évaporation de l'eau.",
+        "Farine 1 min en remuant, 100 ml d'eau, 3 min. Hors du feu : crème, moitié de l'aneth.",
+        "Chou émincé très fin, légèrement salé, massé 2 min, repos 5 min ; presser, mélanger skyr, citron, reste d'aneth.",
+        "Œufs au plat dans les 5 g de beurre restants, blanc et jaune bien pris pour la gamelle."
+      ],
+      "authenticite": "Kasza grillée (prażona), grains détachés : ne jamais remuer pendant la cuisson.",
+      "adaptation": "Salade de chou au skyr à la place de la mizeria au concombre (saison).",
+      "gamelle": "Kasza + sauce + œuf ensemble, 2 min au micro-ondes ; salade de chou à part.",
+      "references": {"culinaire": "non consultée"}
+    },
+    {
+      "id": "S01-R03",
+      "nom": "Pierogi leniwe z surówką z marchewki i jabłka",
+      "nom_fr": "Gnocchis paresseux au fromage frais, salade carotte-pomme",
+      "origine": "Pologne",
+      "service": "chaud",
+      "temps_actif_min": 30,
+      "temps_total_min": 40,
+      "appareils": ["plaque"],
+      "motif_ordre": "Produits stables (cottage, carottes) : fin de semaine possible",
+      "ingredients": [
+        {"food": "cottage_cheese", "qte": 400, "unite": "g", "etat": "net", "rendement": 0.85},
+        {"food": "oeuf", "qte": 2, "unite": "piece", "etat": "net"},
+        {"food": "farine_ble", "qte": 130, "unite": "g", "etat": "sec", "rendement": 1.2},
+        {"food": "chapelure", "qte": 20, "unite": "g", "etat": "sec"},
+        {"food": "beurre", "qte": 20, "unite": "g", "etat": "net"},
+        {"food": "carotte", "qte": 200, "unite": "g", "etat": "cru"},
+        {"food": "pomme", "qte": 100, "unite": "g", "etat": "cru"},
+        {"food": "citron_jus", "qte": 10, "unite": "ml", "etat": "net"},
+        {"food": "sucre", "qte": 5, "unite": "g", "etat": "sec"}
+      ],
+      "eau_retenue_g": 0,
+      "sel_ajoute": true,
+      "etapes": [
+        "Cottage égoutté dans un torchon, pressé fort 5 min, écrasé finement à la fourchette.",
+        "Œufs + pincée de sel ; réserver 10 g de farine pour le plan, incorporer les 120 g restants en 2 fois : pâte souple, juste manipulable.",
+        "Plan fariné : boudins de 2,5 cm, aplatir légèrement, couper en biais tous les 2 cm.",
+        "Eau salée frémissante, pas bouillante : cuire par fournées, retirer 1 min après la remontée.",
+        "Chapelure dorée dans le beurre, sur les leniwe. Surówka : carottes et pomme râpées, citron, sucre."
+      ],
+      "authenticite": "Trop de farine = pâte caoutchouteuse ; s'arrêter dès qu'elle ne colle plus aux doigts.",
+      "adaptation": "Canonique : twaróg. Ici : cottage cheese pressé (disponibilité).",
+      "gamelle": "2 min au micro-ondes, couvert ; surówka à part.",
+      "references": {"culinaire": "non consultée"}
+    },
+    {
+      "id": "S01-R04",
+      "nom": "Kotlety jajeczne z buraczkami zasmażanymi i ziemniakami",
+      "nom_fr": "Galettes d'œufs, betteraves aigres-douces, pommes de terre",
+      "origine": "Pologne",
+      "service": "chaud",
+      "temps_actif_min": 30,
+      "temps_total_min": 40,
+      "appareils": ["plaque", "airfryer"],
+      "motif_ordre": "Betteraves sous vide et œufs : se gardent, dernier jour",
+      "ingredients": [
+        {"food": "oeuf", "qte": 8, "unite": "piece", "etat": "net"},
+        {"food": "chapelure", "qte": 60, "unite": "g", "etat": "sec"},
+        {"food": "oignon", "qte": 60, "unite": "g", "etat": "cru"},
+        {"food": "aneth", "qte": 15, "unite": "g", "etat": "cru"},
+        {"food": "huile_neutre", "qte": 10, "unite": "ml", "etat": "net"},
+        {"food": "betterave_cuite", "qte": 400, "unite": "g", "etat": "net"},
+        {"food": "beurre", "qte": 10, "unite": "g", "etat": "net"},
+        {"food": "farine_ble", "qte": 10, "unite": "g", "etat": "sec"},
+        {"food": "citron_jus", "qte": 15, "unite": "ml", "etat": "net"},
+        {"food": "sucre", "qte": 5, "unite": "g", "etat": "sec"},
+        {"food": "pomme_de_terre", "qte": 200, "unite": "g", "etat": "cru"}
+      ],
+      "eau_retenue_g": 0,
+      "sel_ajoute": true,
+      "etapes": [
+        "7 œufs 10 min à l'eau bouillante, refroidis, écalés. Pommes de terre en dés, 15 min à l'eau salée.",
+        "Œufs durs hachés au couteau, mélangés à l'œuf cru, oignon haché fin, aneth, 40 g de chapelure, sel.",
+        "6 galettes panées dans le reste de chapelure, huilées ; airfryer 190 °C 12 min, retourner à mi-cuisson, dorées.",
+        "Betteraves râpées. Beurre + farine 1 min (zasmażka), betteraves, citron, sucre, sel : 5 min feu doux."
+      ],
+      "authenticite": "Buraczki franchement aigres-doux ; hacher les œufs au couteau, jamais au mixeur.",
+      "adaptation": "Kotlety cuites à l'airfryer au lieu de la poêle (matériel, moins de matière grasse).",
+      "gamelle": "Tout ensemble, 2 min au micro-ondes ; les kotlety se mangent aussi froides.",
+      "references": {"culinaire": "non consultée"}
+    },
+    {
+      "id": "S01-R05",
+      "nom": "Pyry z gzikiem",
+      "nom_fr": "Pommes de terre au fromage frais, radis et ciboulette",
+      "origine": "Pologne, Wielkopolska",
+      "service": "tiède",
+      "temps_actif_min": 10,
+      "temps_total_min": 30,
+      "appareils": ["plaque"],
+      "motif_ordre": "Radis et ciboulette : jour 2",
+      "ingredients": [
+        {"food": "pomme_de_terre", "qte": 400, "unite": "g", "etat": "cru"},
+        {"food": "cottage_cheese", "qte": 200, "unite": "g", "etat": "net"},
+        {"food": "skyr", "qte": 350, "unite": "g", "etat": "net"},
+        {"food": "radis", "qte": 100, "unite": "g", "etat": "cru"},
+        {"food": "oignon", "qte": 60, "unite": "g", "etat": "cru"},
+        {"food": "ciboulette", "qte": 30, "unite": "g", "etat": "cru"},
+        {"food": "beurre", "qte": 10, "unite": "g", "etat": "net"},
+        {"food": "poivre", "qte": 1, "unite": "pincee"}
+      ],
+      "eau_retenue_g": 0,
+      "sel_ajoute": true,
+      "etapes": [
+        "Pommes de terre en robe des champs, bien lavées, 25 min à l'eau salée frémissante.",
+        "Gzik : cottage égoutté écrasé, mélangé au skyr jusqu'à consistance lisse et épaisse.",
+        "Radis en petits dés, oignon haché très fin, ciboulette ciselée ; saler, poivrer généreusement.",
+        "Pommes de terre chaudes coupées en deux, noisette de beurre, gzik froid dessus."
+      ],
+      "authenticite": "Version poznanienne très relevée en oignon et poivre.",
+      "adaptation": "Canonique : twaróg + śmietana. Ici : cottage + skyr.",
+      "gamelle": "Gzik froid à part ; pommes de terre 1 min au micro-ondes.",
+      "references": {"culinaire": "non consultée"}
+    }
+  ]
+}

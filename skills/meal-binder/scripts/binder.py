@@ -1,0 +1,145 @@
+#!/usr/bin/env python3
+"""CLI du classeur : contrôles, courses, rendu et audit.
+
+  python binder.py check-profile --dir DIR
+  python binder.py check-plan    --dir DIR
+  python binder.py check-week S01 --dir DIR
+  python binder.py check-all     --dir DIR
+  python binder.py render        --dir DIR     → DIR/out/classeur.md
+  python binder.py audit         --dir DIR     → DIR/out/audit.md
+  python binder.py list-presets                 → catalogue des préréglages
+  python binder.py show-profile  --dir DIR     → profil résolu et origines
+
+Codes : 0 sans erreur, 1 données non conformes, 2 entrée illisible/manquante,
+3 panne interne ou Python < 3.10. Avec --json, les contrôles renvoient une liste d'écarts ;
+list-presets renvoie le catalogue, show-profile un objet profil/origines/ecarts.
+Sortie volontairement compacte : elle est lue par un agent.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import traceback
+from pathlib import Path
+import yaml
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+from checks import analyse, check_plan, check_profile, load_pantry, load_plan  # noqa: E402
+from core import BinderError, DataError, Issue, load_foods, load_profile, utf8_stdio, week_order  # noqa: E402
+from render import render_audit, render_classeur  # noqa: E402
+from profiles import list_presets, load_resolved, nutrition_mode, week_title  # noqa: E402
+
+
+def report(issues: list, as_json: bool = False) -> int:
+    errs = [i for i in issues if i.level == "erreur"]
+    if as_json:
+        print(json.dumps([i.__dict__ for i in issues], ensure_ascii=False, indent=1, allow_nan=False))
+    else:
+        for i in errs + [i for i in issues if i.level != "erreur"]:
+            print(i.line())
+        print(f"Bilan : {len(errs)} erreur(s), {len(issues) - len(errs)} alerte(s).")
+    return 1 if errs else 0
+
+
+def recipe_table(ctx, wid: str) -> None:
+    w = next((w for w in ctx.weeks if w.get("semaine") == wid), None)
+    if w is None:
+        raise BinderError(f"semaine {wid} introuvable dans weeks/")
+    nutrition = nutrition_mode(ctx.profile) != "desactive"
+    print(f"{wid} {week_title(w)} — valeurs par portion (estimations)")
+    print("jour | id | catégorie | " + ("protéines | kcal | " if nutrition else "") + "poids servi | min")
+    for d, rid in enumerate(week_order(w), start=1):
+        rc, r = ctx.calcs.get(rid), ctx.recipes.get(rid, {})
+        if rc is None:
+            print(f"{d:<5}{rid:<9} non calculée")
+            continue
+        values = " | ".join("—" if n is None else f"{n:.1f}" for n in (rc.prot_pp, rc.kcal_pp)) + " | " if nutrition else ""
+        print(f"{d} | {rid} | {rc.categorie} | {values}{rc.poids_pp:.0f} g | {r['temps_total_min']}")
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("command", choices=["list-presets", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit"])
+    ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")
+    ap.add_argument("--dir", default=".", help="dossier de travail (profile.yaml, plan.yaml, weeks/)")
+    ap.add_argument("--json", action="store_true", help="écarts au format JSON")
+    a = ap.parse_args(argv)
+    wd = Path(a.dir).resolve()
+    try:
+        if a.command == "list-presets":
+            presets = list_presets()
+            if a.json:
+                print(json.dumps(presets, ensure_ascii=False, indent=2, allow_nan=False))
+            else:
+                for name, preset in presets.items():
+                    print(f"{name} — {preset['nom']} : {preset['description']}")
+            return 0
+        if a.command == "show-profile":
+            resolved = load_resolved(wd)
+            foods, issues = load_foods(wd)
+            issues += check_profile(resolved.profile, foods)
+            result = {"profil": resolved.profile, "origines": resolved.origins,
+                      "ecarts": [i.__dict__ for i in issues]}
+            if a.json:
+                print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
+            else:
+                print(yaml.safe_dump(result, allow_unicode=True, sort_keys=False), end="")
+            return int(any(i.level == "erreur" for i in issues))
+        if a.command == "check-profile":
+            foods, issues = load_foods(wd)
+            issues += check_profile(load_profile(wd), foods)
+            _, pantry_issues = load_pantry(wd, foods)
+            issues += pantry_issues
+            return report(issues, a.json)
+        if a.command == "check-plan":
+            foods, issues = load_foods(wd)
+            profile = load_profile(wd)
+            issues += check_profile(profile, foods)
+            if not any(i.code == "schema_profil" for i in issues):
+                issues += check_plan(load_plan(wd), profile)
+            return report(issues, a.json)
+        if a.command == "check-week":
+            if not a.week:
+                raise BinderError("préciser la semaine : check-week S01")
+            ctx = analyse(wd)
+            if not any(w["semaine"] == a.week for w in ctx.weeks):
+                raise BinderError(f"semaine {a.week} introuvable dans weeks/")
+            if not a.json:
+                recipe_table(ctx, a.week)
+            other = {rid for rid, w in ctx.week_of.items() if w != a.week}
+            other |= {w["semaine"] for w in ctx.weeks if w["semaine"] != a.week}
+            scoped = [i for i in ctx.issues if i.where not in other]
+            return report(scoped, a.json)
+        ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit"))
+        if a.command == "check-all":
+            if not a.json:
+                for w in ctx.weeks:
+                    recipe_table(ctx, w.get("semaine"))
+            return report(ctx.issues, a.json)
+        shops, final_stock = ctx.shops, ctx.final_stock
+        out_dir = wd / "out"
+        out_dir.mkdir(exist_ok=True)
+        if a.command == "render":
+            path = out_dir / "classeur.md"
+            path.write_text(render_classeur(ctx, shops, final_stock, []), encoding="utf-8")
+        else:
+            path = out_dir / "audit.md"
+            path.write_text(render_audit(ctx, shops), encoding="utf-8")
+        print(f"Écrit : {path}", file=sys.stderr if a.json else sys.stdout)
+        return report(ctx.issues, a.json)
+    except DataError as e:
+        return report(e.issues, a.json)
+    except BinderError as e:
+        report([Issue("erreur", "entree_illisible", "entree", str(e))], a.json)
+        return 2
+    except Exception as e:
+        traceback.print_exc(file=sys.stderr)
+        report([Issue("erreur", "erreur_interne", "programme", f"{type(e).__name__}: {e}")], a.json)
+        return 3
+
+
+if __name__ == "__main__":
+    utf8_stdio()
+    sys.exit(main())

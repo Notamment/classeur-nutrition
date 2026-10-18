@@ -1,0 +1,8 @@
+nom: Cuisines du monde
+description: Une cuisine par semaine, cuisines distinctes et authenticité documentée ; nombre de semaines libre.
+profil:
+  projet:
+    organisation: cuisines
+    authenticite: documentee
+  variete:
+    cuisines_distinctes: true

@@ -1,0 +1,7 @@
+nom: Budget indicatif
+description: Cible de départ de 40 EUR par semaine pour les repas du classeur, à personnaliser ; ce montant n'est pas une promesse de faisabilité.
+profil:
+  budget:
+    plafond_eur_semaine: 40
+  exigences:
+    budget_depasse: preference

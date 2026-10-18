@@ -1,0 +1,6 @@
+nom: Dîner et gamelle
+description: Deux portions par préparation, pour le dîner et le repas du lendemain ; conservation et transport à expliciter.
+profil:
+  projet:
+    portions_par_recette: 2
+    usage: Dîner + gamelle du lendemain

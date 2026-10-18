@@ -1,0 +1,70 @@
+# profile.yaml — fichier PERSONNEL, ne pas publier.
+# null = non renseigné (jamais zéro). Plages : [min, max].
+version: 1
+
+projet:
+  titre: "CLASSEUR"
+  semaines: 6
+  recettes_par_semaine: 5
+  portions_par_recette: 2
+  usage: "Dîner + gamelle du lendemain"
+  mois: []                          # ex. [octobre, novembre]
+  zone_saison: "France métropolitaine"
+
+repas:
+  proteines_g_par_portion: [32, 40]
+  poids_servi_g_par_portion: [450, 580]   # repas complet prêt à manger, sauce et pain inclus
+  duree_totale_max_min: 45
+  kcal_par_portion: null            # [min, max] ou null
+  conservation_gamelle_h: 24
+
+repartition:                        # nombres de recettes ; somme = semaines × recettes_par_semaine
+  vegetarien: 22
+  poisson: 5
+  viande: 3
+
+legumineuses:
+  g_cuits_par_portion: [80, 120]    # graines cuites égouttées
+  consecutives_autorisees: false
+  soja_compte: false                # tofu/tempeh comptés dans l'alternance ?
+  epices_associees: []              # ids d'aliments ; au moins un présent si légumineuses (ex. [cumin_moulu, gingembre_frais])
+
+variete:
+  riz_max_par_semaine: 2
+  feculents_distincts_min_par_semaine: 3
+  substituts_industriels_max: 1     # sur tout le classeur
+  especes_poisson_uniques: true
+  alternatives_par_poisson: 2
+  cruciferes_min_par_semaine: null
+  ala_min_par_semaine: null         # recettes contenant une source d'ALA (colza, noix, lin moulu)
+  especes_vegetales_min_par_semaine: null   # approximation : 1 aliment végétal distinct = 1 espèce
+  jour_max_fragile: 2               # aliments « fragile » à consommer au plus tard ce jour (1 = premier)
+  cuisines_exclues: []
+
+nutrition:
+  fer_vitamine_c: chaque_repas      # chaque_repas | si_fer_vegetal | non
+  note_tanins: false                # ajoute « thé/café à distance » aux plats riches en fer végétal
+
+aliments:
+  exclus: [epinard_frais]           # ids d'aliments
+  sans_sel_ajoute_si: [fromage_sale]   # tags déclenchant l'interdiction de saler
+
+labels:                             # exigences affichées dans les courses, par catégorie d'aliment
+  defaut: "bio"
+  exceptions_bio: [racine, tubercule]
+  oeuf: "code 0 ou 1"
+  poisson_sauvage: "MSC"
+  poisson_elevage: "bio + ASC"
+  cacao: "Fairtrade"
+  cafe: "Fairtrade"
+  banane: "Fairtrade"
+  quinoa: "Fairtrade, bio"
+  tofu: "bio, fabriqué en Europe"
+
+materiel: [plaque, airfryer, blender]   # ajouter four, congelateur, autocuiseur si disponibles
+plaques: 2
+bureau: [micro-ondes, frigo]
+
+budget:
+  plafond_eur_semaine: null
+  devise: EUR

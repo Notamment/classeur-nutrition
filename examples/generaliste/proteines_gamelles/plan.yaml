@@ -1,0 +1,13 @@
+semaines:
+- id: S01
+  recettes:
+  - id: S01-R01
+    plat: Omelette, pommes de terre et sauce au skyr
+    categorie: vegetarien
+    legumineuses: false
+    feculent: pomme_de_terre
+  - id: S01-R02
+    plat: Salade de pois chiches, œufs, pommes de terre et cottage cheese
+    categorie: vegetarien
+    legumineuses: true
+    feculent: pomme_de_terre

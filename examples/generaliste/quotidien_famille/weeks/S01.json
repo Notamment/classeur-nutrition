@@ -1,0 +1,102 @@
+{
+  "semaine": "S01",
+  "saison": "Exemples avec pommes de terre et champignons ; pois chiches en conserve et céréales sèches.",
+  "recettes": [
+    {
+      "nom": "Omelette, pommes de terre et sauce au skyr",
+      "ingredients": [
+        {
+          "food": "oeuf",
+          "qte": 16,
+          "unite": "piece"
+        },
+        {
+          "food": "pomme_de_terre",
+          "qte": 1000,
+          "unite": "g"
+        },
+        {
+          "food": "skyr",
+          "qte": 200,
+          "unite": "g"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 20,
+          "unite": "ml"
+        },
+        {
+          "food": "huile_olive",
+          "qte": 20,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Couper les pommes de terre en dés de 2 cm. Les couvrir d’eau dans une casserole ; porter à ébullition puis cuire 12 à 15 min, jusqu’à ce qu’une pointe de couteau entre facilement. Égoutter.",
+        "Pendant la cuisson, mélanger le skyr et le jus de citron dans un bol ; garder la sauce à part.",
+        "Battre les œufs. Chauffer la moitié de l’huile dans une grande poêle antiadhésive à feu moyen. Cuire la moitié des œufs 7 à 9 min à feu doux, couvercle posé, jusqu’à prise du centre. Réserver puis recommencer avec le reste d’huile et d’œufs.",
+        "Répartir l’omelette et les pommes de terre entre les portions. Servir la sauce séparément."
+      ],
+      "temps_total_min": 40,
+      "temps_actif_min": 20,
+      "appareils": [
+        "plaque"
+      ],
+      "service": "chaud",
+      "sel_ajoute": false,
+      "references": {
+        "culinaire": "Exemple original du projet, sans revendication traditionnelle"
+      },
+      "id": "S01-R01",
+      "motif_ordre": "Produits frais à utiliser selon leur date limite ; conserve ouverte lors de la préparation."
+    },
+    {
+      "nom": "Boulgour aux champignons et pois chiches",
+      "ingredients": [
+        {
+          "food": "boulgour",
+          "qte": 240,
+          "unite": "g"
+        },
+        {
+          "food": "champignon_paris",
+          "qte": 600,
+          "unite": "g"
+        },
+        {
+          "food": "pois_chiche_egoutte",
+          "qte": 480,
+          "unite": "g"
+        },
+        {
+          "food": "huile_olive",
+          "qte": 20,
+          "unite": "ml"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 40,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Porter une casserole d’eau à ébullition. Ajouter le boulgour, cuire selon l’emballage, environ 10 à 12 min, puis égoutter.",
+        "Pendant ce temps, émincer les champignons. Les faire revenir en deux fournées, chacune avec la moitié de l’huile, 8 à 10 min à feu moyen-vif, jusqu’à évaporation de leur eau.",
+        "Rincer et égoutter les pois chiches, peser 480 g. Réunir les champignons dans la poêle, ajouter les pois chiches et chauffer 3 min.",
+        "Ajouter le boulgour égoutté. Mélanger 1 min à feu doux, retirer du feu et ajouter le jus de citron. Répartir entre les portions."
+      ],
+      "temps_total_min": 35,
+      "temps_actif_min": 20,
+      "appareils": [
+        "plaque"
+      ],
+      "service": "chaud",
+      "sel_ajoute": false,
+      "references": {
+        "culinaire": "Exemple original du projet, sans revendication traditionnelle"
+      },
+      "id": "S01-R02",
+      "motif_ordre": "Produits frais à utiliser selon leur date limite ; conserve ouverte lors de la préparation."
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+# Fins de ligne LF dans le dépôt, quel que soit le système (Windows inclus)
+* text=auto eol=lf
+*.zip binary
+*.xls binary
+*.xlsx binary

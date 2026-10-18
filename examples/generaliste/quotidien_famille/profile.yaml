@@ -1,0 +1,13 @@
+version: 2
+projet:
+  semaines: 1
+  recettes_par_semaine: 2
+  mois:
+  - octobre
+  zone_saison: France métropolitaine
+  titre: Repas du quotidien — exemple famille
+  portions_par_recette: 4
+  organisation: libre
+materiel:
+- plaque
+plaques: 2

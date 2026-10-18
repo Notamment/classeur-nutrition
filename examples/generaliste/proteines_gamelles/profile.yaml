@@ -1,0 +1,19 @@
+version: 2
+projet:
+  semaines: 1
+  recettes_par_semaine: 2
+  mois:
+  - octobre
+  zone_saison: France métropolitaine
+  titre: Objectifs protéiques et gamelles — exemple
+materiel:
+- plaque
+plaques: 2
+prereglages:
+- recomposition
+- gamelles
+repas:
+  duree_totale_max_min: 35
+bureau:
+- micro-ondes
+- frigo

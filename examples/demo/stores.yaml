@@ -1,0 +1,16 @@
+# Magasins FICTIFS de démonstration.
+verifie_le: null
+zone: null
+magasins:
+  - nom: "Supermarché généraliste (exemple)"
+    role: principal
+    adresse: null
+    lien: null
+    rayons: []
+    usage: "Achats courants, gamme bio."
+  - nom: "Magasin bio (exemple)"
+    role: depannage
+    adresse: null
+    lien: null
+    rayons: [Épicerie salée]
+    usage: "Sarrasin grillé et vrac."

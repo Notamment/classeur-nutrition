@@ -1,0 +1,21 @@
+# Données personnelles — ignorées à tous les niveaux (racine, mon-classeur/, etc.)
+profile.yaml
+pantry.yaml
+stores.yaml
+plan.yaml
+foods.local.csv
+weeks/
+out/
+.privacy-patterns
+
+# Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
+!/examples/**
+!/evals/pantry.yaml
+
+# Évaluations : publier seulement evals/results.md
+evals/runs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/

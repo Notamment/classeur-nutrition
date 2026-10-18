@@ -1,0 +1,35 @@
+# Profil personnel : ne pas publier dans un dépôt public.
+# Version obligatoire pour les nouveaux profils ; sans version = comportement historique v1.
+version: 2
+
+# Choix : rapide, vegetarien, petit_budget, gamelles, cuisines_du_monde, recomposition.
+# Combiner les préréglages ; les champs explicites ci-dessous ont priorité.
+prereglages: []
+projet:
+  titre: CLASSEUR
+  semaines: 1
+  recettes_par_semaine: 5
+  mois: []                         # facultatif ; ex. [octobre, novembre]
+  # portions_par_recette: 4        # défaut : 2 ; quantités pour toutes les portions
+  # organisation: themes          # libre (défaut), cuisines ou themes
+
+# Options absentes : héritage des préréglages, puis des défauts neutres.
+# Ne pas recopier un défaut si l'on souhaite laisser agir un préréglage.
+# null désactive une limite nullable ; [] est une liste vide ; 0 est une valeur réelle.
+# nutrition:
+#   mode: information              # desactive (défaut), information ou cibles
+# repas:
+#   duree_totale_max_min: 30
+#   proteines_g_par_portion: [25, 40]  # seulement en mode cibles, choix personnel
+# budget:
+#   plafond_eur_semaine: 40         # caisse pour les recettes générées, épicerie incluse
+# exigences:
+#   budget_depasse: preference      # dépassement visible, non bloquant
+#   duree: imperative              # défaut de toute règle active
+# alimentation:
+#   regime: vegetarien             # libre, vegetarien, vegetalien ou pescetarien
+# aliments:
+#   exclus: [champignon_paris]      # interdiction stricte, identifiants de foods.csv
+#   a_eviter: [brocoli]             # préférence, écart visible
+# materiel: [plaque, airfryer]       # null : non renseigné ; [] : aucun appareil
+# repartition: null                 # pas de quota par défaut

@@ -1,0 +1,5 @@
+nom: Végétarien
+description: Exclut viande et poisson selon la nature des ingrédients renseignés ; œufs et laitages autorisés.
+profil:
+  alimentation:
+    regime: vegetarien

@@ -1,0 +1,78 @@
+id,nom,rayon,nature,categorie,tags,prot_g_100g,kcal_100g,etat_ref,g_par_piece,densite_g_ml,rendement,unite_achat,conditionnements,report_ok,prix_eur,source
+ail,Ail (gousse),Fruits et légumes,vegetal,,,6,130,cru,5,,1,piece,,1,,placeholder
+aneth,Aneth,Herbes fraîches,vegetal,,vitc|fragile,3.5,43,cru,,,1,g,,0,,placeholder
+banane,Banane,Fruits et légumes,vegetal,banane,,1.1,90,cru,120,,1,piece,,0,,placeholder
+betterave_cuite,Betterave cuite sous vide,Fruits et légumes,vegetal,racine,,1.7,45,net,,,1,g,500,0,,placeholder
+beurre,Beurre doux,Crèmerie,laitier,,,0.7,745,net,,,1,g,250,1,,placeholder
+boulgour,Boulgour,Épicerie salée,vegetal,,feculent:boulgour,12,350,sec,,,2.6,g,500,1,,placeholder
+brocoli,Brocoli,Fruits et légumes,vegetal,,crucifere|vitc|fragile,3,34,cru,,,0.9,g,,0,,placeholder
+cacao_poudre,Cacao en poudre non sucré,Épicerie sucrée,vegetal,cacao,,20,360,sec,,,1,g,250,1,,placeholder
+carotte,Carotte,Fruits et légumes,vegetal,racine,,0.8,38,cru,,,1,g,,1,,placeholder
+champignon_paris,Champignons de Paris,Fruits et légumes,vegetal,,fragile,3,22,cru,,,0.6,g,250|500,0,,placeholder
+chapelure,Chapelure,Épicerie salée,vegetal,,feculent:ble,12,380,sec,,,1,g,,1,,placeholder
+chinchard,Chinchard (filets),Poissonnerie,poisson,poisson_sauvage,espece:chinchard|fer|fragile,20,120,cru,,,0.8,g,,0,,placeholder
+chou_blanc,Chou blanc,Fruits et légumes,vegetal,,crucifere|vitc,1.3,27,cru,,,1,g,,1,,placeholder
+chou_fleur,Chou-fleur (fleurettes),Fruits et légumes,vegetal,,crucifere|vitc,2,25,cru,,,0.9,g,,0,,placeholder
+ciboulette,Ciboulette,Herbes fraîches,vegetal,,vitc|fragile,3,30,cru,,,1,g,,0,,placeholder
+citron_jus,Citron (jus),Fruits et légumes,vegetal,,vitc,0.4,25,net,40,1.03,1,piece,,1,,placeholder
+colin,Colin / lieu (filets),Poissonnerie,poisson,poisson_sauvage,espece:colin|fer|fragile,17,80,cru,,,0.8,g,,0,,placeholder
+coriandre,Coriandre fraîche,Herbes fraîches,vegetal,,vitc|fragile,2,25,cru,,,1,g,,0,,placeholder
+cornichon_malossol,Cornichons malossol,Huiles et condiments,vegetal,,,0.6,15,egoutte,,,1,g,360,0,,placeholder
+cottage_cheese,Cottage cheese,Crèmerie,laitier,,,11,100,net,,,1,g,200,0,,placeholder
+creme_15,Crème fraîche 15 %,Crèmerie,laitier,,,2.8,160,net,,1.0,1,g,200,0,,placeholder
+creme_epaisse_30,Crème fraîche épaisse 30 %,Crèmerie,laitier,,,2.3,290,net,,1.0,1,g,200,0,,placeholder
+cumin_moulu,Cumin moulu,Épices,vegetal,,,18,400,net,,,1,g,,1,,placeholder
+epinard_frais,Épinards frais,Fruits et légumes,vegetal,,fer_vegetal|fragile,3,25,cru,,,0.5,g,,0,,placeholder
+epinard_surgele,Épinards hachés surgelés,Surgelés,vegetal,,fer_vegetal,3,25,cru,,,0.9,g,750,0,,placeholder
+farine_ble,Farine de blé T65,Épicerie salée,vegetal,,feculent:ble,10,340,sec,,,1,g,1000,1,,placeholder
+feta,Feta AOP,Crèmerie,laitier,,fromage_sale,14,260,net,,,1,g,200,0,,placeholder
+fromage_affine,Fromage affiné à pâte pressée,Crèmerie,laitier,,,27,410,net,,,1,g,,1,,placeholder
+gingembre_frais,Gingembre frais,Fruits et légumes,vegetal,,,1.8,80,cru,,,1,g,,1,,placeholder
+graines_courge,Graines de courge,Épicerie sucrée,vegetal,,fer_vegetal,30,570,net,,,1,g,250,1,,placeholder
+halloumi,Halloumi,Crèmerie,laitier,,fromage_sale,21,320,net,,,1,g,250,0,,placeholder
+hareng_marine,Filets de hareng doux marinés,Poissonnerie,poisson,poisson_sauvage,espece:hareng|fer,18,220,egoutte,,,1,g,,0,,placeholder
+haricot_rouge_egoutte,Haricots rouges en conserve,Conserves,vegetal,,legumineuse|fer_vegetal|feculent:legumineuse,8,120,egoutte,,,1,g,250,0,,placeholder
+huile_colza,Huile de colza,Huiles et condiments,vegetal,,ala,0,900,net,,0.92,1,ml,500|1000,1,,placeholder
+huile_neutre,Huile neutre,Huiles et condiments,vegetal,,,0,900,net,,0.92,1,ml,1000,1,,placeholder
+huile_olive,Huile d'olive vierge extra,Huiles et condiments,vegetal,,,0,900,net,,0.92,1,ml,500|750|1000,1,,placeholder
+kasza_sarrasin,Sarrasin grillé (kasza gryczana),Épicerie salée,vegetal,,feculent:sarrasin|fer_vegetal,13,340,sec,,,2.5,g,500,1,,placeholder
+lait_demi_ecreme,Lait demi-écrémé,Crèmerie,laitier,,,3.3,46,net,,1.03,1,ml,1000,0,,placeholder
+lentille_verte_seche,Lentilles vertes sèches,Épicerie salée,vegetal,,legumineuse|fer_vegetal|feculent:legumineuse,24,330,sec,,,2.5,g,500,1,,placeholder
+lin_moulu,Graines de lin moulues,Épicerie sucrée,vegetal,,ala,20,500,net,,,1,g,250,1,,placeholder
+maquereau,Maquereau (filets),Poissonnerie,poisson,poisson_sauvage,espece:maquereau|fer|fragile,19,200,cru,,,0.8,g,,0,,placeholder
+maquereau_fume,Maquereau fumé,Poissonnerie,poisson,poisson_sauvage,espece:maquereau|fer,19,300,net,,,1,g,,0,,placeholder
+millet,Millet décortiqué,Épicerie salée,vegetal,,feculent:millet,11,370,sec,,,2.8,g,500,1,,placeholder
+miso,Pâte miso,Produits du monde,vegetal,,soja_condiment,12,200,net,,,1,g,,1,,placeholder
+noix,Cerneaux de noix,Épicerie sucrée,vegetal,,ala,15,700,net,,,1,g,125|250,1,,placeholder
+oeuf,Œuf calibre M,Œufs,oeuf,oeuf,fer,12.6,143,net,50,,1,piece,6|12,1,,placeholder
+oignon,Oignon jaune,Fruits et légumes,vegetal,,,1.2,40,cru,,,1,g,,1,,placeholder
+oignon_rouge,Oignon rouge,Fruits et légumes,vegetal,,,1.2,40,cru,,,1,g,,1,,placeholder
+orge_perle,Orge perlé,Épicerie salée,vegetal,,feculent:orge,10,350,sec,,,2.7,g,500,1,,placeholder
+pain,Pain de campagne,Boulangerie,vegetal,,feculent:ble|fragile,8,260,net,,,1,g,,0,,placeholder
+paneer,Paneer,Crèmerie,laitier,,,19,290,net,,,1,g,250,0,,placeholder
+pates_seches,Pâtes sèches,Épicerie salée,vegetal,,feculent:ble,12.5,355,sec,,,2.3,g,500,1,,placeholder
+patate_douce,Patate douce,Fruits et légumes,vegetal,tubercule,feculent:patate_douce|vitc,1.6,86,cru,,,0.9,g,,1,,placeholder
+persil,Persil plat,Herbes fraîches,vegetal,,vitc,3,40,cru,,,1,g,,0,,placeholder
+pois_chiche_egoutte,Pois chiches en conserve,Conserves,vegetal,,legumineuse|fer_vegetal|feculent:legumineuse,8,135,egoutte,,,1,g,240,0,,placeholder
+poivre,Poivre noir moulu,Épices,vegetal,,,10,255,net,,,1,g,,1,,placeholder
+poivron,Poivron,Fruits et légumes,vegetal,,vitc,0.9,30,cru,,,0.8,g,,0,,placeholder
+poivron_surgele,Poivron en lanières surgelé,Surgelés,vegetal,,vitc,0.9,30,cru,,,0.8,g,450,0,,placeholder
+pomme,Pomme acidulée,Fruits et légumes,vegetal,,,0.3,55,cru,,,1,g,,1,,placeholder
+pomme_de_terre,Pomme de terre,Fruits et légumes,vegetal,tubercule,feculent:pomme_de_terre,2,80,cru,,,1,g,1000|2500,1,,placeholder
+poulet_cuisse,Cuisse de poulet désossée sans peau,Boucherie,viande,,fer|fragile,19,145,cru,,,0.75,g,,0,,placeholder
+quinoa,Quinoa,Épicerie salée,vegetal,quinoa,feculent:quinoa|fer_vegetal,14,370,sec,,,2.7,g,500,1,,placeholder
+radis,Radis,Fruits et légumes,vegetal,,crucifere|vitc|fragile,0.7,16,cru,,,1,g,,0,,placeholder
+riz_basmati,Riz basmati,Épicerie salée,vegetal,,feculent:riz,7.5,350,sec,,,2.8,g,500|1000,1,,placeholder
+sardine,Sardine (filets),Poissonnerie,poisson,poisson_sauvage,espece:sardine|fer|fragile,20,180,cru,,,0.8,g,,0,,placeholder
+sauce_soja,Sauce soja,Produits du monde,vegetal,,soja_condiment,8,60,net,,1.1,1,ml,250|500,1,,placeholder
+sel_iode,Sel iodé,Épices,autre,,,0,0,net,,,1,g,,1,,placeholder
+semoule_complete,Semoule de blé complète,Épicerie salée,vegetal,,feculent:ble,13,350,sec,,,2.2,g,500|1000,1,,placeholder
+skyr,Skyr nature,Crèmerie,laitier,,,10,63,net,,,1,g,150|450,0,,placeholder
+substitut_vegetal_hache,Substitut végétal type haché,Produits végétariens,vegetal,,substitut_industriel|soja,18,220,net,,,0.9,g,,0,,placeholder
+sucre,Sucre,Épicerie sucrée,vegetal,,,0,400,sec,,,1,g,1000,1,,placeholder
+tofu_ferme,Tofu ferme,Produits végétariens,vegetal,tofu,soja|fer_vegetal,15,150,net,,,1,g,250|400,0,,placeholder
+tofu_fume,Tofu fumé,Produits végétariens,vegetal,tofu,soja|fer_vegetal,17,180,net,,,1,g,200,0,,placeholder
+tomate,Tomate,Fruits et légumes,vegetal,,vitc|fragile,0.8,20,cru,,,1,g,,0,,placeholder
+tomate_concassee,Tomates concassées en conserve,Conserves,vegetal,,,1.2,25,net,,,1,g,400,0,,placeholder
+truite,Truite (filets),Poissonnerie,poisson,poisson_elevage,espece:truite|fer|fragile,20,140,cru,,,0.8,g,,0,,placeholder
+yaourt_nature,Yaourt nature,Crèmerie,laitier,,,4,60,net,,,1,g,500,0,,placeholder

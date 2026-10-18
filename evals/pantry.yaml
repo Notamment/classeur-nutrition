@@ -1,0 +1,7 @@
+# Stock commun aux évaluations (fictif).
+stock:
+  - {id: huile_olive, quantite: null, unite: ml, etat: net}
+  - {id: huile_neutre, quantite: 500, unite: ml, etat: net}
+  - {id: poivre, quantite: null, unite: g, etat: net}
+  - {id: pates_seches, quantite: 500, unite: g, etat: sec}
+  - {id: sucre, quantite: 250, unite: g, etat: sec}

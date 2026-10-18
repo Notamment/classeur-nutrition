@@ -1,0 +1,7 @@
+# Stock FICTIF de démonstration.
+stock:
+  - {id: farine_ble, quantite: 200, unite: g, etat: sec}
+  - {id: sucre, quantite: 500, unite: g, etat: sec}
+  - {id: beurre, quantite: null, unite: g, etat: net}
+  - {id: huile_neutre, quantite: null, unite: ml, etat: net}
+  - {id: poivre, quantite: null, unite: g, etat: net}

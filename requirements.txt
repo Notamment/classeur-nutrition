@@ -1,0 +1,4 @@
+pyyaml>=6.0
+# Optionnel, pour scripts/build_foods.py selon le format de la table Ciqual :
+# openpyxl   (xlsx)
+# xlrd       (xls)

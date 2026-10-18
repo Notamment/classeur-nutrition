@@ -1,0 +1,5 @@
+nom: Quotidien rapide
+description: Limite impérative de 30 minutes au total par recette ; aucun objectif nutritionnel ajouté.
+profil:
+  repas:
+    duree_totale_max_min: 30

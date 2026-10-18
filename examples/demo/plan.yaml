@@ -1,0 +1,9 @@
+semaines:
+  - id: S01
+    cuisine: Pologne
+    recettes:   # ordre de consommation
+      - {id: S01-R02, plat: "Kasza gryczana z sosem grzybowym", categorie: vegetarien, feculent: sarrasin, legumineuses: false}
+      - {id: S01-R05, plat: "Pyry z gzikiem", categorie: vegetarien, feculent: pomme_de_terre, legumineuses: false}
+      - {id: S01-R01, plat: "Śledź w śmietanie", categorie: poisson, feculent: pomme_de_terre, legumineuses: false, espece_poisson: hareng}
+      - {id: S01-R03, plat: "Pierogi leniwe", categorie: vegetarien, feculent: ble, legumineuses: false}
+      - {id: S01-R04, plat: "Kotlety jajeczne", categorie: vegetarien, feculent: pomme_de_terre, legumineuses: false}

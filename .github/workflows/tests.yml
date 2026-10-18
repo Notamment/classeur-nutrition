@@ -1,0 +1,32 @@
+name: tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.10", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: pip install -r requirements.txt
+      - name: Tests unitaires
+        run: python -m unittest discover tests -v
+      - name: Démo reproductible
+        run: python tools/check_demo.py
+      - name: dist/prompt.md à jour
+        if: runner.os == 'Linux'
+        run: |
+          python tools/build_prompt.py
+          git diff --exit-code dist/prompt.md

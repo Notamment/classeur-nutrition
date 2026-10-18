@@ -1,0 +1,12 @@
+# stores.yaml — fichier PERSONNEL. Ne contient jamais d'adresse personnelle.
+verifie_le: null          # AAAA-MM-JJ : date de vérification des adresses
+zone: null                # ville ou code postal
+magasins:
+  - nom: null
+    role: principal       # principal | specialise | depannage
+    adresse: null
+    lien: null
+    rayons: []            # rayons achetés ici ; vide = tout ce qui n'est pas affecté ailleurs
+    usage: null
+notes:
+  - "Adresses vérifiées, sans garantie de stock, de prix ni de label."

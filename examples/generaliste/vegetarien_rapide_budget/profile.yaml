@@ -1,0 +1,20 @@
+version: 2
+projet:
+  semaines: 1
+  recettes_par_semaine: 2
+  mois:
+  - octobre
+  zone_saison: France métropolitaine
+  titre: Végétarien rapide — exemple
+  organisation: themes
+materiel:
+- plaque
+plaques: 2
+prereglages:
+- vegetarien
+- rapide
+- petit_budget
+nutrition:
+  mode: information
+budget:
+  plafond_eur_semaine: 35

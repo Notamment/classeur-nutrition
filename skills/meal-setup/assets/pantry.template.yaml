@@ -1,0 +1,7 @@
+# pantry.yaml — stock de départ, fichier PERSONNEL.
+# Vaut pour la première rotation uniquement ; le mettre à jour avant une nouvelle rotation.
+# quantite: null = présent, quantité à vérifier (jamais 0).
+# id : identifiant de foods.csv ou foods.local.csv ; etat : celui de l'aliment (sec, net, egoutte…).
+stock:
+  - {id: huile_olive, quantite: null, unite: ml, etat: net}
+  - {id: poivre, quantite: null, unite: g, etat: net}
