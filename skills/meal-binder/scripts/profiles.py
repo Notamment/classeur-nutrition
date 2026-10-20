@@ -136,7 +136,8 @@ def apply_requirements(issues, profile):
     for issue in issues:
         if (issue.level == "erreur" and issue.where != "profil" and issue.code in CONFIGURABLE_RULES
                 and requirement(profile, issue.code) == "preference"):
-            issue = replace(issue, level="alerte", msg="Préférence non satisfaite : " + issue.msg)
+            issue = replace(issue, level="alerte", requirement="preference",
+                            msg="Préférence non satisfaite : " + issue.msg)
         out.append(issue)
     return out
 

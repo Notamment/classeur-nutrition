@@ -50,7 +50,7 @@ def check_recipe_adaptation(recipe, profile, catalogs, *, plan=False):
     target = profile["repas"].get("difficulte_max")
     if target:
         if metadata["niveau"] is None:
-            issues.append(Issue("erreur", "difficulte", where, "non vérifiable : renseigner execution.techniques et taches_simultanees"))
+            issues.append(Issue("erreur", "difficulte", where, "non vérifiable : renseigner execution.techniques et taches_simultanees", kind="unknown"))
         elif metadata["niveau"] > LEVELS[target]:
             issues.append(Issue("erreur", "difficulte", where,
                                 f"{metadata['difficulte']} > {target} ; " + "; ".join(metadata["raisons"])))
@@ -58,7 +58,7 @@ def check_recipe_adaptation(recipe, profile, catalogs, *, plan=False):
     active, total = recipe.get("temps_actif_min"), recipe.get("temps_total_min")
     if cap is not None:
         if active is None:
-            issues.append(Issue("erreur", "duree_active", where, "non vérifiable : temps_actif_min absent"))
+            issues.append(Issue("erreur", "duree_active", where, "non vérifiable : temps_actif_min absent", kind="unknown"))
         elif active > cap:
             issues.append(Issue("erreur", "duree_active", where, f"{active:g} min actives > {cap:g} min"))
     if plan and active is not None and total is not None and active > total:
@@ -84,7 +84,8 @@ def check_food_families(recipe, calc, foods, profile, catalogs):
         for family in sorted(set(profile["aliments"].get(key, [])) & present.keys()):
             prefix = "Préférence non satisfaite : " if level == "alerte" else ""
             issues.append(Issue(level, code, calc.rid,
-                                f"{prefix}{family} : {', '.join(sorted(present[family]))}"))
+                                f"{prefix}{family} : {', '.join(sorted(present[family]))}",
+                                requirement="preference" if level == "alerte" else "imperative"))
     return issues
 
 
@@ -99,7 +100,7 @@ def check_week_variety(recipes, profile, where, catalogs):
         missing = _missing(recipes, "plat_id")
         count = len({r["plat_id"] for r in recipes if r.get("plat_id")})
         if missing:
-            issues.append(Issue("erreur", "variete_plats", where, "non vérifiable : plat_id absent pour " + ", ".join(missing)))
+            issues.append(Issue("erreur", "variete_plats", where, "non vérifiable : plat_id absent pour " + ", ".join(missing), kind="unknown"))
         elif count < distinct:
             issues.append(Issue("erreur", "variete_plats", where, f"{count} plats distincts < {distinct}"))
     cap = var.get("ingredient_principal_max_par_semaine")
@@ -107,7 +108,7 @@ def check_week_variety(recipes, profile, where, catalogs):
         missing = _missing(recipes, "ingredients_principaux")
         if missing:
             issues.append(Issue("erreur", "ingredient_recurrent", where,
-                                "non vérifiable : ingredients_principaux absents pour " + ", ".join(missing)))
+                                "non vérifiable : ingredients_principaux absents pour " + ", ".join(missing), kind="unknown"))
         counts = Counter(food for r in recipes for food in set(r.get("ingredients_principaux", [])))
         for food, count in sorted(counts.items()):
             if count > cap:
@@ -117,7 +118,7 @@ def check_week_variety(recipes, profile, where, catalogs):
         missing = _missing(recipes, "execution")
         techniques = {t for r in recipes for t in r.get("execution", {}).get("techniques", [])}
         if missing or techniques - catalogs.techniques.keys():
-            issues.append(Issue("erreur", "variete_techniques", where, "non vérifiable : techniques manquantes ou inconnues"))
+            issues.append(Issue("erreur", "variete_techniques", where, "non vérifiable : techniques manquantes ou inconnues", kind="unknown"))
         elif len(techniques) < minimum:
             issues.append(Issue("erreur", "variete_techniques", where, f"{len(techniques)} techniques distinctes < {minimum}"))
     return apply_requirements(issues, profile)
@@ -130,7 +131,7 @@ def check_repeated_dishes(recipes, profile, where):
     issues = []
     missing = _missing(recipes, "plat_id")
     if missing:
-        issues.append(Issue("erreur", "repetition_plat", where, "non vérifiable : plat_id absent pour " + ", ".join(missing)))
+        issues.append(Issue("erreur", "repetition_plat", where, "non vérifiable : plat_id absent pour " + ", ".join(missing), kind="unknown"))
     counts = Counter(r["plat_id"] for r in recipes if r.get("plat_id"))
     for dish, count in sorted(counts.items()):
         if count > cap:

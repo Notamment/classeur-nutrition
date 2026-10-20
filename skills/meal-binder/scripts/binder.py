@@ -33,6 +33,7 @@ from checks import analyse, check_plan, check_profile, load_pantry, load_plan  #
 from core import BinderError, DataError, Issue, load_foods, load_profile, utf8_stdio, week_order  # noqa: E402
 from render import render_audit, render_classeur  # noqa: E402
 from profiles import list_presets, load_resolved, nutrition_mode, week_title  # noqa: E402
+from storage import write_render  # noqa: E402
 
 
 def report(issues: list, as_json: bool = False) -> int:
@@ -145,10 +146,10 @@ def main(argv=None) -> int:
         out_dir.mkdir(exist_ok=True)
         if a.command == "render":
             path = out_dir / "classeur.md"
-            path.write_text(render_classeur(ctx, shops, final_stock, []), encoding="utf-8")
+            write_render(path, render_classeur(ctx, shops, final_stock, []))
         else:
             path = out_dir / "audit.md"
-            path.write_text(render_audit(ctx, shops), encoding="utf-8")
+            write_render(path, render_audit(ctx, shops))
         print(f"Écrit : {path}", file=sys.stderr if a.json else sys.stdout)
         return report(ctx.issues, a.json)
     except DataError as e:

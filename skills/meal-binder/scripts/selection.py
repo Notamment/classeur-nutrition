@@ -19,6 +19,7 @@ import yaml
 from checks import analyse, check_profile, preference_counts, required_budget_unverified
 from core import BinderError, DataError, Issue, load_foods, load_profile, load_weeks
 from render import esc, fr, render_classeur
+from storage import safe_destination
 
 MAX_PROPOSALS = 30
 MARKER = "meal-binder:selection:v1\n"
@@ -139,7 +140,7 @@ def select_proposals(workdir):
         if row is not winner:
             row["departage"] = _explain_pair(winner, row, priorities)
     report = {
-        "version": 1, "titre": profile["projet"]["titre"],
+        "version": 2, "titre": profile["projet"]["titre"],
         "selectionne": winner["id"] if winner else None, "priorites": priorities,
         "methode": [
             "Rejeter les violations impératives, données invalides et budgets impératifs invérifiables.",
@@ -189,7 +190,7 @@ def render_selection(selection):
 def save_selection(selection, workdir):
     """Sortie autonome atomique ; aucun fichier d'entrée n'est remplacé."""
     workdir = Path(workdir)
-    out = workdir / "out"
+    out = safe_destination(workdir / "out")
     out.mkdir(exist_ok=True)
     target = out / "selection"
     marker = target / "GENERATED"
@@ -197,6 +198,7 @@ def save_selection(selection, workdir):
         raise BinderError("out/selection existe et n'est pas une sortie générée reconnue ; choisir un autre dossier de travail")
     stage = Path(tempfile.mkdtemp(prefix=".selection-", dir=out))
     backup = None
+    published = False
     try:
         (stage / "GENERATED").write_text(MARKER, encoding="utf-8")
         (stage / "rapport.json").write_text(json.dumps(selection.report, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
@@ -220,6 +222,7 @@ def save_selection(selection, workdir):
             os.replace(target, backup)
         try:
             os.replace(stage, target)
+            published = True
         except OSError:
             if backup:
                 os.replace(backup, target)
@@ -229,5 +232,5 @@ def save_selection(selection, workdir):
     finally:
         if stage.exists():
             shutil.rmtree(stage)
-        if backup and backup.exists():
+        if published and backup and backup.exists():
             shutil.rmtree(backup)

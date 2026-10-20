@@ -433,7 +433,7 @@ def audit_rows_v2(ctx, shops) -> list:
         if active:
             if any(i.level == "erreur" for i in matching):
                 status = "non conforme"
-            elif any(i.msg.startswith("Préférence non satisfaite") and "non vérifiable" not in i.msg for i in matching):
+            elif any(i.preference_failed for i in matching):
                 status = "préférence non satisfaite"
             elif matching or data_incomplete:
                 status = "non vérifié"

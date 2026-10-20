@@ -164,6 +164,9 @@ Voir [`evals/README.md`](evals/README.md). Le taux local de recettes sans erreur
 
 ## Tests
 
+Les [parcours professionnels](skills/meal-binder/references/professional.md)
+documentent les diagnostics structurés et la protection des sorties.
+
 ```bash
 python -m unittest discover tests
 python tools/check_demo.py

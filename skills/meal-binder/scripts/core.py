@@ -66,6 +66,22 @@ class Issue:
     code: str
     where: str
     msg: str
+    kind: str | None = None
+    requirement: str | None = None
+
+    def __post_init__(self):
+        if self.kind is None:
+            self.kind = "internal" if self.code == "erreur_interne" else "violation" if self.level == "erreur" or self.requirement == "preference" else "information"
+        if self.requirement is None and self.level == "erreur" and self.kind != "internal":
+            self.requirement = "imperative"
+
+    @property
+    def preference_failed(self):
+        return self.requirement == "preference" and self.kind == "violation"
+
+    @property
+    def preference_unknown(self):
+        return self.requirement == "preference" and self.kind == "unknown"
 
     def line(self) -> str:
         return f"{self.level.upper():7} {self.where:<9} {self.code}: {self.msg}"
@@ -438,7 +454,7 @@ def compute_recipe(r: dict, foods: dict, portions: int, *, version=1,
         negligible = unit == "pincee"
         if nutrition_mode != "desactive" and not negligible and (food.prot is None or food.kcal is None):
             issues.append(Issue("erreur" if version == 1 else "alerte", "nutrition_absente", where,
-                                f"{fid}: protéines ou kcal absents de la base ; valeur inconnue, jamais zéro"))
+                                f"{fid}: protéines ou kcal absents de la base ; valeur inconnue, jamais zéro", kind="unknown"))
         prot = (0.0 if negligible else None if food.prot is None else grams * food.prot / 100)
         kcal = (0.0 if negligible else None if food.kcal is None else grams * food.kcal / 100)
         if nutrition_mode == "desactive":

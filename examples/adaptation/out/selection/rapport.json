@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "titre": "DÉMO ADAPTATION — PRIX FICTIFS",
   "selectionne": "economique",
   "priorites": [
@@ -37,7 +37,9 @@
           "level": "erreur",
           "code": "famille_exclue",
           "where": "S01-R01",
-          "msg": "soja : Pâte miso"
+          "msg": "soja : Pâte miso",
+          "kind": "violation",
+          "requirement": "imperative"
         }
       ],
       "motifs_rejet": [

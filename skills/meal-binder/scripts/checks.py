@@ -215,7 +215,7 @@ def check_recipe(rc, r: dict, p: dict, position: int, alts: list) -> list:
         if limits is None:
             continue
         if value is None:
-            out.append(Issue("erreur", code, rid, f"{label}/portion : objectif non vérifiable, données absentes"))
+            out.append(Issue("erreur", code, rid, f"{label}/portion : objectif non vérifiable, données absentes", kind="unknown"))
         elif not limits[0] <= value <= limits[1]:
             out.append(Issue("erreur", code, rid, f"{value:.1f} {label}/portion hors {limits} (estimation)"))
     t = r.get("temps_total_min")
@@ -251,7 +251,7 @@ def check_recipe(rc, r: dict, p: dict, position: int, alts: list) -> list:
         if ln.food.id in excluded:
             out.append(Issue("erreur", "aliment_exclu", rid, f"{ln.food.nom} est exclu par le profil"))
         if ln.food.id in p["aliments"].get("a_eviter", []):
-            out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : {ln.food.nom} est à éviter"))
+            out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : {ln.food.nom} est à éviter", requirement="preference"))
         if ln.food.nature in forbidden_natures(p):
             out.append(Issue("erreur", "regime", rid, f"{ln.food.nom} incompatible avec le régime alimentaire"))
     mode = nut["fer_vitamine_c"] if nutrition_targets(p) else "non"
@@ -274,7 +274,7 @@ def check_recipe(rc, r: dict, p: dict, position: int, alts: list) -> list:
             if a["food"] in excluded:
                 out.append(Issue("erreur", "alternative_invalide", rid, f"{a['nom']} : aliment exclu"))
             if a["food"] in p["aliments"].get("a_eviter", []):
-                out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : alternative {a['nom']} à éviter"))
+                out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : alternative {a['nom']} à éviter", requirement="preference"))
             for field, key, label in (("prot_pp", "proteines_g_par_portion", "protéines"),
                                       ("poids_pp", "poids_servi_g_par_portion", "poids servi"),
                                       ("kcal_pp", "kcal_par_portion", "kcal")):
@@ -475,8 +475,8 @@ def preference_counts(ctx):
     """Un écart par règle et portée ; un échec connu prime sur une incertitude."""
     failed, unknown = set(), set()
     for issue in ctx.issues:
-        if issue.msg.startswith("Préférence non satisfaite"):
-            target = unknown if "non vérifiable" in issue.msg else failed
+        if issue.requirement == "preference":
+            target = unknown if issue.kind == "unknown" else failed
             target.add((issue.code, issue.where))
     if (ctx.profile["budget"]["plafond_eur_semaine"] is not None
             and requirement(ctx.profile, "budget_depasse") == "preference"):
