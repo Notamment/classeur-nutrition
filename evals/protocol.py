@@ -45,6 +45,10 @@ def prepare(target, repetitions=3, case_ids=None):
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".eval-", dir=target.parent))
     try:
+        for path in [*engine_files(), SKILL_DIR / "SKILL.md", *SKILL_DIR.joinpath("references").glob("*.md")]:
+            destination = stage / "runtime" / path.relative_to(SKILL_DIR)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, destination)
         for case in cases:
             for repeat in range(1, repetitions + 1):
                 directory = stage / f"{case['id']}-{repeat}"
@@ -55,7 +59,7 @@ def prepare(target, repetitions=3, case_ids=None):
                 if case["id"] == "R08":
                     atomic_text(directory / "pantry.yaml", "stock:\n- id: carotte\n  quantite: null\n  unite: g\n")
                 task = ("Utiliser le skill meal-binder pour générer ce dossier fictif, sans modifier le profil, le stock ni les sources.\n"
-                        f"Lire les instructions du skill dans {SKILL_DIR / 'SKILL.md'} et ses références ; les scripts sont sous {SKILL_DIR / 'scripts'}.\n"
+                        "Lire les instructions du skill dans ../runtime/SKILL.md et ses références ; les scripts sont sous ../runtime/scripts/.\n"
                         "Produire plan.yaml, weeks/*.json et out/classeur.md avec les scripts.\n"
                         "Ne pas inventer de prix ni corriger les inconnues par des zéros.\n"
                         "Ne pas poser de question : conserver les impératifs et livrer les diagnostics non résolus.\n"
