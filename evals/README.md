@@ -1,5 +1,47 @@
 # Évaluations
 
+## Protocole professionnel
+
+`corpus.yaml` définit **24 scénarios fictifs**, 12 nutrition et 12 restauration.
+Il décrit les points de relecture sans prétendre que ces scénarios ont été exécutés.
+
+```bash
+python evals/protocol.py prepare --dir evals/runs/pilote --repetitions 3
+python evals/protocol.py summarize --dir evals/runs/pilote
+```
+
+Pour un pilote économique avant les 72 générations, préparer un seul scénario
+avec `--case N10 --repetitions 1`. Répéter le même scénario dans un autre dossier
+pour un autre modèle, avec les mêmes entrées. Une génération par outil constitue
+un essai de parcours, pas un benchmark statistique.
+
+La préparation crée 72 dossiers indépendants, leurs consignes et des grilles
+humaines vides. Elle n'attribue aucun score. Les générations et leurs journaux
+restent privés sous `evals/runs/` ou dans un dossier extérieur au dépôt.
+
+Pour exécuter un dossier, fournir explicitement un agent installé, le modèle et
+une commande sous forme de liste JSON : `protocol.py run --dir <cas> --agent <nom>
+--model <modèle> --agent-command '<liste JSON>'`. La liste peut utiliser `{task}`
+pour la consigne et `{dir}` pour le chemin. Aucun shell n'est lancé implicitement.
+Configurer le modèle, les autorisations et les limites de coût dans l'agent choisi
+avant exécution. Le délai par défaut est de 600 s, réglable via `--timeout`.
+
+Le protocole garde modèle, agent, durée mesurée, code de sortie et empreintes
+du moteur, corpus et consigne. Un agent ne peut pas modifier les profils, stocks
+et sources imposés pour améliorer son score. Les tentatives échouées restent
+enregistrées et ne sont pas relancées dans le même dossier. Les coûts et tokens
+non observés restent `null`, jamais zéro.
+
+`evaluate --dir <cas>` recalcule le score automatique. La revue humaine reste
+séparée : copier `human.template.json` en `human.json`, puis renseigner un relecteur,
+les cinq notes de 1 à 5 et une liste de défauts critiques après relecture réelle.
+Aucune grille humaine n'est remplie par le protocole. Publier uniquement un bilan
+anonymisé ; aucune performance réelle n'est revendiquée tant que les générations
+et relectures n'ont pas eu lieu. Les tests du runner utilisent des agents factices
+et ne constituent pas une évaluation de modèle.
+
+## Protocole historique
+
 Mesurer, modèle par modèle, la conformité aux contrôles implémentés de `meal-binder`. Le même pipeline calcule les recettes, les courses et le budget pour la CLI et pour l'évaluation.
 
 ## Métriques

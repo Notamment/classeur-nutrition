@@ -1,0 +1,48 @@
+"""Le protocole ne confond pas préparations, exécutions et revues humaines."""
+import json
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+from test_binder import ROOT
+sys.path.insert(0, str(ROOT / "evals"))
+from core import BinderError, load_yaml
+from protocol import prepare, evaluate, execute, summarize
+
+
+class TestEvaluationProtocol(unittest.TestCase):
+    def test_corpus_has_twelve_cases_per_profession_and_prepares_no_scores(self):
+        cases = load_yaml(ROOT / "evals/corpus.yaml")["cas"]
+        self.assertEqual(sum(c["metier"] == "nutrition" for c in cases), 12)
+        self.assertEqual(sum(c["metier"] == "restauration" for c in cases), 12)
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "runs"
+            result = prepare(root)
+            self.assertEqual(result["generations_preparees"], 72)
+            self.assertEqual(result["generations_executees"], 0)
+            self.assertFalse(list(root.rglob("evaluation.json")))
+            self.assertEqual(summarize(root)["revues_humaines"], 0)
+            with self.assertRaises(BinderError):
+                evaluate(root / "N01-1")
+
+    def test_failed_fixture_agent_is_recorded_without_fabricated_human_or_cost(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "runs"; prepare(root, repetitions=1)
+            case = root / "N01-1"
+            result = execute(case, [sys.executable, "-c", "raise SystemExit(7)"], "fixture-test", "fixture-test")
+            self.assertFalse(result["automatique"]["conforme"])
+            self.assertIsNone(result["humain"])
+            self.assertIsNone(result["cout_eur"])
+            self.assertEqual(summarize(root)["generations_executees"], 1)
+            with self.assertRaises(BinderError):
+                execute(case, [sys.executable, "-c", "pass"], "fixture-test", "fixture-test")
+
+    def test_agent_editing_imposed_profile_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "runs"; prepare(root, repetitions=1)
+            case = root / "N01-1"
+            command = [sys.executable, "-c", "from pathlib import Path; Path('profile.yaml').write_text('version: 2', encoding='utf-8')"]
+            with self.assertRaises(BinderError):
+                execute(case, command, "fixture-test", "fixture-test")
+            self.assertFalse((case / "evaluation.json").exists())
