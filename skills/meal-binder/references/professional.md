@@ -105,3 +105,41 @@ les tags culinaires. Une composition explicitement inconnue ne peut pas valider
 une exclusion par famille : erreur impérative ou préférence invérifiable selon
 la demande. Les informations d'allergènes sont conservées séparément ; elles
 ne constituent pas un moteur de certification d'allergènes ou de traces.
+
+## Dossiers, journal et revue humaine
+
+Les commandes suivantes rendent un objet JSON `version: 1` :
+
+```bash
+python skills/meal-binder/scripts/binder.py init --dir dossiers/client_001 --id client_001 --profession nutrition
+python skills/meal-binder/scripts/binder.py clone --source dossiers/client_001 --dir dossiers/client_002 --id client_002
+python skills/meal-binder/scripts/binder.py render --dir dossiers/client_001
+python skills/meal-binder/scripts/binder.py review --dir dossiers/client_001 --reviewer relecteur_001 --note "Recettes et limites relues."
+python skills/meal-binder/scripts/binder.py review-status --dir dossiers/client_001
+python skills/meal-binder/scripts/binder.py history --dir dossiers/client_001
+python skills/meal-binder/scripts/binder.py archive --dir dossiers/client_001 --output archives/client_001_v1
+```
+
+`init` crée un profil v2 neutre ; l'agent complète ensuite le profil et les semaines.
+Les dossiers sont locaux et privés, identifiés par pseudonymes ; aucun fichier
+de client ne doit être publié. Dans le checkout Git, la création est limitée
+aux dossiers ignorés `dossiers/` et `archives/`. À l'extérieur, choisir un emplacement
+privé approprié. Une cible existante n'est jamais remplacée. `clone` ne copie
+ni les anciennes revues, ni le journal, ni les notes non déclarées comme entrées.
+
+`professional.yaml` conserve seulement l'identifiant et le métier. `history.jsonl`
+conserve les opérations de création et de revue. Le fichier `.dossier.lock`
+empêche les opérations concurrentes de ce workflow. Ne retirer un verrou abandonné
+qu'après vérification de l'absence du processus qui l'a créé.
+
+Une revue référence les entrées, le moteur, les calculs et le document exact.
+Le rendu doit être à jour ; erreurs et budget impératif invérifiable empêchent
+la décision `revu`. Pour conserver un constat sans validation, utiliser
+`--decision a_revoir`. Les alertes restent attachées à la revue ; elles ne sont
+pas effacées. Toute modification invalide la revue précédente. Le code 0 de
+`review-status` signifie que la revue porte sur la version actuelle ; consulter
+sa `decision` pour distinguer `revu` et `a_revoir`.
+
+La revue est une annotation locale déclarative, pas une signature d'identité.
+L'archive protège également les empreintes du journal et de la revue présents.
+Aucune donnée client ni note n'est transmise à un service par ces commandes.

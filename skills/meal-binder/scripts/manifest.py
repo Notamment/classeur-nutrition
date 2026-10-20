@@ -82,10 +82,12 @@ def snapshot(ctx, target, date=None):
     if target.exists() or target == source or target in source.parents or source in target.parents:
         raise BinderError("archive : destination nouvelle et extérieure au dossier de travail requise")
     manifest = make_manifest(ctx, date)
+    attachments = [source / name for name in ("history.jsonl", "out/review.json") if (source / name).is_file()]
+    manifest["pieces_jointes"] = hashes(attachments, source)
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".snapshot-", dir=target.parent))
     try:
-        for relative in manifest["entrees"]:
+        for relative in (*manifest["entrees"], *manifest["pieces_jointes"]):
             destination = stage / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source / relative, destination)
@@ -93,6 +95,11 @@ def snapshot(ctx, target, date=None):
             destination = stage / ".runtime/meal-binder" / relative
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(SKILL_DIR / relative, destination)
+        if hashes(input_files(stage), stage) != manifest["entrees"]:
+            raise BinderError("entrées modifiées pendant l'archivage ; archive non publiée")
+        from checks import analyse
+        if digest(encode(analysis_payload(analyse(stage, complete=True))).encode("utf-8")) != manifest["analyse_sha256"]:
+            raise BinderError("calculs modifiés pendant l'archivage ; archive non publiée")
         atomic_text(stage / "snapshot.json", encode(manifest))
         atomic_text(stage / "analyse.json", encode(analysis_payload(ctx)))
         from render import render_classeur
@@ -118,8 +125,8 @@ def verify_snapshot(directory):
     if not isinstance(manifest, dict) or manifest.get("version") != 1:
         raise BinderError("version de manifeste non prise en charge")
     differences = []
-    for key, root in (("entrees", directory), ("moteur_fichiers", directory / ".runtime/meal-binder")):
-        entries = manifest.get(key)
+    for key, root in (("entrees", directory), ("moteur_fichiers", directory / ".runtime/meal-binder"), ("pieces_jointes", directory)):
+        entries = manifest.get(key, {} if key == "pieces_jointes" else None)
         if not isinstance(entries, dict):
             raise BinderError("manifeste incomplet")
         for name, expected in entries.items():

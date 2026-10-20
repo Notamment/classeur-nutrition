@@ -70,6 +70,11 @@ def recipe_table(ctx, wid: str) -> None:
 
 
 def main(argv=None) -> int:
+    values = list(sys.argv[1:] if argv is None else argv)
+    from workflow import COMMANDS
+    if values and values[0] in COMMANDS:
+        from workflow import main as workflow_main
+        return workflow_main(values)
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot", "nutrients", "use-data", "products"])
     ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")

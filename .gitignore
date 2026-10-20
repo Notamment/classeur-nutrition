@@ -17,6 +17,10 @@ analyse.json
 .runtime/
 dossiers/
 archives/
+history.jsonl
+.dossier.lock
+.backup-*
+.transaction-*
 
 # Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
 !/examples/**

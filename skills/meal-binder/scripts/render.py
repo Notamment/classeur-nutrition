@@ -533,6 +533,7 @@ def products_block(ctx):
     from products import product_report
     report = product_report(ctx.workdir, ctx.foods)
     used = {line.food.id for calc in ctx.calcs.values() for line in calc.lines}
+    notes = []
     out = ["## Produits et prix déclarés", "", f"Date de référence : {report['date_reference']}.", "",
            "| Aliment | Référence | Fournisseur | Prix observé | Date | Composition |", "|---|---|---|---|---|---|"]
     for fid, item in sorted(report["produits"].items()):
@@ -541,9 +542,8 @@ def products_block(ctx):
         price = "non vérifié" if item["perime"] or item["prix_eur"] is None else f"{fr(item['prix_eur'], 2)} EUR / {item['prix_pour']:g} {item['unite']}"
         out.append("| " + " | ".join(esc(x) for x in (ctx.foods[fid].nom, item["reference"], item["fournisseur"], price,
                                                        item["observe_le"], item["composition"]["statut"])) + " |")
-        out.append("")
-        out.append(f"Source {esc(item['reference'])} : {esc(item['source'])}.")
-    out += ["", "Les compositions sont déclaratives ; familles culinaires et informations d'allergènes restent distinctes. "
+        notes.append(f"Source {esc(item['reference'])} : {esc(item['source'])}.")
+    out += ["", *notes, "", "Les compositions sont déclaratives ; familles culinaires et informations d'allergènes restent distinctes. "
             "L'absence de mention ne garantit pas l'absence d'allergène ou de traces.", ""]
     return out
 
