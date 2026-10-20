@@ -95,20 +95,26 @@ def evaluate(directory):
         raise BinderError("moteur différent du protocole préparé")
     if run.get("corpus_sha256") != digest((ROOT / "evals/corpus.yaml").read_bytes()) or run.get("protocole_sha256") != digest(Path(__file__).read_bytes()):
         raise BinderError("corpus ou protocole différent de la préparation")
-    score = score_run(directory)
-    score.pop("run", None)
-    if "codes" in score:
-        score["codes"] = dict(score["codes"])
+    produced = bool(list(directory.joinpath("weeks").glob("*.json")))
+    score = score_run(directory) if produced else None
+    if score is not None:
+        score.pop("run", None)
+        if "codes" in score:
+            score["codes"] = dict(score["codes"])
     missing = [name for name in ("plan.yaml", "out/classeur.md") if not (directory / name).is_file()]
-    if run.get("code_agent") != 0 or missing:
+    if score is not None and (run.get("code_agent") != 0 or missing):
         score.update(conforme=False, taux=0, generation_interrompue=run.get("code_agent") != 0,
                      sorties_manquantes=missing)
     result = {"version": 1, "cas": run["cas"], "repetition": run["repetition"],
               "modele": run["modele"], "agent": run["agent"], "duree_secondes": run["duree_secondes"],
               "cout_eur": run.get("cout_eur"), "tokens": run.get("tokens"),
-              "automatique": score, "humain": None}
+              "automatique": score, "humain": None,
+              "execution": {"code_agent": run.get("code_agent"), "recettes_produites": produced,
+                            "sorties_manquantes": missing}}
     human_path = directory / "human.json"
     if human_path.exists():
+        if not produced:
+            raise BinderError("aucune recette produite : aucune évaluation humaine de génération possible")
         human = load_json(human_path)
         if (human.get("version") != 1 or not human.get("relecteur")
             or set(human.get("notes", {})) != set(RUBRIC)
@@ -165,12 +171,14 @@ def summarize(directory):
         evaluation = path.parent / "evaluation.json"
         if evaluation.exists():
             value = load_json(evaluation)
-            result.update(conforme=value["automatique"].get("conforme", False),
+            result.update(conforme=value["automatique"].get("conforme", False) if value["automatique"] else None,
+                          recettes_produites=value.get("execution", {}).get("recettes_produites", False),
                           relecture_humaine=value["humain"] is not None,
                           defauts_critiques=value["humain"].get("defauts_critiques") if value["humain"] else None)
         runs.append(result)
     return {"version": 1, "generations_preparees": len(runs),
-            "generations_executees": sum(r["statut"] != "prepare" for r in runs),
+            "tentatives_lancees": sum(r["statut"] != "prepare" for r in runs),
+            "generations_produites": sum(r.get("recettes_produites", False) for r in runs),
             "revues_humaines": sum(r.get("relecture_humaine", False) for r in runs), "executions": runs}
 
 

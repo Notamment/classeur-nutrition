@@ -31,10 +31,11 @@ class TestEvaluationProtocol(unittest.TestCase):
             root = Path(temp) / "runs"; prepare(root, repetitions=1)
             case = root / "N01-1"
             result = execute(case, [sys.executable, "-c", "raise SystemExit(7)"], "fixture-test", "fixture-test")
-            self.assertFalse(result["automatique"]["conforme"])
+            self.assertIsNone(result["automatique"])
             self.assertIsNone(result["humain"])
             self.assertIsNone(result["cout_eur"])
-            self.assertEqual(summarize(root)["generations_executees"], 1)
+            self.assertEqual(summarize(root)["tentatives_lancees"], 1)
+            self.assertEqual(summarize(root)["generations_produites"], 0)
             with self.assertRaises(BinderError):
                 execute(case, [sys.executable, "-c", "pass"], "fixture-test", "fixture-test")
 

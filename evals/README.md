@@ -30,7 +30,9 @@ Le protocole garde modèle, agent, durée mesurée, code de sortie et empreintes
 du moteur, corpus et consigne. Un agent ne peut pas modifier les profils, stocks
 et sources imposés pour améliorer son score. Les tentatives échouées restent
 enregistrées et ne sont pas relancées dans le même dossier. Les coûts et tokens
-non observés restent `null`, jamais zéro.
+non observés restent `null`, jamais zéro. Sans recette produite, le champ
+`automatique` reste `null` : un échec d'environnement n'est pas un score de
+qualité du modèle. Le bilan distingue tentatives lancées et générations produites.
 
 `evaluate --dir <cas>` recalcule le score automatique. La revue humaine reste
 séparée : copier `human.template.json` en `human.json`, puis renseigner un relecteur,
