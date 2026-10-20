@@ -312,6 +312,7 @@ class Context:
     final_stock: dict = field(default_factory=dict)
     catalogs: object = None
     adaptations: dict = field(default_factory=dict)
+    products: dict | None = None
 
 
 def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:
@@ -319,6 +320,8 @@ def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:
     foods, food_issues = load_foods(workdir)
     weeks = load_weeks(workdir) if weeks is None else weeks
     ctx = Context(workdir, p, foods, weeks, issues=list(food_issues))
+    from products import load_products
+    ctx.products = load_products(workdir)
     ctx.catalogs = load_catalogs() if p["version"] == 2 else None
     ctx.issues += check_profile(p, foods, ctx.catalogs)
     if any(i.code == "schema_profil" for i in ctx.issues):
@@ -385,7 +388,7 @@ def _check_week(ctx: Context, w: dict, portions: int) -> list:
         if ctx.catalogs:
             metadata, issues = check_recipe_adaptation(r, p, ctx.catalogs)
             ctx.adaptations[rid] = metadata
-            out += issues + check_food_families(r, rc, ctx.foods, p, ctx.catalogs)
+            out += issues + check_food_families(r, rc, ctx.foods, p, ctx.catalogs, products=ctx.products)
     if ctx.catalogs:
         out += check_week_variety([ctx.recipes[rid] for rid in order if rid in ctx.recipes], p, wid, ctx.catalogs)
     calcs = [ctx.calcs[i] for i in order if i in ctx.calcs]

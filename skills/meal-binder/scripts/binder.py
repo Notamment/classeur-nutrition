@@ -71,7 +71,7 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot", "nutrients", "use-data"])
+    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot", "nutrients", "use-data", "products"])
     ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")
     ap.add_argument("--dir", default=".", help="dossier de travail (profile.yaml, plan.yaml, weeks/)")
     ap.add_argument("--json", action="store_true", help="écarts au format JSON")
@@ -122,6 +122,11 @@ def main(argv=None) -> int:
                 for name, preset in presets.items():
                     print(f"{name} — {preset['nom']} : {preset['description']}")
             return 0
+        if a.command == "products":
+            from products import product_report
+            foods, issues = load_foods(wd)
+            print(encode(product_report(wd, foods)), end="")
+            return int(any(i.level == "erreur" for i in issues))
         if a.command == "show-profile":
             resolved = load_resolved(wd)
             foods, issues = load_foods(wd)

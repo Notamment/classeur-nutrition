@@ -276,7 +276,9 @@ def load_foods(workdir: Path | None = None) -> tuple[dict, list]:
     except (OSError, UnicodeError, csv.Error) as e:
         raise BinderError(f"CSV des aliments illisible : {e}") from e
     from sources import apply_sources
-    return apply_sources(foods, workdir), issues
+    from products import apply_products
+    foods, product_issues = apply_products(apply_sources(foods, workdir), workdir)
+    return foods, issues + product_issues
 
 
 # ---------------------------------------------------------------- unités

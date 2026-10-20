@@ -447,7 +447,7 @@ def audit_rows_v2(ctx, shops) -> list:
     add("Régime et exclusions", f"{p['alimentation']['regime']} ; {p['aliments']['exclus']}",
         {"regime", "aliment_exclu", "alternative_invalide"}, fallback="selon la base d'aliments")
     add("Ingrédients à éviter", p["aliments"]["a_eviter"], {"aliment_a_eviter"}, bool(p["aliments"]["a_eviter"]))
-    add("Familles exclues", p["aliments"]["familles_exclues"], {"famille_exclue", "famille_inconnue", "foods_famille"},
+    add("Familles exclues", p["aliments"]["familles_exclues"], {"famille_exclue", "famille_inconnue", "foods_famille", "famille_non_verifiable"},
         bool(p["aliments"]["familles_exclues"]), fallback="selon la base d'aliments")
     add("Familles à éviter", p["aliments"]["familles_a_eviter"], {"famille_a_eviter", "famille_inconnue", "foods_famille"},
         bool(p["aliments"]["familles_a_eviter"]), fallback="selon la base d'aliments")
@@ -527,6 +527,27 @@ def stores_block(ctx) -> list:
     return out
 
 
+def products_block(ctx):
+    if not ctx.products:
+        return []
+    from products import product_report
+    report = product_report(ctx.workdir, ctx.foods)
+    used = {line.food.id for calc in ctx.calcs.values() for line in calc.lines}
+    out = ["## Produits et prix déclarés", "", f"Date de référence : {report['date_reference']}.", "",
+           "| Aliment | Référence | Fournisseur | Prix observé | Date | Composition |", "|---|---|---|---|---|---|"]
+    for fid, item in sorted(report["produits"].items()):
+        if fid not in used:
+            continue
+        price = "non vérifié" if item["perime"] or item["prix_eur"] is None else f"{fr(item['prix_eur'], 2)} EUR / {item['prix_pour']:g} {item['unite']}"
+        out.append("| " + " | ".join(esc(x) for x in (ctx.foods[fid].nom, item["reference"], item["fournisseur"], price,
+                                                       item["observe_le"], item["composition"]["statut"])) + " |")
+        out.append("")
+        out.append(f"Source {esc(item['reference'])} : {esc(item['source'])}.")
+    out += ["", "Les compositions sont déclaratives ; familles culinaires et informations d'allergènes restent distinctes. "
+            "L'absence de mention ne garantit pas l'absence d'allergène ou de traces.", ""]
+    return out
+
+
 def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None) -> str:
     p = ctx.profile
     issues = ctx.issues + [i for i in extra_issues if i not in ctx.issues]
@@ -547,12 +568,12 @@ def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None)
     shop_by_week = {ws.semaine: ws for ws in shops}
     for w in ctx.weeks:
         out += week_blocks(ctx, w, shop_by_week[w.get("semaine")], issues)
-    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + products_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)
 
 
 def render_audit(ctx, shops, *, generated_on=None) -> str:
     out = [f"# Audit — {esc(ctx.profile['projet']['titre'])}", "",
            f"Généré le {generated_on or dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
-    out += index_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + products_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)

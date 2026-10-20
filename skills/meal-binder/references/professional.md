@@ -79,3 +79,29 @@ date via `--source`, `--source-version`, `--license`, `--retrieved-on` hors
 simulation `--dry-run`. Il refuse doublons, lignes tronquées et nombres invalides,
 et écrit CSV et registre en transaction. Les correspondances restent à relire :
 le script ne choisit pas un code Ciqual ni un état de pesée à la place de l'utilisateur.
+
+## Produits, tarifs et compositions
+
+`products.yaml` est facultatif, `version: 1`. Il contient `date_reference`
+(date choisie pour l'analyse), `validite_jours` et un objet `produits` indexé
+par identifiant d'aliment. La date est fixée dans le fichier pour rendre une
+analyse reproductible ; l'actualiser explicitement pour une nouvelle commande.
+
+Chaque produit renseigne `reference`, `fournisseur`, `source`, `observe_le`,
+`prix_eur` (nullable), `prix_pour`, `unite` (`g`, `ml`, `piece`, identique à
+l'unité d'achat de l'aliment), `conditionnements` et `composition`.
+Par exemple, 2 EUR pour 500 g donnent 4 EUR/kg ; les achats restent arrondis
+aux emballages après déduction du stock. Les prix de formes brutes déclarées
+dans les recettes restent séparés de ce prix du produit de référence.
+
+Une date future est refusée. Un prix périmé devient inconnu, sans réutilisation
+du prix CSV antérieur ; un plafond impératif invérifiable interdit la sélection.
+`products --dir <dir>` expose source, prix normalisé et état de fraîcheur du tarif.
+Le classeur et l'audit affichent les références des produits utilisés.
+
+La composition indique `statut` (`documentee`, `inconnue`), `familles`,
+`allergenes_presents`, `traces_declarees`. Les familles documentées complètent
+les tags culinaires. Une composition explicitement inconnue ne peut pas valider
+une exclusion par famille : erreur impérative ou préférence invérifiable selon
+la demande. Les informations d'allergènes sont conservées séparément ; elles
+ne constituent pas un moteur de certification d'allergènes ou de traces.

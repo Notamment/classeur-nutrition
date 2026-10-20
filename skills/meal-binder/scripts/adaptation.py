@@ -69,7 +69,7 @@ def check_recipe_adaptation(recipe, profile, catalogs, *, plan=False):
     return metadata, apply_requirements(issues, profile)
 
 
-def check_food_families(recipe, calc, foods, profile, catalogs):
+def check_food_families(recipe, calc, foods, profile, catalogs, *, products=None):
     issues, present = [], {}
     for line in calc.lines:
         for family in catalogs.families_for(line.food):
@@ -86,6 +86,15 @@ def check_food_families(recipe, calc, foods, profile, catalogs):
             issues.append(Issue(level, code, calc.rid,
                                 f"{prefix}{family} : {', '.join(sorted(present[family]))}",
                                 requirement="preference" if level == "alerte" else "imperative"))
+    used = {line.food.id for line in calc.lines} | {a["food"] for a in recipe.get("alternatives_poisson", [])}
+    unknown = sorted(fid for fid, item in (products or {}).get("produits", {}).items()
+                     if fid in used and item["composition"]["statut"] == "inconnue")
+    if unknown:
+        for key, code, level in (("familles_exclues", "famille_non_verifiable", "erreur"),
+                                 ("familles_a_eviter", "famille_a_eviter", "alerte")):
+            if profile["aliments"].get(key):
+                issues.append(Issue(level, code, calc.rid, "composition non vérifiable : " + ", ".join(unknown),
+                                    kind="unknown", requirement="imperative" if level == "erreur" else "preference"))
     return issues
 
 

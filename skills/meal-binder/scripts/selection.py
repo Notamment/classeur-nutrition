@@ -106,7 +106,7 @@ def select_proposals(workdir):
         try:
             if folder.is_symlink() or not re.fullmatch(r"[a-z][a-z0-9_-]*", folder.name):
                 raise DataError([Issue("erreur", "proposition_id", folder.name, "dossier simple requis, identifiant a-z, chiffres, _ ou -")])
-            for filename in ("profile.yaml", "pantry.yaml", "stores.yaml", "foods.local.csv"):
+            for filename in ("profile.yaml", "pantry.yaml", "stores.yaml", "foods.local.csv", "provenance.yaml", "products.yaml", "professional.yaml", "schedule.yaml"):
                 if (folder / filename).exists():
                     raise DataError([Issue("erreur", "proposition_configuration", folder.name,
                                           f"{filename} doit être commun et placé à la racine du dossier de travail")])
