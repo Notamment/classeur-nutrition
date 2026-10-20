@@ -275,7 +275,8 @@ def load_foods(workdir: Path | None = None) -> tuple[dict, list]:
             foods.update(_read_foods(workdir / "foods.local.csv", issues))
     except (OSError, UnicodeError, csv.Error) as e:
         raise BinderError(f"CSV des aliments illisible : {e}") from e
-    return foods, issues
+    from sources import apply_sources
+    return apply_sources(foods, workdir), issues
 
 
 # ---------------------------------------------------------------- unités

@@ -71,15 +71,26 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot"])
+    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot", "nutrients", "use-data"])
     ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")
     ap.add_argument("--dir", default=".", help="dossier de travail (profile.yaml, plan.yaml, weeks/)")
     ap.add_argument("--json", action="store_true", help="écarts au format JSON")
     ap.add_argument("--date", type=lambda s: dt.date.fromisoformat(s).isoformat(), help="date de génération YYYY-MM-DD")
     ap.add_argument("--output", type=Path, help="destination nouvelle d'une archive autonome")
+    ap.add_argument("--edition", choices=["ciqual2025"], help="jeu de données optionnel à activer explicitement")
     a = ap.parse_args(argv)
     wd = Path(a.dir).resolve()
     try:
+        if a.command == "use-data":
+            from core import SKILL_DIR
+            if a.edition is None:
+                raise BinderError("use-data nécessite --edition ciqual2025")
+            destination = wd / "provenance.yaml"
+            if destination.exists():
+                raise BinderError("provenance.yaml existe : fusion manuelle requise pour préserver les sources locales")
+            atomic_text(destination, (SKILL_DIR / "data" / a.edition / "provenance.yaml").read_text(encoding="utf-8"))
+            print(encode({"version": 1, "edition": a.edition, "sources_exigees": True}), end="")
+            return 0
         if a.command == "verify-snapshot":
             result = verify_snapshot(wd)
             print(encode(result), end="")
@@ -147,7 +158,11 @@ def main(argv=None) -> int:
             other |= {w["semaine"] for w in ctx.weeks if w["semaine"] != a.week}
             scoped = [i for i in ctx.issues if i.where not in other]
             return report(scoped, a.json)
-        ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit", "diagnose", "snapshot"))
+        ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit", "diagnose", "snapshot", "nutrients"))
+        if a.command == "nutrients":
+            from sources import nutrient_report
+            print(encode(nutrient_report(ctx)), end="")
+            return int(any(i.level == "erreur" for i in ctx.issues))
         if a.command == "diagnose":
             print(encode({"version": 2, **analysis_payload(ctx)}), end="")
             return int(any(i.level == "erreur" for i in ctx.issues))

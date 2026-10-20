@@ -54,3 +54,28 @@ et PyYAML pour reprendre une version ancienne.
 
 Le manifeste assure la détection de modifications par rapport à ses empreintes,
 pas une signature cryptographique d'auteur ni une certification des données.
+
+## Données nutritionnelles sourcées
+
+Le [jeu optionnel Ciqual 2025](../data/ciqual2025/README.md) couvre 16 aliments
+avec six métriques par aliment, les codes, noms, édition et licence de source.
+Il s'active par `use-data --edition ciqual2025 --dir <dir>`, sans écraser un
+registre existant. Les aliments non couverts restent explicitement inconnus.
+
+`provenance.yaml` est un registre local `version: 1`, avec un objet `aliments`
+indexé par identifiant. Chaque entrée renseigne `source`, `edition`, `date`,
+`licence`, `etat_ref` et `nutriments`. Chaque mesure donne `statut`
+(`exact`, `borne`, `traces`, `absent`), `unite`, `minimum`, `maximum`.
+Une valeur exacte possède deux bornes égales. Une trace a une borne inférieure
+nulle et une borne supérieure inconnue ; elle ne vaut jamais exactement zéro.
+
+`nutrients --dir <dir>` rend les intervalles par portion et les aliments sans
+données. Les cibles historiques protéines/kcal utilisent uniquement les valeurs
+exactes ; une mesure bornée ou absente reste invérifiable. Les autres nutriments
+sont informatifs, sans objectifs implicites. Aucun besoin journalier n'est déduit.
+
+L'import `build_foods.py` exige une URL source, une édition, une licence et une
+date via `--source`, `--source-version`, `--license`, `--retrieved-on` hors
+simulation `--dry-run`. Il refuse doublons, lignes tronquées et nombres invalides,
+et écrit CSV et registre en transaction. Les correspondances restent à relire :
+le script ne choisit pas un code Ciqual ni un état de pesée à la place de l'utilisateur.

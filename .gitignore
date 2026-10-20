@@ -21,6 +21,7 @@ archives/
 # Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
 !/examples/**
 !/evals/pantry.yaml
+!/skills/meal-binder/data/ciqual2025/provenance.yaml
 
 # Évaluations : publier seulement evals/results.md
 evals/runs/

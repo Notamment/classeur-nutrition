@@ -32,6 +32,7 @@ def generation_date(value=None):
 def engine_files():
     return sorted([*SKILL_DIR.joinpath("scripts").glob("*.py"),
                    *SKILL_DIR.joinpath("data").rglob("*.csv"),
+                   *SKILL_DIR.joinpath("data").rglob("*.json"),
                    *SKILL_DIR.joinpath("data").rglob("*.yaml")])
 
 

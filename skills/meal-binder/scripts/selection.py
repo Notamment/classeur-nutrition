@@ -211,6 +211,9 @@ def save_selection(selection, workdir, *, generated_on=None):
                 (stage / "stores.yaml").write_text(yaml.safe_dump(ctx.stores, allow_unicode=True, sort_keys=False), encoding="utf-8")
             if (workdir / "foods.local.csv").exists():
                 shutil.copy2(workdir / "foods.local.csv", stage / "foods.local.csv")
+            for name in ("provenance.yaml", "products.yaml", "professional.yaml"):
+                if (workdir / name).exists():
+                    shutil.copy2(workdir / name, stage / name)
             (stage / "weeks").mkdir()
             for week in ctx.weeks:
                 (stage / "weeks" / f"{week['semaine']}.json").write_text(json.dumps(week, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
