@@ -12,6 +12,7 @@ Appliquer uniquement les options actives du profil résolu. Un nouveau profil v2
 | Nutrition désactivée, information ou cibles | `nutrition.mode` |
 | Protéines, kcal et poids servi par portion | `repas.*_par_portion` |
 | Durée totale, préparation et repos inclus | `repas.duree_totale_max_min` |
+| Temps actif et difficulté estimée, en v2 | `repas.duree_active_max_min` / `repas.difficulte_max` |
 | Régime | `alimentation.regime` |
 | Quotas par catégorie, facultatifs | `repartition` |
 | Quantité et alternance des légumineuses | `legumineuses.*` |
@@ -19,10 +20,12 @@ Appliquer uniquement les options actives du profil résolu. Un nouveau profil v2
 | Fer + vitamine C en mode cibles | `nutrition.fer_vitamine_c` |
 | Interdiction d'ajouter du sel en présence de certains tags | `aliments.sans_sel_ajoute_si` |
 | Interdictions strictes / préférences d'ingrédients | `aliments.exclus` / `aliments.a_eviter` |
+| Familles strictement exclues / à éviter, en v2 | `aliments.familles_exclues` / `aliments.familles_a_eviter` |
 | Appareils disponibles, si renseignés | `materiel` |
 | Labels demandés par l'utilisateur | `labels` |
 | Plafond de caisse par semaine, facultatif | `budget.plafond_eur_semaine` |
 | Niveau de chaque règle configurable | `exigences.<code>` : `imperative` ou `preference` |
+| Ordre de départage des propositions, en v2 | `selection.priorites` |
 
 Le script classe tout seul les catégories, légumineuses, soja, féculents, poissons et marqueurs nutritionnels depuis les ingrédients. Ne pas déclarer ces calculs dans les données des recettes.
 
@@ -36,6 +39,10 @@ Le script classe tout seul les catégories, légumineuses, soja, féculents, poi
 - Courses : besoin et stock comestibles, déduction du stock puis conversion en achat brut, puis emballages. Conserver les décimales. Ne jamais remplacer une quantité inconnue par zéro.
 - Budget : montant caisse après stock, pour les seules recettes prévues. Prix et stocks inconnus empêchent de le valider ; afficher les sous-totaux comme incomplets. Un dépassement est bloquant seulement si la règle est impérative.
 - Nutrition désactivée : ne pas afficher de protéines/kcal ni imposer fer/C. Information : afficher les seules estimations calculables. Cibles : appliquer les limites configurées ; une valeur manquante ne satisfait pas une cible impérative.
+- Difficulté v2 : maximum du niveau des techniques du catalogue et de la coordination déclarée (1–2 tâches simultanées : facile ; 3 : intermédiaire ; 4 ou plus : avancée). Donner les raisons du niveau retenu ; ne pas déduire automatiquement le niveau du seul temps total.
+- Temps actif : attention nécessaire à une préparation, toutes les portions ensemble, sans compter deux fois les périodes simultanées. Temps total : durée écoulée. Ne pas classer une durée absente comme zéro.
+- Variété v2 : identifier les plats avec un `plat_id` stable ; changer le titre ne crée pas un plat distinct. Déclarer un à trois `ingredients_principaux` présents dans la recette et les techniques réellement nécessaires. Appliquer les limites de plats distincts, répétitions, récurrence d'ingrédients principaux et variété de techniques si actives. Les métadonnées absentes rendent ces contrôles invérifiables.
+- Familles v2 : utiliser le catalogue et les appartenances renseignées, parents compris. Le soja comprend les condiments identifiés comme tels ; ses familles parentes sont héritées. Ne pas confondre famille culinaire, quota de légumineuses et détection d'allergènes.
 
 ## 3. Arbitrages
 
@@ -45,6 +52,7 @@ Le script classe tout seul les catégories, légumineuses, soja, féculents, poi
 4. Ne pas modifier les exigences pour faire passer les tests. Conflit insoluble : livrer le diagnostic et l'ajustement minimal nécessaire.
 5. Statuts : conforme, estimation, non vérifié, non conforme, préférence non satisfaite, non demandé. « Aucune erreur » ne valide pas les points non vérifiés.
 6. Sans moteur de calcul disponible, signaler que l'audit est manuel, sans prétendre à un contrôle automatisé.
+7. Si plusieurs propositions sont comparées : même profil, stock et prix pour toutes. Écarter violations impératives et budgets impératifs invérifiables ; minimiser les écarts préférentiels (un par règle et portée, incertitudes comprises), puis suivre `selection.priorites` : minimiser caisse totale, temps actif total et difficulté maximale, maximiser les plats distincts. Pour chaque critère, l'inconnu suit le connu ; égalité finale départagée par identifiant. Le plafond de budget reste hebdomadaire. Expliquer le critère décisif et limiter toute affirmation d'optimalité aux propositions examinées.
 
 ## 4. Achats et ingrédients
 

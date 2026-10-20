@@ -8,7 +8,8 @@ Mesurer, modèle par modèle, la conformité aux contrôles implémentés de `me
 - `taux` (score principal) : taux local, ramené à zéro en présence d'une erreur globale (semaine, quotas, base d'aliments, budget…) ou d'un plafond budgétaire impératif impossible à vérifier.
 - `conforme` : toutes les recettes attendues calculées, aucune erreur locale/globale et aucun plafond budgétaire impératif invérifiable.
 - `budget` : non conforme, préférence non satisfaite, non vérifié ou estimation. Des prix fictifs ne doivent jamais être utilisés pour noter une génération réelle.
-- `preferences_non_satisfaites` : nombre d'écarts explicitement préférentiels ; séparé de la conformité aux impératifs. Une préférence invérifiable reste signalée dans l'audit ; elle ne doit pas être présentée comme satisfaite.
+- `preferences_non_satisfaites` : nombre de règles préférentielles connues comme violées, comptées une fois par règle et portée (recette, semaine ou classeur), séparé de la conformité aux impératifs.
+- `preferences_non_verifiables` : préférences actives sans données suffisantes, dont un budget préférentiel incomplet. Une règle déjà connue comme violée à cette portée n'est pas comptée une seconde fois. Même décompte que la sélection ; les détails restent dans l'audit.
 
 Un classeur qui dépasse un budget impératif ne reçoit pas un score de 100 %. Sans prix, le profil historique `budget-omnivore` ne peut pas obtenir de score positif. Les profils sans plafond impératif gardent leur taux, avec budget explicitement non vérifié. Les profils historiques restent en v1 ; les trois dossiers de `examples/generaliste/` démontrent les parcours v2.
 

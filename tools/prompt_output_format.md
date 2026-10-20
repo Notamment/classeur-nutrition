@@ -8,6 +8,7 @@ Un seul document Markdown. Style télégraphique explicite. Pas de préambule, d
 2. **Ordre de préparation** : `Jour | ID | Plat | Motif | Achat différé`. Identifiants stables.
 3. **Fiche par recette** :
    - ID, nom, catégorie ; temps actif et total ; appareils. Origine et traduction seulement si pertinentes.
+   - Difficulté estimée et raisons (techniques, tâches simultanées) si demandée. Variété : plats et ingrédients principaux déclarés, sans faux doublons créés par renommage.
    - Tableau `Ingrédient | Quantité | État` pour toutes les portions.
    - Étapes numérotées : gestes, feu/température, durée, critère de fin ; opérations simultanées compatibles avec le matériel.
    - Poids servi estimé par portion. Si nutrition active : protéines et kcal estimées ; données absentes indiquées par `—`. Principaux apports protéiques seulement si calculables.
@@ -27,3 +28,4 @@ Un seul document Markdown. Style télégraphique explicite. Pas de préambule, d
 2. **Épicerie partagée** : utilisations sur plusieurs semaines, stock, achats, reste conservable.
 3. **Hypothèses et éléments non vérifiés** : ceux qui affectent cuisson, achats, budget et conformité.
 4. **Audit** : `Contrôle | Attendu | Résultat | Statut`. Statuts : conforme, estimation, non vérifié, non conforme, préférence non satisfaite, non demandé. N'affirmer aucune validation automatique. Les préférences insatisfaites restent distinctes des erreurs et des données inconnues.
+5. **Choix du classeur**, si comparaison demandée : propositions examinées, rejets, préférences insatisfaites ou invérifiables, métriques connues et premier critère décisif. Comparaison manuelle, limitée aux propositions réellement examinées.

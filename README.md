@@ -45,7 +45,40 @@ python skills/meal-binder/scripts/binder.py show-profile --dir mon-classeur
 | Exigence `imperative` | Écart bloquant. |
 | Exigence `preference` | Écart visible, non bloquant. |
 
-Les erreurs de données, conversions, exclusions et régimes restent strictes. Les préférences ne constituent pas encore un optimiseur pondéré. [Référence complète des profils](skills/meal-binder/references/profiles.md).
+Les erreurs de données, conversions, exclusions et régimes restent strictes. [Référence complète des profils](skills/meal-binder/references/profiles.md).
+
+## Adapter les recettes et comparer les choix
+
+Ces options v2 s'ajoutent au profil ; les limites absentes restent désactivées :
+
+```yaml
+repas:
+  difficulte_max: facile
+  duree_active_max_min: 15
+variete:
+  recettes_distinctes_min_par_semaine: 4
+  ingredient_principal_max_par_semaine: 2
+  repetition_plat_max: 1
+aliments:
+  familles_exclues: [soja]
+  familles_a_eviter: [champignons]
+exigences:
+  duree_active: preference
+selection:
+  priorites: [budget, temps_actif, difficulte, variete]
+```
+
+La difficulté est estimée à partir des techniques et des tâches simultanées déclarées ; le temps actif est distinct du temps total. La variété repose sur des identifiants de plats stables, des ingrédients principaux et des techniques renseignés. Les exclusions par familles incluent les dérivés identifiés dans la base, par exemple miso et sauce soja pour le soja.
+
+L'agent peut proposer plusieurs classeurs complets sous `propositions/<id>/weeks/`. La commande `select` écarte les violations impératives, minimise les préférences insatisfaites ou invérifiables, puis départage selon les priorités. Le budget compare les **achats en caisse**, stock et emballages compris. Le rapport explique chaque rejet et le critère qui départage les propositions admissibles.
+
+```bash
+python skills/meal-binder/scripts/binder.py list-options
+python skills/meal-binder/scripts/binder.py select --dir examples/adaptation
+python skills/meal-binder/scripts/binder.py check-all --dir examples/adaptation/out/selection
+```
+
+→ [Exemple complet](examples/adaptation/README.md), avec trois propositions et des **prix fictifs réservés à la démonstration**. Le classeur retenu est copié sous `out/selection/out/classeur.md`, avec ses données et ses rapports ; les entrées sont conservées. La comparaison porte sur les propositions fournies, sans garantie d'optimum global. [Paramètres, formats et méthode détaillés](skills/meal-binder/references/adaptation.md).
 
 ## Démarrage
 
@@ -84,15 +117,14 @@ La [démo historique v1](examples/demo/out/classeur.md) conserve ses cinq écart
 | `skills/meal-binder/` | Workflow (`SKILL.md`), règles (`references/`), base d'aliments (`data/`), scripts. |
 | `examples/demo/` | Dossier de travail complet, profil fictif. |
 | `examples/generaliste/` | Trois parcours v2 complets, contrôlés de bout en bout. |
+| `examples/adaptation/` | Comparaison de propositions : prix fictifs, temps actif, difficulté, variété et familles. |
 | `skills/meal-binder/data/presets/` | Préréglages composables et validés. |
 | `evals/` | Profils de test et score par modèle. |
 | `tools/` | Build du prompt monolithique, détection de données personnelles. |
 | `dist/prompt.md` | Version monolithique **générée** : ne pas l'éditer. |
-| `PLAN_CONSOLIDATION.md` | Plan de travail, cas d'acceptation et bilan de vérification. |
-| `PLAN_GENERALISATION.md` | Périmètre et bilan de l'étape 1. |
 | `CHANGELOG.md` | Corrections et changements de comportement. |
 
-Contrôles automatiques : protéines et poids par portion, durée, matériel, répartition végétarien/poisson/viande, quantité et alternance des légumineuses, riz, féculents distincts, crucifères et ALA (optionnels), espèces de poisson uniques, fer + vitamine C, sel avec fromages salés, aliments et cuisines exclus, fraîcheur selon le jour de consommation, emballages, stock suivi semaine par semaine, budget.
+Contrôles automatiques : protéines et poids par portion, durées totale et active, difficulté déclarée, matériel, répartition végétarien/poisson/viande, quantité et alternance des légumineuses, riz, féculents distincts, répétition des plats et ingrédients principaux, variété des techniques, crucifères et ALA (optionnels), espèces de poisson uniques, fer + vitamine C, sel avec fromages salés, aliments, familles et cuisines exclus, fraîcheur selon le jour de consommation, emballages, stock suivi semaine par semaine, budget.
 
 Non contrôlé par script : authenticité, saison, labels des produits réels, goût et cohérence sémantique des étapes en texte libre. Les quantités de fer et de vitamine C ne sont pas calculées : le contrôle détecte la présence d'aliments tagués. Les rendements et les durées restent des estimations déclarées.
 
@@ -102,7 +134,7 @@ Non contrôlé par script : authenticité, saison, labels des produits réels, g
 - Besoin et stock sont exprimés en **forme comestible de référence**, avant cuisson. Un bloc `achat` décrit son équivalent brut : le stock est déduit avant conversion. Prix et conditionnements du produit brut se renseignent dans ce bloc ; ceux des filets ne sont pas réutilisés pour un poisson entier.
 - `report_ok=0` empêche le report intersemaine des restes achetés **et du stock initial**. Un achat différé doit donc être prévu pour les semaines suivantes.
 - `analyse()` calcule les mêmes écarts pour `check-week`, `check-all`, `render`, `audit` et `evals/score.py`. Un budget dépassé est une erreur s'il est impératif, une alerte s'il est préférentiel. Un budget incomplet reste explicitement non vérifié.
-- `--json` écrit une liste d'écarts seule sur stdout pour les contrôles, le rendu et l'audit. `show-profile` renvoie un objet `profil`/`origines`/`ecarts` ; `list-presets` renvoie le catalogue. Codes de sortie : `0` sans erreur détectée, `1` données non conformes, `2` fichier illisible/manquant, `3` panne interne. **Le code 0 n'atteste pas les points signalés non vérifiés.** Les fichiers de diagnostic peuvent être rendus malgré des erreurs de conformité.
+- `--json` écrit une liste d'écarts seule sur stdout pour les contrôles, le rendu et l'audit. `show-profile` renvoie un objet `profil`/`origines`/`ecarts` ; `list-presets` et `list-options` renvoient leurs catalogues ; `select` renvoie son rapport. Codes de sortie : `0` sans erreur détectée (ou sélection réussie), `1` données non conformes (ou aucune proposition admissible), `2` entrée illisible/manquante ou sortie protégée, `3` panne interne. **Le code 0 n'atteste pas les points signalés non vérifiés.** Les fichiers de diagnostic peuvent être rendus malgré des erreurs de conformité.
 
 Les schémas déclaratifs sont centralisés dans `skills/meal-binder/scripts/schemas.py` ; les règles métier dans `checks.py` ; les conversions dans `core.py` ; le stock, les emballages et le budget dans `shopping.py`. Aucune dépendance ajoutée. Voir les [formats et conventions détaillés](skills/meal-binder/references/recipe-format.md).
 
@@ -122,7 +154,7 @@ Vos produits précis (étiquette, prix) : `foods.local.csv` dans votre dossier d
 
 Le profil contient des données personnelles : objectifs, santé, stock, zone d'achat. Elles restent dans votre dossier de travail.
 
-- `profile.yaml`, `pantry.yaml`, `stores.yaml`, `plan.yaml`, `foods.local.csv`, `weeks/` et `out/` sont ignorés par git dans tous les dossiers (ex. `mon-classeur/`), sauf sous `examples/`.
+- `profile.yaml`, `pantry.yaml`, `stores.yaml`, `plan.yaml`, `foods.local.csv`, `weeks/`, `propositions/` et `out/` sont ignorés par git dans tous les dossiers (ex. `mon-classeur/`), sauf sous `examples/`.
 - `meal-setup` demande une zone (ville ou code postal), jamais une adresse.
 - Avant de publier un fork : créer `.privacy-patterns` (ignoré par git) avec vos mots sensibles, puis `python tools/check_privacy.py`.
 

@@ -1,0 +1,18 @@
+# Groupes culinaires, pas une classification médicale ni une garantie d'allergènes.
+# Un produit local peut ajouter famille:<id> à ses tags ; les parents sont hérités.
+familles:
+  produits_animaux: {nom: Produits animaux, parents: [], natures: [], tags: [], aliments: []}
+  poissons: {nom: Poissons et dérivés, parents: [produits_animaux], natures: [poisson], tags: [], aliments: []}
+  viandes: {nom: Viandes et dérivés, parents: [produits_animaux], natures: [viande], tags: [], aliments: []}
+  produits_laitiers: {nom: Produits laitiers, parents: [produits_animaux], natures: [laitier], tags: [], aliments: []}
+  oeufs: {nom: Œufs, parents: [produits_animaux], natures: [oeuf], tags: [], aliments: []}
+  legumineuses: {nom: Légumineuses et dérivés, parents: [], natures: [], tags: [legumineuse], aliments: []}
+  soja: {nom: Soja et dérivés, parents: [legumineuses], natures: [], tags: [soja, soja_condiment], aliments: []}
+  fruits_a_coque: {nom: Fruits à coque et dérivés, parents: [], natures: [], tags: [], aliments: [noix]}
+  champignons: {nom: Champignons, parents: [], natures: [], tags: [], aliments: [champignon_paris]}
+  alliums: {nom: Ail oignon et apparentés, parents: [], natures: [], tags: [], aliments: [ail, oignon, oignon_rouge, ciboulette]}
+  cruciferes: {nom: Crucifères, parents: [], natures: [], tags: [crucifere], aliments: []}
+  cereales: {nom: Céréales et dérivés, parents: [], natures: [], tags: [feculent:riz, feculent:millet, feculent:orge], aliments: []}
+  ble: {nom: Blé et dérivés, parents: [cereales], natures: [], tags: [feculent:ble, feculent:boulgour], aliments: []}
+  tubercules: {nom: Tubercules, parents: [], natures: [], tags: [feculent:pomme_de_terre, feculent:patate_douce], aliments: []}
+  agrumes: {nom: Agrumes, parents: [], natures: [], tags: [], aliments: [citron_jus]}

@@ -8,11 +8,14 @@
   python binder.py render        --dir DIR     → DIR/out/classeur.md
   python binder.py audit         --dir DIR     → DIR/out/audit.md
   python binder.py list-presets                 → catalogue des préréglages
+  python binder.py list-options                 → techniques, familles, critères
   python binder.py show-profile  --dir DIR     → profil résolu et origines
+  python binder.py select        --dir DIR     → comparaison et copie du classeur retenu
 
 Codes : 0 sans erreur, 1 données non conformes, 2 entrée illisible/manquante,
 3 panne interne ou Python < 3.10. Avec --json, les contrôles renvoient une liste d'écarts ;
-list-presets renvoie le catalogue, show-profile un objet profil/origines/ecarts.
+list-presets et list-options renvoient leurs catalogues, show-profile un objet
+profil/origines/ecarts, select un rapport (code 1 si aucune proposition admissible).
 Sortie volontairement compacte : elle est lue par un agent.
 """
 from __future__ import annotations
@@ -61,13 +64,32 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list-presets", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit"])
+    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select"])
     ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")
     ap.add_argument("--dir", default=".", help="dossier de travail (profile.yaml, plan.yaml, weeks/)")
     ap.add_argument("--json", action="store_true", help="écarts au format JSON")
     a = ap.parse_args(argv)
     wd = Path(a.dir).resolve()
     try:
+        if a.command == "list-options":
+            from catalogs import load_catalogs
+            from schemas import SELECTION_CRITERIA
+            options = load_catalogs().as_dict() | {"criteres_selection": list(SELECTION_CRITERIA)}
+            print(json.dumps(options, ensure_ascii=False, indent=2, allow_nan=False) if a.json
+                  else yaml.safe_dump(options, allow_unicode=True, sort_keys=False), end="\n" if a.json else "")
+            return 0
+        if a.command == "select":
+            from selection import select_proposals, save_selection
+            selected = select_proposals(wd)
+            path = save_selection(selected, wd)
+            if a.json:
+                print(json.dumps(selected.report, ensure_ascii=False, indent=2, allow_nan=False))
+            else:
+                print(selected.report["explication"])
+                print(f"Rapport : {path / 'rapport.md'}")
+                if selected.chosen:
+                    print(f"Classeur : {path / 'out/classeur.md'}")
+            return 0 if selected.chosen else 1
         if a.command == "list-presets":
             presets = list_presets()
             if a.json:

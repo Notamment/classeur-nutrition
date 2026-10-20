@@ -93,7 +93,10 @@ CONFIGURABLE_RULES = (
     "proteines", "kcal", "poids_servi", "duree", "repartition", "legumineuses_g",
     "legumineuses_consecutives", "riz", "feculents", "substituts", "espece_doublon",
     "cruciferes", "ala", "diversite", "cuisine_doublon", "fer_vitc", "sel", "budget_depasse",
+    "difficulte", "duree_active", "variete_plats", "repetition_plat", "ingredient_recurrent", "variete_techniques",
 )
+DIFFICULTIES = ("facile", "intermediaire", "avancee")
+SELECTION_CRITERIA = ("budget", "temps_actif", "difficulte", "variete")
 PROFILE_V2 = copy.deepcopy(PROFILE)
 P2 = PROFILE_V2["properties"]
 P2["version"]["values"] = [2]
@@ -117,6 +120,17 @@ P2["aliments"]["properties"]["a_eviter"] = arr(FOOD_ID)
 P2["aliments"]["required"] = tuple(P2["aliments"]["properties"])
 P2["materiel"] = nullable(STRINGS)
 P2["plaques"] = nullable(COUNT)
+P2["repas"]["properties"].update({"duree_active_max_min": nullable(num()),
+                                   "difficulte_max": nullable(enum(DIFFICULTIES))})
+P2["repas"]["required"] = tuple(P2["repas"]["properties"])
+for key in ("recettes_distinctes_min_par_semaine", "ingredient_principal_max_par_semaine",
+            "techniques_distinctes_min_par_semaine", "repetition_plat_max"):
+    P2["variete"]["properties"][key] = nullable(COUNT)
+P2["variete"]["required"] = tuple(P2["variete"]["properties"])
+for key in ("familles_exclues", "familles_a_eviter"):
+    P2["aliments"]["properties"][key] = arr(FOOD_ID)
+P2["aliments"]["required"] = tuple(P2["aliments"]["properties"])
+P2["selection"] = obj({"priorites": arr(enum(SELECTION_CRITERIA))}, ("priorites",))
 PROFILE_V2["required"] = tuple(P2)
 
 
@@ -139,6 +153,10 @@ RECIPE = obj({
 }, ("id", "nom", "ingredients", "etapes", "temps_total_min", "gamelle", "authenticite", "sel_ajoute"))
 RECIPE_V2 = copy.deepcopy(RECIPE)
 RECIPE_V2["required"] = tuple(k for k in RECIPE["required"] if k not in ("gamelle", "authenticite"))
+EXECUTION = obj({"techniques": arr(FOOD_ID, 1), "taches_simultanees": POS_COUNT},
+                ("techniques", "taches_simultanees"))
+ADAPTATION_FIELDS = {"plat_id": FOOD_ID, "ingredients_principaux": arr(FOOD_ID, 1, 3), "execution": EXECUTION}
+RECIPE_V2["properties"].update(ADAPTATION_FIELDS)
 WEEK = obj({"semaine": WEEK_ID, "cuisine": TEXT, "saison": TEXT, "ordre": arr(RECIPE_ID),
             "recettes": arr(obj({"id": RECIPE_ID}, ("id",), extra=True))},
            ("semaine", "cuisine", "recettes"))
@@ -156,6 +174,8 @@ _plan_week = PLAN_V2["properties"]["semaines"]["items"]
 _plan_week["required"] = ("id", "recettes")
 _plan_week["properties"]["theme"] = TEXT
 _plan_week["properties"]["recettes"]["items"]["properties"]["categorie"] = enum((*CATEGORIES, "mixte"))
+_plan_week["properties"]["recettes"]["items"]["properties"].update({
+    **ADAPTATION_FIELDS, "temps_actif_min": num(), "temps_total_min": POSITIVE})
 PANTRY_ENTRY = obj({"id": FOOD_ID, "quantite": nullable(num()),
                     "unite": enum(UNITS - {"pincee"}), "etat": enum(STATES), "note": TEXT}, ("id", "quantite"))
 PANTRY = obj({"stock": arr(PANTRY_ENTRY)}, ("stock",))

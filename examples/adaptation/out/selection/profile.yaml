@@ -1,0 +1,74 @@
+version: 2
+projet:
+  titre: DÉMO ADAPTATION — PRIX FICTIFS
+  semaines: 1
+  recettes_par_semaine: 2
+  portions_par_recette: 2
+  usage: Repas au choix
+  mois:
+  - octobre
+  - novembre
+  zone_saison: France métropolitaine
+  organisation: libre
+  authenticite: libre
+repas:
+  proteines_g_par_portion: null
+  poids_servi_g_par_portion: null
+  duree_totale_max_min: 40
+  kcal_par_portion: null
+  conservation_gamelle_h: 24
+  duree_active_max_min: 20
+  difficulte_max: facile
+repartition: null
+legumineuses:
+  g_cuits_par_portion: null
+  consecutives_autorisees: true
+  soja_compte: false
+  epices_associees: []
+variete:
+  riz_max_par_semaine: null
+  feculents_distincts_min_par_semaine: 0
+  substituts_industriels_max: null
+  especes_poisson_uniques: false
+  alternatives_par_poisson: 0
+  cruciferes_min_par_semaine: null
+  ala_min_par_semaine: null
+  especes_vegetales_min_par_semaine: null
+  jour_max_fragile: null
+  cuisines_exclues: []
+  cuisines_distinctes: false
+  recettes_distinctes_min_par_semaine: 2
+  ingredient_principal_max_par_semaine: 2
+  techniques_distinctes_min_par_semaine: 2
+  repetition_plat_max: 1
+nutrition:
+  fer_vitamine_c: non
+  note_tanins: false
+  mode: desactive
+aliments:
+  exclus: []
+  sans_sel_ajoute_si: []
+  a_eviter: []
+  familles_exclues:
+  - soja
+  familles_a_eviter: []
+labels:
+  defaut: aucun label exigé
+  exceptions_bio: []
+materiel:
+- plaque
+plaques: null
+bureau: []
+budget:
+  plafond_eur_semaine: 25
+  devise: EUR
+prereglages: []
+exigences: {}
+alimentation:
+  regime: vegetarien
+selection:
+  priorites:
+  - budget
+  - temps_actif
+  - difficulte
+  - variete

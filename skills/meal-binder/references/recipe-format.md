@@ -19,7 +19,7 @@ semaines:
 
 Champs : `id`, `plat`, `categorie` (`vegetarien` | `poisson` | `viande`, et `mixte` en v2), `feculent` (identifiant libre, `riz` compté pour le quota riz), `legumineuses` (bool), optionnels `soja` (bool), `espece_poisson`, `substitut_industriel` (bool).
 
-Le plan sert à valider quotas et alternance avant rédaction. À la rédaction, le script recalcule tout depuis les ingrédients.
+Le plan sert à valider quotas et alternance avant rédaction. À la rédaction, le script recalcule tout depuis les ingrédients. En v2, le plan et les recettes acceptent aussi `plat_id`, `ingredients_principaux`, `execution`, `temps_actif_min` et `temps_total_min` : voir [adaptation et sélection](adaptation.md). Ces métadonnées sont nécessaires aux limites d'adaptation actives ; elles restent facultatives sinon. La difficulté est calculée, jamais un champ libre à inventer.
 
 ## Semaine — `<dir>/weeks/SXX.json`
 
@@ -71,6 +71,8 @@ Le plan sert à valider quotas et alternance avant rédaction. À la rédaction,
 | `ordre` | Tous les `id` une fois. Absent = ordre de `recettes`. |
 | `service` | `chaud` · `tiède` · `froid`. |
 | `temps_total_min` | Durée réaliste, tout compris. Trempage préalable : le citer dans `etapes`, préfixé « La veille : ». |
+| `temps_actif_min` | Durée d'attention par préparation, finie, ≥ 0 et ≤ temps total. Facultative sauf limite active demandée. |
+| `plat_id`, `ingredients_principaux`, `execution` | Métadonnées v2 de difficulté et variété ; [formats détaillés](adaptation.md). |
 | `appareils` | Sous-ensemble de `profile.yaml › materiel` si renseigné ; `null` en v2 désactive ce contrôle. |
 | `ingredients[].food` | Identifiant de `foods.csv` ou `foods.local.csv`. |
 | `qte`, `unite` | Pour **toutes** les portions. Nombre fini strictement positif, sans chaîne ni booléen. Unités : `g` `kg` `ml` `cl` `l` `cac` `cas` `piece` `pincee`. Pincées réservées aux épices et au sel, exclues des apports et des marqueurs nutritionnels. |
@@ -138,7 +140,7 @@ Ces écarts sont communs aux contrôles, au rendu, à l'audit et à l'évaluatio
 | `rayon` | Voir la liste en fin de section. |
 | `nature` | `vegetal` · `laitier` · `oeuf` · `poisson` · `viande` · `autre`. Détermine la catégorie de la recette. |
 | `categorie` | Clé de `profile.yaml › labels` (ex. `oeuf`, `poisson_sauvage`, `racine`, `tofu`, `cacao`). Vide = `defaut`. |
-| `tags` | Séparés par `|` : `legumineuse`, `soja`, `soja_condiment`, `feculent:<nom>`, `fer`, `fer_vegetal`, `vitc`, `crucifere`, `ala`, `fragile`, `fromage_sale`, `substitut_industriel`, `espece:<nom>`. |
+| `tags` | Séparés par `|` : `legumineuse`, `soja`, `soja_condiment`, `feculent:<nom>`, `fer`, `fer_vegetal`, `vitc`, `crucifere`, `ala`, `fragile`, `fromage_sale`, `substitut_industriel`, `espece:<nom>`, `famille:<identifiant>` (v2, catalogue requis). |
 | `prot_g_100g`, `kcal_100g` | Pour 100 g à l'état `etat_ref`. Vides autorisés dans le CSV. En v2 désactivé : ignorés ; information : total inconnu pour la métrique manquante ; cibles : objectif correspondant invérifiable. En v1, une valeur manquante bloque le calcul de recette. |
 | `etat_ref` | État de pesée des valeurs. |
 | `g_par_piece` | Masse comestible d'une pièce (œuf, citron…). |

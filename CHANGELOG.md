@@ -1,3 +1,27 @@
+# Adaptation du classeur — étape 2 — 20 octobre 2026
+
+## Fonctionnalités
+
+- Options v2 facultatives pour difficulté, temps actif, plats distincts, répétitions, ingrédients principaux récurrents et techniques variées.
+- Difficulté estimée depuis un catalogue de techniques et les tâches simultanées, avec raisons visibles ; données absentes distinguées des limites dépassées.
+- Familles d'ingrédients exclues ou à éviter, héritage des familles parentes et tags explicites pour les produits composites ; contrôle des alternatives poisson inclus.
+- Commandes `list-options` et `select`. Comparaison de 1 à 30 classeurs complets : impératifs, nombre d'écarts préférentiels, puis priorités ordonnées budget/temps/difficulté/variété.
+- Budget fondé sur le montant caisse calculé avec stock, emballages et reports ; plafond conservé par semaine. Un budget impératif invérifiable interdit la sélection.
+- Rapports Markdown et JSON expliquant rejets et premier critère décisif ; copie du classeur retenu et de ses données, sans modification des sources.
+- Remplacement atomique des sorties générées ; absence de gagnant explicite et protection des dossiers non reconnus.
+- Décompte partagé sélection/évaluation : `preferences_non_satisfaites` compte les violations connues par règle et portée ; nouveau champ `preferences_non_verifiables`. Les données inconnues ne sont plus incluses dans le premier compteur.
+- Documentation, modèles, skills et prompt monolithique alignés ; catalogues embarqués depuis leur source. Exemple de trois propositions à prix fictifs.
+
+## Vérification et compatibilité
+
+142 tests passent sous Python 3.12 : 95 conservés, 42 issus de l'étape 2 et 5 régressions d'intégration (défauts neutres, achats bruts après stock, reports, stock inconnu et confidentialité des propositions). Profils v1 et v2 antérieurs, exemples généralistes et écarts intentionnels de la démo conservés. Base d'aliments, moteur de conversion, calcul des achats et quantités historiques inchangés.
+
+Les adaptations UTF-8 Windows, la CI Ubuntu/Windows sur Python 3.10/3.13 et les fins de ligne LF sont préservées. Les propositions privées sont ignorées par Git à tous les niveaux, avec une exception pour les exemples publics fictifs.
+
+La sélection compare l'ensemble fourni ; elle ne génère pas les recettes et ne garantit pas un optimum global. Les métadonnées sont déclaratives, les familles ne certifient ni allergènes ni traces et les prix de démonstration n'ont pas de valeur commerciale.
+
+---
+
 # Généralisation du produit — étape 1 — 18 octobre 2026
 
 ## Fonctionnalités

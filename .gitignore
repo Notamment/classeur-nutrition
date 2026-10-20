@@ -5,6 +5,7 @@ stores.yaml
 plan.yaml
 foods.local.csv
 weeks/
+propositions/
 out/
 .privacy-patterns
 

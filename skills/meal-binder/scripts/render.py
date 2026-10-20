@@ -77,8 +77,13 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
     head = [r.get("nom_fr") and f"*{esc(r['nom_fr'])}*", esc(r.get("origine")), cat, esc(r.get("service")),
             f"actif {r.get('temps_actif_min', '?')} min · total {r.get('temps_total_min', '?')} min",
             esc(", ".join(r.get("appareils") or []))]
-    out = [f"### {rid} — {esc(r.get('nom'))}", "", " · ".join(x for x in head if x), "",
-           "| Ingrédient | Quantité | État |", "|---|---|---|"]
+    out = [f"### {rid} — {esc(r.get('nom'))}", "", " · ".join(x for x in head if x), ""]
+    metadata = ctx.adaptations.get(rid, {})
+    if metadata.get("difficulte"):
+        out += [f"**Difficulté estimée** — {metadata['difficulte']} ; " + " ; ".join(esc(s) for s in metadata["raisons"]) + ".", ""]
+    elif p["repas"].get("difficulte_max") or r.get("execution"):
+        out += ["**Difficulté** — non vérifiable ; voir l'audit.", ""]
+    out += ["| Ingrédient | Quantité | État |", "|---|---|---|"]
     for ln in rc.lines:
         out.append(f"| {esc(ln.food.nom)} | {qty_text(ln)} | {ln.etat} |")
     out += ["", "**Étapes**", ""]
@@ -161,7 +166,31 @@ def week_blocks(ctx, w, shop, issues) -> list:
         macros = f"{fr(rc.prot_pp)} g | {r10(rc.kcal_pp)} | " if nutrition else ""
         out.append(f"| {rid} | {esc(rc.nom)} | {CAT_LABEL.get(rc.categorie)} | {macros}"
                    f"{r10(rc.poids_pp)} g | {leg} | {'oui' if rc.soja else 'non'} |")
-    out += ["", *shopping_block(ctx, shop), ""]
+    out += ["", *adaptation_block(ctx, w), *shopping_block(ctx, shop), ""]
+    return out
+
+
+def adaptation_block(ctx, week) -> list:
+    if not ctx.catalogs:
+        return []
+    recipes = [ctx.recipes[rid] for rid in week_order(week) if rid in ctx.recipes]
+    active_rules = any(ctx.profile["repas"].get(key) is not None for key in ("difficulte_max", "duree_active_max_min"))
+    active_rules |= any(ctx.profile["variete"].get(key) is not None for key in (
+        "recettes_distinctes_min_par_semaine", "ingredient_principal_max_par_semaine",
+        "techniques_distinctes_min_par_semaine", "repetition_plat_max"))
+    if not active_rules and not any(r.get("execution") or r.get("plat_id") or r.get("ingredients_principaux") for r in recipes):
+        return []
+    out = [f"### Adaptation {week['semaine']}", "",
+           "| Recette | Temps actif (min) | Difficulté estimée | Ingrédients principaux déclarés |",
+           "|---|---:|---|---|"]
+    for r in recipes:
+        metadata = ctx.adaptations.get(r["id"], {})
+        principal = [ctx.foods[f].nom if f in ctx.foods else f for f in r.get("ingredients_principaux", [])]
+        out.append(f"| {esc(r['nom'])} | {fr(r.get('temps_actif_min'), 1)} | {metadata.get('difficulte') or '—'} | "
+                   f"{esc(', '.join(principal) or '—')} |")
+    complete = len(recipes) == ctx.profile["projet"]["recettes_par_semaine"]
+    distinct = str(len({r["plat_id"] for r in recipes})) if complete and all(r.get("plat_id") for r in recipes) else "non vérifiable"
+    out += ["", f"Plats distincts : {distinct}, selon les identifiants déclarés. — signifie non renseigné ou non vérifiable.", ""]
     return out
 
 
@@ -301,6 +330,10 @@ def hypotheses_block(ctx, shops) -> list:
         out.append(f"- Prix de référence manquants ({len(missing)}) : budget incomplet.")
     if ctx.pantry:
         out.append("- Déductions de stock valables pour la première rotation uniquement.")
+    if ctx.catalogs and any(r.get("execution") or r.get("plat_id") or r.get("ingredients_principaux") for r in ctx.recipes.values()):
+        out.append("- Difficulté : maximum du niveau des techniques et de la simultanéité déclarées ; temps et variété dépendent des métadonnées renseignées, sans lecture automatique des étapes.")
+    if ctx.catalogs and (ctx.profile["aliments"]["familles_exclues"] or ctx.profile["aliments"]["familles_a_eviter"]):
+        out.append("- Familles culinaires : correspondances de la base et des tags renseignés, avec leurs familles parentes ; composition réelle et traces non vérifiées.")
     return out + [""]
 
 
@@ -392,7 +425,7 @@ def audit_rows_v2(ctx, shops) -> list:
     rows = []
     data_incomplete = len(ctx.calcs) != len(ctx.declared) or any(
         i.level == "erreur" and (i.code.startswith(("schema_", "foods_")) or i.code in
-        {"aliment_inconnu", "etat", "conversion", "achat", "unite", "portions", "id_doublon"}) for i in issues)
+        {"aliment_inconnu", "etat", "conversion", "achat", "unite", "portions", "id_doublon", "metadata_recette", "technique_inconnue"}) for i in issues)
 
     def add(label, expected, codes, active=True, fallback="conforme", policy=None):
         matching = [i for i in issues if i.code in codes]
@@ -400,7 +433,7 @@ def audit_rows_v2(ctx, shops) -> list:
         if active:
             if any(i.level == "erreur" for i in matching):
                 status = "non conforme"
-            elif any(i.msg.startswith("Préférence non satisfaite") for i in matching):
+            elif any(i.msg.startswith("Préférence non satisfaite") and "non vérifiable" not in i.msg for i in matching):
                 status = "préférence non satisfaite"
             elif matching or data_incomplete:
                 status = "non vérifié"
@@ -414,6 +447,10 @@ def audit_rows_v2(ctx, shops) -> list:
     add("Régime et exclusions", f"{p['alimentation']['regime']} ; {p['aliments']['exclus']}",
         {"regime", "aliment_exclu", "alternative_invalide"}, fallback="selon la base d'aliments")
     add("Ingrédients à éviter", p["aliments"]["a_eviter"], {"aliment_a_eviter"}, bool(p["aliments"]["a_eviter"]))
+    add("Familles exclues", p["aliments"]["familles_exclues"], {"famille_exclue", "famille_inconnue", "foods_famille"},
+        bool(p["aliments"]["familles_exclues"]), fallback="selon la base d'aliments")
+    add("Familles à éviter", p["aliments"]["familles_a_eviter"], {"famille_a_eviter", "famille_inconnue", "foods_famille"},
+        bool(p["aliments"]["familles_a_eviter"]), fallback="selon la base d'aliments")
     rows.append(("Nutrition", nutrition_mode(p), "valeurs absentes affichées —" if nutrition_mode(p) != "desactive" else "aucun calcul nutritionnel",
                  "non demandé" if nutrition_mode(p) == "desactive" else
                  "non vérifié" if any(i.code == "nutrition_absente" for i in issues) else "estimation"))
@@ -421,6 +458,8 @@ def audit_rows_v2(ctx, shops) -> list:
         "repartition": ("Répartition", p["repartition"], p["repartition"] is not None),
         "poids_servi": ("Poids servi / portion", p["repas"]["poids_servi_g_par_portion"], p["repas"]["poids_servi_g_par_portion"] is not None),
         "duree": ("Temps total maximal", p["repas"]["duree_totale_max_min"], p["repas"]["duree_totale_max_min"] is not None),
+        "duree_active": ("Temps actif maximal", p["repas"]["duree_active_max_min"], p["repas"]["duree_active_max_min"] is not None),
+        "difficulte": ("Difficulté maximale", p["repas"]["difficulte_max"], p["repas"]["difficulte_max"] is not None),
         "legumineuses_g": ("Légumineuses / portion", p["legumineuses"]["g_cuits_par_portion"], p["legumineuses"]["g_cuits_par_portion"] is not None),
         "legumineuses_consecutives": ("Alternance des légumineuses", "non consécutives", not p["legumineuses"]["consecutives_autorisees"]),
         "sel": ("Sel ajouté", p["aliments"]["sans_sel_ajoute_si"], bool(p["aliments"]["sans_sel_ajoute_si"])),
@@ -439,13 +478,17 @@ def audit_rows_v2(ctx, shops) -> list:
         ("cruciferes", "cruciferes_min_par_semaine", "Crucifères : minimum / semaine"),
         ("ala", "ala_min_par_semaine", "Sources d'ALA : minimum / semaine"),
         ("diversite", "especes_vegetales_min_par_semaine", "Diversité végétale : minimum / semaine"),
+        ("variete_plats", "recettes_distinctes_min_par_semaine", "Plats distincts : minimum / semaine"),
+        ("ingredient_recurrent", "ingredient_principal_max_par_semaine", "Même ingrédient principal : maximum / semaine"),
+        ("variete_techniques", "techniques_distinctes_min_par_semaine", "Techniques distinctes : minimum / semaine"),
+        ("repetition_plat", "repetition_plat_max", "Même plat : maximum / classeur"),
     ):
         value = p["variete"][key]
-        active = value is not None if code in ("riz", "substituts") else bool(value)
+        active = value is not None if code in ("riz", "substituts", "ingredient_recurrent", "repetition_plat") else bool(value)
         rules[code] = (label, value, active)
     for code, (label, expected, active) in rules.items():
         add(label, expected if expected is not None else "non fixé", {code}, active,
-            "estimation" if code in {"proteines", "kcal", "poids_servi", "duree", "legumineuses_g"} else "conforme", code if active else None)
+            "estimation" if code in {"proteines", "kcal", "poids_servi", "duree", "duree_active", "difficulte", "legumineuses_g"} else "conforme", code if active else None)
     add("Matériel", p["materiel"], {"materiel"}, p["materiel"] is not None)
     add("Organisation et authenticité", f"{p['projet']['organisation']} ; {p['projet']['authenticite']}",
         {"organisation", "authenticite", "cuisine_exclue"}, fallback="non vérifié")
