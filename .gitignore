@@ -8,6 +8,15 @@ weeks/
 propositions/
 out/
 .privacy-patterns
+professional.yaml
+provenance.yaml
+products.yaml
+schedule.yaml
+snapshot.json
+analyse.json
+.runtime/
+dossiers/
+archives/
 
 # Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
 !/examples/**

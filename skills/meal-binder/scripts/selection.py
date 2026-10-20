@@ -187,7 +187,7 @@ def render_selection(selection):
     return "\n".join(lines) + "\n"
 
 
-def save_selection(selection, workdir):
+def save_selection(selection, workdir, *, generated_on=None):
     """Sortie autonome atomique ; aucun fichier d'entrée n'est remplacé."""
     workdir = Path(workdir)
     out = safe_destination(workdir / "out")
@@ -215,7 +215,9 @@ def save_selection(selection, workdir):
             for week in ctx.weeks:
                 (stage / "weeks" / f"{week['semaine']}.json").write_text(json.dumps(week, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
             (stage / "out").mkdir()
-            (stage / "out/classeur.md").write_text(render_classeur(ctx, ctx.shops, ctx.final_stock, []).rstrip() + "\n", encoding="utf-8")
+            (stage / "out/classeur.md").write_text(render_classeur(ctx, ctx.shops, ctx.final_stock, [], generated_on=generated_on).rstrip() + "\n", encoding="utf-8")
+            from manifest import make_manifest, encode
+            (stage / "out/manifest.json").write_text(encode(make_manifest(analyse(stage, complete=True), generated_on)), encoding="utf-8")
         if target.exists():
             backup = Path(tempfile.mkdtemp(prefix=".selection-backup-", dir=out))
             backup.rmdir()

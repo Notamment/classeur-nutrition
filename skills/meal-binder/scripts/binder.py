@@ -11,6 +11,9 @@
   python binder.py list-options                 → techniques, familles, critères
   python binder.py show-profile  --dir DIR     → profil résolu et origines
   python binder.py select        --dir DIR     → comparaison et copie du classeur retenu
+  python binder.py diagnose      --dir DIR     → analyse JSON versionnée
+  python binder.py snapshot      --dir DIR --output ARCHIVE [--date YYYY-MM-DD]
+  python binder.py verify-snapshot --dir ARCHIVE
 
 Codes : 0 sans erreur, 1 données non conformes, 2 entrée illisible/manquante,
 3 panne interne ou Python < 3.10. Avec --json, les contrôles renvoient une liste d'écarts ;
@@ -24,6 +27,7 @@ import argparse
 import json
 import sys
 import traceback
+import datetime as dt
 from pathlib import Path
 import yaml
 
@@ -34,6 +38,8 @@ from core import BinderError, DataError, Issue, load_foods, load_profile, utf8_s
 from render import render_audit, render_classeur  # noqa: E402
 from profiles import list_presets, load_resolved, nutrition_mode, week_title  # noqa: E402
 from storage import write_render  # noqa: E402
+from storage import atomic_text  # noqa: E402
+from manifest import analysis_payload, encode, make_manifest, snapshot, verify_snapshot  # noqa: E402
 
 
 def report(issues: list, as_json: bool = False) -> int:
@@ -65,13 +71,19 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select"])
+    ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot"])
     ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")
     ap.add_argument("--dir", default=".", help="dossier de travail (profile.yaml, plan.yaml, weeks/)")
     ap.add_argument("--json", action="store_true", help="écarts au format JSON")
+    ap.add_argument("--date", type=lambda s: dt.date.fromisoformat(s).isoformat(), help="date de génération YYYY-MM-DD")
+    ap.add_argument("--output", type=Path, help="destination nouvelle d'une archive autonome")
     a = ap.parse_args(argv)
     wd = Path(a.dir).resolve()
     try:
+        if a.command == "verify-snapshot":
+            result = verify_snapshot(wd)
+            print(encode(result), end="")
+            return 0 if result["integre"] else 1
         if a.command == "list-options":
             from catalogs import load_catalogs
             from schemas import SELECTION_CRITERIA
@@ -82,7 +94,7 @@ def main(argv=None) -> int:
         if a.command == "select":
             from selection import select_proposals, save_selection
             selected = select_proposals(wd)
-            path = save_selection(selected, wd)
+            path = save_selection(selected, wd, generated_on=a.date)
             if a.json:
                 print(json.dumps(selected.report, ensure_ascii=False, indent=2, allow_nan=False))
             else:
@@ -135,7 +147,15 @@ def main(argv=None) -> int:
             other |= {w["semaine"] for w in ctx.weeks if w["semaine"] != a.week}
             scoped = [i for i in ctx.issues if i.where not in other]
             return report(scoped, a.json)
-        ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit"))
+        ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit", "diagnose", "snapshot"))
+        if a.command == "diagnose":
+            print(encode({"version": 2, **analysis_payload(ctx)}), end="")
+            return int(any(i.level == "erreur" for i in ctx.issues))
+        if a.command == "snapshot":
+            if a.output is None:
+                raise BinderError("snapshot nécessite --output vers un dossier nouveau")
+            print(encode(snapshot(ctx, a.output, a.date)), end="")
+            return int(any(i.level == "erreur" for i in ctx.issues))
         if a.command == "check-all":
             if not a.json:
                 for w in ctx.weeks:
@@ -146,10 +166,11 @@ def main(argv=None) -> int:
         out_dir.mkdir(exist_ok=True)
         if a.command == "render":
             path = out_dir / "classeur.md"
-            write_render(path, render_classeur(ctx, shops, final_stock, []))
+            write_render(path, render_classeur(ctx, shops, final_stock, [], generated_on=a.date))
         else:
             path = out_dir / "audit.md"
-            write_render(path, render_audit(ctx, shops))
+            write_render(path, render_audit(ctx, shops, generated_on=a.date))
+        atomic_text(out_dir / "manifest.json", encode(make_manifest(ctx, a.date)))
         print(f"Écrit : {path}", file=sys.stderr if a.json else sys.stdout)
         return report(ctx.issues, a.json)
     except DataError as e:

@@ -14,6 +14,7 @@ from test_regressions import cli
 from checks import analyse, preference_counts
 from core import BinderError
 from storage import atomic_text
+from manifest import snapshot, verify_snapshot
 
 
 class TestStructuredDiagnostics(unittest.TestCase):
@@ -87,3 +88,52 @@ class TestAtomicOutputs(unittest.TestCase):
                 self.skipTest("création de liens symboliques indisponible")
             self.assertEqual(cli(d, "render").returncode, 2)
             self.assertEqual(list(Path(external).iterdir()), [])
+
+
+class TestReproducibleSnapshots(unittest.TestCase):
+    def test_snapshot_is_autonomous_and_identical_across_processes(self):
+        with workspace() as d, tempfile.TemporaryDirectory() as temp:
+            archive = Path(temp) / "archive"
+            snapshot(analyse(d, complete=True), archive, "2026-01-02")
+            self.assertIn("Généré le 2026-01-02", (archive / "out/classeur.md").read_text(encoding="utf-8"))
+            self.assertTrue(verify_snapshot(archive)["integre"])
+            result = cli(archive, "verify-snapshot")
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertTrue(json.loads(result.stdout)["integre"])
+            (d / "profile.yaml").unlink()
+            self.assertTrue(verify_snapshot(archive)["integre"])
+
+    def test_input_change_and_addition_are_detected(self):
+        with workspace() as d, tempfile.TemporaryDirectory() as temp:
+            archive = Path(temp) / "archive"
+            snapshot(analyse(d, complete=True), archive)
+            (archive / "pantry.yaml").write_text("stock: []\n", encoding="utf-8")
+            self.assertFalse(verify_snapshot(archive)["integre"])
+            (archive / "pantry.yaml").unlink()
+            (archive / "profile.yaml").write_text("version: 2\n", encoding="utf-8")
+            self.assertIn("entrees/profile.yaml : modifié", verify_snapshot(archive)["differences"])
+
+    def test_changed_engine_is_reported_without_executing_archived_code(self):
+        with workspace() as d, tempfile.TemporaryDirectory() as temp:
+            archive = Path(temp) / "archive"
+            snapshot(analyse(d, complete=True), archive)
+            engine = archive / ".runtime/meal-binder/scripts/binder.py"
+            engine.write_text("raise RuntimeError('ne jamais exécuter')", encoding="utf-8")
+            result = cli(archive, "verify-snapshot")
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertIn("modifié", result.stdout)
+            self.assertNotIn("Traceback", result.stderr)
+
+    def test_snapshot_refuses_overwrite_and_source_descendants(self):
+        with workspace() as d:
+            ctx = analyse(d, complete=True)
+            for destination in (d, d / "archive", d.parent):
+                with self.subTest(destination=destination), self.assertRaises(BinderError):
+                    snapshot(ctx, destination)
+
+    def test_fixed_date_makes_repeated_render_and_manifest_identical(self):
+        with workspace() as d:
+            self.assertEqual(cli(d, "render", "--date", "2026-01-02").returncode, 0)
+            first = [(d / name).read_bytes() for name in ("out/classeur.md", "out/manifest.json")]
+            self.assertEqual(cli(d, "render", "--date", "2026-01-02").returncode, 0)
+            self.assertEqual(first, [(d / name).read_bytes() for name in ("out/classeur.md", "out/manifest.json")])

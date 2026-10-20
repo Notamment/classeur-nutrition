@@ -527,7 +527,7 @@ def stores_block(ctx) -> list:
     return out
 
 
-def render_classeur(ctx, shops, final_stock, extra_issues) -> str:
+def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None) -> str:
     p = ctx.profile
     issues = ctx.issues + [i for i in extra_issues if i not in ctx.issues]
     ctx = replace(ctx, issues=issues)
@@ -535,7 +535,7 @@ def render_classeur(ctx, shops, final_stock, extra_issues) -> str:
     mois = ", ".join(p["projet"].get("mois") or []) or "mois non renseignés"
     out = [f"# {esc(p['projet']['titre'])}", "",
            f"{len(ctx.weeks)} semaine{'s' if len(ctx.weeks) > 1 else ''} · {mois} · {p['projet']['portions_par_recette']} portions par recette "
-           f"({esc(p['projet']['usage'])}). Généré le {dt.date.today().isoformat()} par meal-binder.",
+           f"({esc(p['projet']['usage'])}). Généré le {generated_on or dt.date.today().isoformat()} par meal-binder.",
            "",
            ("> Poids = estimation calculée. " if nutrition_mode(p) == "desactive" else "> Protéines, kcal et poids = estimations calculées par script. ")
            + (f"**{errs} écart(s) non conforme(s)** : voir l'audit." if errs else "Aucun écart bloquant ; voir l'audit pour les points non vérifiés."),
@@ -551,8 +551,8 @@ def render_classeur(ctx, shops, final_stock, extra_issues) -> str:
     return "\n".join(out)
 
 
-def render_audit(ctx, shops) -> str:
+def render_audit(ctx, shops, *, generated_on=None) -> str:
     out = [f"# Audit — {esc(ctx.profile['projet']['titre'])}", "",
-           f"Généré le {dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
+           f"Généré le {generated_on or dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
     out += index_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)
