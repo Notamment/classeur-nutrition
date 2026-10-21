@@ -15,6 +15,7 @@ from version import ENGINE_VERSION, DIAGNOSTICS_VERSION
 
 INPUTS = ("profile.yaml", "pantry.yaml", "stores.yaml", "plan.yaml", "foods.local.csv",
           "provenance.yaml", "products.yaml", "professional.yaml", "schedule.yaml")
+INPUTS += ("locks.yaml",)
 
 
 def digest(data):

@@ -21,6 +21,8 @@ history.jsonl
 .dossier.lock
 .backup-*
 .transaction-*
+locks.yaml
+bibliotheque/
 
 # Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
 !/examples/**

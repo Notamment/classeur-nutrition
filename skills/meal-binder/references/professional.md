@@ -144,6 +144,40 @@ La revue est une annotation locale déclarative, pas une signature d'identité.
 L'archive protège également les empreintes du journal et de la revue présents.
 Aucune donnée client ni note n'est transmise à un service par ces commandes.
 
+## Adapter et réutiliser les recettes
+
+```bash
+classeur-nutrition scale --dir dossiers/client_001 --portions 4
+classeur-nutrition scale --dir dossiers/client_001 --portions 4 --apply
+classeur-nutrition lock-recipe --dir dossiers/client_001 --recipe S01-R01
+classeur-nutrition unlock-recipe --dir dossiers/client_001 --recipe S01-R01
+classeur-nutrition save-recipe --dir dossiers/client_001 --recipe S01-R01 --name plat_revu
+classeur-nutrition favorite --dir dossiers/client_001 --name plat_revu --value oui
+classeur-nutrition library --dir dossiers/client_001
+classeur-nutrition replace --dir dossiers/client_001 --recipe S01-R01 --from-file dossiers/client_001/bibliotheque/plat_revu.json
+```
+
+`scale` et `replace` rendent un aperçu avant/après ; seul `--apply` écrit les
+entrées et le journal en transaction, après les mêmes calculs et contrôles.
+Une erreur impérative ou un budget impératif invérifiable empêche l'application.
+Les préférences et données manquantes restent dans le rapport. Le stock n'est
+pas multiplié : les achats sont recalculés après déduction du stock réel.
+
+Le redimensionnement porte sur toutes les recettes et le nombre global de
+portions du profil historique. Un verrou de recette bloque tout redimensionnement
+global et son remplacement. Le remplacement conserve l'identifiant de destination ;
+un fichier recette simple exige `--source-portions`, une entrée de bibliothèque
+fournit ce nombre. Les métadonnées calculées du plan sont resynchronisées.
+Les quantités, formes brutes et eau retenue sont proportionnées ; durées, gestes,
+matériel et conservation nécessitent une nouvelle relecture. Le moteur n'invente
+pas de nouvelle instruction de cuisson. Une ancienne revue devient obsolète :
+refaire le rendu puis la revue.
+
+L'ajout à `bibliotheque/` exige une revue humaine actuelle avec décision `revu`.
+La bibliothèque et `locks.yaml` restent privés et ignorés par Git. Une recette
+revue dans un dossier ne possède aucune validation transférable à un autre profil.
+Les favoris servent au rangement ; ils n'annulent aucune contrainte.
+
 ## Installation et mises à jour
 
 `python -m pip install .` installe la commande `classeur-nutrition`, utilisable
