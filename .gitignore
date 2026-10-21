@@ -34,3 +34,7 @@ evals/runs/
 __pycache__/
 *.pyc
 .venv/
+build/
+*.egg-info/
+/dist/*.whl
+/dist/*.tar.gz

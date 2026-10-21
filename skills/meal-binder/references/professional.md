@@ -143,3 +143,16 @@ sa `decision` pour distinguer `revu` et `a_revoir`.
 La revue est une annotation locale déclarative, pas une signature d'identité.
 L'archive protège également les empreintes du journal et de la revue présents.
 Aucune donnée client ni note n'est transmise à un service par ces commandes.
+
+## Installation et mises à jour
+
+`python -m pip install .` installe la commande `classeur-nutrition`, utilisable
+hors du checkout. `python -m classeur_nutrition` fonctionne aussi depuis les
+sources. `doctor` vérifie Python, PyYAML et la présence des données embarquées,
+sans connexion réseau ni accès aux dossiers clients. `--version` affiche la
+version du moteur. Les scripts historiques restent utilisables directement.
+
+Avant mise à jour, créer une archive privée et vérifier sa reproduction. Une
+nouvelle version ne modifie pas automatiquement les profils ni les recettes ;
+ses empreintes différentes invalident les revues précédentes. Aucune migration
+silencieuse ni publication de données n'est effectuée par l'installation.

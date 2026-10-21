@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "classeur-nutrition"
+version = "0.3.0"
+description = "Classeurs de recettes personnalisés, calculs et audits locaux"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {file = "LICENSE"}
+dependencies = ["PyYAML>=6.0"]
+
+[project.optional-dependencies]
+ciqual = ["openpyxl>=3.1", "xlrd>=2.0"]
+
+[project.scripts]
+classeur-nutrition = "classeur_nutrition:main"
+
+[tool.setuptools]
+packages = ["classeur_nutrition", "classeur_nutrition.engine"]
+
+[tool.setuptools.package-dir]
+"classeur_nutrition.engine" = "skills/meal-binder"
+
+[tool.setuptools.package-data]
+"classeur_nutrition.engine" = ["SKILL.md", "scripts/*.py", "references/*.md", "data/*.csv", "data/*.yaml", "data/presets/*.yaml", "data/ciqual2025/*"]

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import math
 from dataclasses import replace
 from pathlib import Path
 
@@ -59,6 +60,8 @@ def apply_products(foods, workdir):
                                 f"tarif du {observed} périmé à la date de référence {reference}", kind="unknown"))
         if price is not None:
             price = price / product["prix_pour"] * (1 if product["unite"] == "piece" else 1000)
+            if not math.isfinite(price):
+                raise DataError([Issue("erreur", "produit_prix", fid, "prix normalisé hors capacité numérique")])
         tags = set(foods[fid].tags)
         composition = product["composition"]
         if composition["statut"] == "documentee":

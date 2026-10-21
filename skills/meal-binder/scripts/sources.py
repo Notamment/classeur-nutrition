@@ -21,7 +21,7 @@ REGISTRY = obj({"version": {"kind": "integer", "minimum": 1, "values": [1]},
 
 
 def parse_measure(text, unit):
-    value = str(text or "").strip().replace(",", ".")
+    value = ("" if text is None else str(text)).strip().replace(",", ".")
     if value in ("", "-", "—"):
         return {"statut": "absent", "unite": unit, "minimum": None, "maximum": None}
     if value.lower() == "traces":
@@ -31,7 +31,7 @@ def parse_measure(text, unit):
         number = float(value.lstrip("< "))
     except ValueError as exc:
         raise ValueError(f"valeur nutritionnelle invalide : {text}") from exc
-    if not math.isfinite(number) or number < 0:
+    if not math.isfinite(number) or number < 0 or (bounded and number == 0):
         raise ValueError("valeur nutritionnelle finie positive ou nulle requise")
     return {"statut": "borne" if bounded else "exact", "unite": unit,
             "minimum": 0 if bounded else number, "maximum": number}

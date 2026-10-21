@@ -82,6 +82,23 @@ python skills/meal-binder/scripts/binder.py check-all --dir examples/adaptation/
 
 ## Démarrage
 
+### Commande locale installable
+
+Depuis un checkout de la version choisie :
+
+```bash
+python -m pip install .
+classeur-nutrition doctor
+classeur-nutrition --version
+classeur-nutrition init --dir dossiers/client_001 --id client_001
+```
+
+Le paquet inclut le moteur, les règles et les jeux de données optionnels. Il
+n'installe pas les skills dans un agent automatiquement. Les commandes
+historiques `python skills/meal-binder/scripts/binder.py ...` restent disponibles.
+Pour importer une table Ciqual Excel : `python -m pip install '.[ciqual]'`.
+Le fonctionnement courant n'ajoute que PyYAML ; aucun service réseau n'est requis.
+
 ### Avec un agent compatible Agent Skills (recommandé)
 
 Claude Code, Codex, Gemini CLI, Cursor, Copilot et d'autres lisent le format `SKILL.md`.

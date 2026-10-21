@@ -13,7 +13,7 @@ def safe_destination(path):
     for part in (path, *path.parents):
         if part.is_symlink():
             raise BinderError(f"sortie protégée : lien symbolique {part.name}")
-    return path
+    return path.resolve()
 
 
 def atomic_write(path, data):

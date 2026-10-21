@@ -1,3 +1,17 @@
+# Parcours professionnels — développement — 20 octobre 2026
+
+- Diagnostics structurés indépendants des messages et protection atomique des sorties.
+- Manifeste, date fixable, archives privées autonomes et vérification des empreintes/calculs.
+- Provenance nutritionnelle avec bornes et inconnues ; import strict et jeu optionnel Anses Ciqual 2025 (16 aliments, six métriques).
+- Produits et tarifs datés, conditionnements, compositions déclarées et exclusions invérifiables explicites.
+- Dossiers locaux pseudonymes, duplication, journal et revue humaine invalidée après modification.
+- Corpus de 24 scénarios fictifs, protocole d'exécution explicite et séparation entre contrôles automatiques et revue humaine.
+- Installation locale via paquet Python et commande `classeur-nutrition` ; diagnostics d'installation hors réseau.
+
+Les données historiques restent inchangées. Les données Ciqual non couvertes restent inconnues lorsque le jeu sourcé est activé. Aucun résultat de benchmark réel ni validation clinique n'est revendiqué. Cette version de développement reste à valider en CI distante et en pilote professionnel.
+
+---
+
 # Adaptation du classeur — étape 2 — 20 octobre 2026
 
 ## Fonctionnalités

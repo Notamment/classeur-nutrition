@@ -27,6 +27,11 @@ def products(d, item, **changes):
 
 
 class TestProducts(unittest.TestCase):
+    def test_overflowing_normalized_price_is_a_data_error(self):
+        with workspace() as d:
+            products(d, product(prix_eur=1e308, prix_pour=1e-308))
+            with self.assertRaises(DataError):
+                analyse(d)
     def test_pack_price_is_normalized_and_selected_copy_keeps_it(self):
         with workspace({"budget": {"plafond_eur_semaine": 3}}, recipes=[basic()]) as d:
             products(d, product())

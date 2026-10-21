@@ -100,11 +100,12 @@ def snapshot(ctx, target, date=None):
         from checks import analyse
         if digest(encode(analysis_payload(analyse(stage, complete=True))).encode("utf-8")) != manifest["analyse_sha256"]:
             raise BinderError("calculs modifiés pendant l'archivage ; archive non publiée")
-        atomic_text(stage / "snapshot.json", encode(manifest))
         atomic_text(stage / "analyse.json", encode(analysis_payload(ctx)))
         from render import render_classeur
         atomic_text(stage / "out/classeur.md", render_classeur(ctx, ctx.shops, ctx.final_stock, [],
                                                               generated_on=manifest["date_generation"]))
+        manifest["sorties"] = hashes([stage / "analyse.json", stage / "out/classeur.md"], stage)
+        atomic_text(stage / "snapshot.json", encode(manifest))
         os.replace(stage, target)
         return manifest
     finally:
@@ -125,8 +126,8 @@ def verify_snapshot(directory):
     if not isinstance(manifest, dict) or manifest.get("version") != 1:
         raise BinderError("version de manifeste non prise en charge")
     differences = []
-    for key, root in (("entrees", directory), ("moteur_fichiers", directory / ".runtime/meal-binder"), ("pieces_jointes", directory)):
-        entries = manifest.get(key, {} if key == "pieces_jointes" else None)
+    for key, root in (("entrees", directory), ("moteur_fichiers", directory / ".runtime/meal-binder"), ("pieces_jointes", directory), ("sorties", directory)):
+        entries = manifest.get(key, {} if key in ("pieces_jointes", "sorties") else None)
         if not isinstance(entries, dict):
             raise BinderError("manifeste incomplet")
         for name, expected in entries.items():
@@ -149,7 +150,10 @@ def verify_snapshot(directory):
         differences.append("moteur courant différent : utiliser explicitement le moteur archivé de confiance")
     if not differences:
         from checks import analyse
-        actual = digest(encode(analysis_payload(analyse(directory, complete=True))).encode("utf-8"))
+        ctx = analyse(directory, complete=True)
+        if ctx.profile != manifest.get("profil_effectif") or manifest.get("moteur") != ENGINE_VERSION:
+            differences.append("configuration effective ou version déclarée différente")
+        actual = digest(encode(analysis_payload(ctx)).encode("utf-8"))
         if actual != manifest["analyse_sha256"]:
             differences.append("résultats recalculés différents")
         if digest((directory / "analyse.json").read_bytes()) != manifest["analyse_sha256"]:

@@ -91,6 +91,20 @@ class TestAtomicOutputs(unittest.TestCase):
 
 
 class TestReproducibleSnapshots(unittest.TestCase):
+    def test_modified_rendered_document_is_detected(self):
+        with workspace() as d, tempfile.TemporaryDirectory() as temp:
+            archive = Path(temp) / "archive"
+            snapshot(analyse(d, complete=True), archive)
+            (archive / "out/classeur.md").write_text("# Document modifié", encoding="utf-8")
+            self.assertFalse(verify_snapshot(archive)["integre"])
+
+    def test_parent_traversal_cannot_hide_source_descendant(self):
+        with workspace() as d:
+            sibling = d.parent / "intermediaire"
+            target = sibling / ".." / d.name / "archive"
+            with self.assertRaises(BinderError):
+                snapshot(analyse(d, complete=True), target)
+
     def test_snapshot_is_autonomous_and_identical_across_processes(self):
         with workspace() as d, tempfile.TemporaryDirectory() as temp:
             archive = Path(temp) / "archive"

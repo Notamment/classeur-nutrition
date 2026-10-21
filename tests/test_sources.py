@@ -49,7 +49,7 @@ class TestProvenance(unittest.TestCase):
         self.assertEqual(parse_measure("traces", "g"), {"statut": "traces", "unite": "g", "minimum": 0, "maximum": None})
         self.assertEqual(parse_measure("< 0,5", "g"), {"statut": "borne", "unite": "g", "minimum": 0, "maximum": .5})
         self.assertEqual(parse_measure("-", "g")["statut"], "absent")
-        for value in ("NaN", "inf", "-1", "texte"):
+        for value in ("NaN", "inf", "-1", "texte", "< 0"):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 parse_measure(value, "g")
 

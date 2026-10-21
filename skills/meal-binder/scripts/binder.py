@@ -71,11 +71,22 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     values = list(sys.argv[1:] if argv is None else argv)
+    if values and values[0] == "doctor":
+        from version import ENGINE_VERSION
+        from core import SKILL_DIR
+        print(encode({"version": 1, "moteur": ENGINE_VERSION, "python": sys.version.split()[0],
+                      "pyyaml": yaml.__version__, "python_compatible": sys.version_info >= (3, 10),
+                      "donnees_presentes": (SKILL_DIR / "data/foods.csv").is_file(),
+                      "ciqual_optionnel_present": (SKILL_DIR / "data/ciqual2025/provenance.yaml").is_file(),
+                      "reseau_requis": False}), end="")
+        return 0
     from workflow import COMMANDS
     if values and values[0] in COMMANDS:
         from workflow import main as workflow_main
         return workflow_main(values)
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    from version import ENGINE_VERSION
+    ap.add_argument("--version", action="version", version=ENGINE_VERSION)
     ap.add_argument("command", choices=["list-presets", "list-options", "show-profile", "check-profile", "check-plan", "check-week", "check-all", "render", "audit", "select", "diagnose", "snapshot", "verify-snapshot", "nutrients", "use-data", "products"])
     ap.add_argument("week", nargs="?", help="identifiant de semaine pour check-week (ex. S01)")
     ap.add_argument("--dir", default=".", help="dossier de travail (profile.yaml, plan.yaml, weeks/)")
