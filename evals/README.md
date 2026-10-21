@@ -28,7 +28,9 @@ avant exécution. Le délai par défaut est de 600 s, réglable via `--timeout`.
 
 Le protocole garde modèle, agent, durée mesurée, code de sortie et empreintes
 du moteur, corpus et consigne. Un agent ne peut pas modifier les profils, stocks
-et sources imposés pour améliorer son score. Les tentatives échouées restent
+et sources imposés pour améliorer son score, ni ajouter un tarif ou une autre
+configuration non prévue. Les empreintes de la consigne, du moteur portable
+et de ses références sont vérifiées avant lancement et après exécution. Les tentatives échouées restent
 enregistrées et ne sont pas relancées dans le même dossier. Les coûts et tokens
 non observés restent `null`, jamais zéro. Sans recette produite, le champ
 `automatique` reste `null` : un échec d'environnement n'est pas un score de

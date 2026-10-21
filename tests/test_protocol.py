@@ -47,3 +47,27 @@ class TestEvaluationProtocol(unittest.TestCase):
             with self.assertRaises(BinderError):
                 execute(case, command, "fixture-test", "fixture-test")
             self.assertFalse((case / "evaluation.json").exists())
+
+    def test_added_price_override_is_rejected_before_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "runs"; prepare(root, repetitions=1, case_ids=["N10"])
+            case = root / "N10-1"
+            (case / "products.yaml").write_text("version: 1", encoding="utf-8")
+            with self.assertRaises(BinderError):
+                execute(case, [sys.executable, "-c", "raise RuntimeError('must not run')"], "fixture-test", "fixture-test")
+            self.assertFalse((case / "agent.stdout.txt").exists())
+
+    def test_portable_skill_changes_are_rejected_before_execution(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "runs"; prepare(root, repetitions=1, case_ids=["N10"])
+            (root / "runtime/SKILL.md").write_text("Instructions modifiées", encoding="utf-8")
+            with self.assertRaises(BinderError):
+                execute(root / "N10-1", [sys.executable, "-c", "pass"], "fixture-test", "fixture-test")
+
+    def test_missing_agent_is_a_recorded_startup_failure_not_a_score(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp) / "runs"; prepare(root, repetitions=1, case_ids=["N10"])
+            result = execute(root / "N10-1", [str(root / "agent_absent")], "fixture-test", "fixture-test")
+            self.assertEqual(result["execution"]["code_agent"], 127)
+            self.assertIsNone(result["automatique"])
+            self.assertIsNone(result["humain"])

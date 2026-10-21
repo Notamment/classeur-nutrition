@@ -18,12 +18,19 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "skills/meal-binder/scripts"))
 from core import BinderError, DataError, load_json, load_yaml, utf8_stdio  # noqa: E402
 from checks import analyse  # noqa: E402
-from manifest import digest, encode, engine_files, hashes  # noqa: E402
+from manifest import INPUTS, digest, encode, engine_files, hashes  # noqa: E402
 from core import SKILL_DIR  # noqa: E402
 from storage import atomic_text, safe_destination  # noqa: E402
 from score import score_run  # noqa: E402
 
 RUBRIC = ("etapes", "quantites", "durees", "materiel", "conservation")
+FROZEN_INPUTS = tuple(name for name in INPUTS if name != "plan.yaml")
+
+
+def runtime_hashes(directory):
+    root = Path(directory) / "runtime"
+    return hashes(sorted(p for p in root.rglob("*") if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"), root)
+
 
 
 def prepare(target, repetitions=3, case_ids=None):
@@ -71,8 +78,9 @@ def prepare(target, repetitions=3, case_ids=None):
                                                             "prompt_sha256": digest(task.encode("utf-8")),
                                                             "corpus_sha256": digest((ROOT / "evals/corpus.yaml").read_bytes()),
                                                             "protocole_sha256": digest(Path(__file__).read_bytes()),
-                                                            "entrees_initiales": hashes([directory / n for n in ("profile.yaml", "pantry.yaml", "provenance.yaml") if (directory / n).exists()], directory),
-                                                            "moteur_fichiers": hashes(engine_files(), SKILL_DIR)}))
+                                                            "entrees_initiales": hashes([directory / n for n in FROZEN_INPUTS if (directory / n).exists()], directory),
+                                                            "moteur_fichiers": hashes(engine_files(), SKILL_DIR),
+                                                            "runtime_fichiers": runtime_hashes(stage)}))
                 atomic_text(directory / "human.template.json", encode({"version": 1, "relecteur": None,
                             "notes": {key: None for key in RUBRIC}, "defauts_critiques": None, "commentaire": None}))
         os.replace(stage, target)
@@ -82,19 +90,26 @@ def prepare(target, repetitions=3, case_ids=None):
             shutil.rmtree(stage)
 
 
-def evaluate(directory):
-    run = load_json(directory / "run.json")
-    if run.get("statut") not in ("execute", "termine"):
-        raise BinderError("génération non exécutée : aucun score ne doit être attribué")
-    initial = hashes([directory / name for name in run["entrees_initiales"]], directory)
-    if initial != run["entrees_initiales"]:
-        raise BinderError("agent a modifié les entrées imposées ; résultat invalide")
+def verify_inputs(directory, run):
+    paths = [directory / name for name in FROZEN_INPUTS if (directory / name).exists()]
+    if hashes(paths, directory) != run["entrees_initiales"]:
+        raise BinderError("entrées imposées modifiées ou ajout de configuration non autorisé ; résultat invalide")
+    if runtime_hashes(directory.parent) != run.get("runtime_fichiers"):
+        raise BinderError("moteur portable ou instructions modifiés après préparation")
+
     if digest((directory / "task.txt").read_bytes()) != run["prompt_sha256"]:
         raise BinderError("consigne modifiée après préparation")
     if hashes(engine_files(), SKILL_DIR) != run["moteur_fichiers"]:
         raise BinderError("moteur différent du protocole préparé")
     if run.get("corpus_sha256") != digest((ROOT / "evals/corpus.yaml").read_bytes()) or run.get("protocole_sha256") != digest(Path(__file__).read_bytes()):
         raise BinderError("corpus ou protocole différent de la préparation")
+
+
+def evaluate(directory):
+    run = load_json(directory / "run.json")
+    if run.get("statut") not in ("execute", "termine"):
+        raise BinderError("génération non exécutée : aucun score ne doit être attribué")
+    verify_inputs(directory, run)
     produced = bool(list(directory.joinpath("weeks").glob("*.json")))
     score = score_run(directory) if produced else None
     if score is not None:
@@ -133,6 +148,7 @@ def execute(directory, command, model, agent, timeout=600):
         raise BinderError("une génération enregistrée n'est pas relancée ni remplacée")
     if not command or any(not isinstance(part, str) for part in command):
         raise BinderError("commande attendue : liste JSON non vide d'arguments, sans shell")
+    verify_inputs(directory, run)
     task = (directory / "task.txt").read_text(encoding="utf-8")
     args = [part.replace("{task}", task).replace("{dir}", str(directory.resolve())) for part in command]
     start = time.monotonic()
@@ -143,6 +159,8 @@ def execute(directory, command, model, agent, timeout=600):
         code, stdout, stderr = 124, exc.stdout or b"", exc.stderr or b""
         if isinstance(stdout, bytes): stdout = stdout.decode("utf-8", errors="replace")
         if isinstance(stderr, bytes): stderr = stderr.decode("utf-8", errors="replace")
+    except OSError as exc:
+        code, stdout, stderr = 127, "", str(exc)
     run.update(statut="execute", modele=model, agent=agent, duree_secondes=time.monotonic() - start,
                code_agent=code, cout_eur=None, tokens=None,
                commande_sha256=digest(encode(command).encode("utf-8")))
