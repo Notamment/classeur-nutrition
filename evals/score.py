@@ -56,7 +56,7 @@ def score_run(workdir: Path) -> dict:
         "conforme": not errs and not budget_unknown and len(ctx.calcs) == expected,
         "budget": "non conforme" if any(i.code == "budget_depasse" for i in errs)
                   else "préférence non satisfaite" if any(i.code == "budget_depasse" for i in ctx.issues)
-                  else "non vérifié" if any(not s.budget_verifiable for s in ctx.shops) else "estimation",
+                  else "non vérifié" if any(i.code == "budget_non_verifie" for i in ctx.issues) else "estimation",
         "preferences_non_satisfaites": missed,
         "preferences_non_verifiables": unknown,
         "err_recettes": sum(i.where in rids for i in errs),

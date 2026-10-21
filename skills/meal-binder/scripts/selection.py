@@ -43,8 +43,12 @@ def _measurements(ctx):
     active = [r.get("temps_actif_min") for r in recipes]
     levels = [r.get("niveau") for r in adaptations]
     dishes = [r.get("plat_id") for r in recipes]
+    budget = math.fsum(s.montant_caisse for s in ctx.shops) if all(s.budget_verifiable for s in ctx.shops) else None
+    if ctx.schedule:
+        weeks_budget = list(ctx.schedule["semaines_achat"].values())
+        budget = math.fsum(v["caisse_connue"] for v in weeks_budget) if all(v["verifiable"] for v in weeks_budget) else None
     return {
-        "budget": math.fsum(s.montant_caisse for s in ctx.shops) if all(s.budget_verifiable for s in ctx.shops) else None,
+        "budget": budget,
         "temps_actif": math.fsum(active) if recipes and all(v is not None for v in active) else None,
         "difficulte": max(levels) if levels and all(v is not None for v in levels) else None,
         "variete": len(set(dishes)) if dishes and all(dishes) else None,
@@ -98,6 +102,9 @@ def select_proposals(workdir):
     if len(folders) > MAX_PROPOSALS:
         raise DataError([Issue("erreur", "selection_taille", "propositions", f"au plus {MAX_PROPOSALS} propositions par comparaison")])
     priorities = profile["selection"]["priorites"]
+    from editing import locks
+    protected = locks(workdir)
+    originals = {r["id"]: r for w in load_weeks(workdir) for r in w["recettes"]} if protected else {}
     rows, contexts = [], {}
     for folder in folders:
         row = {"id": folder.name, "source": f"propositions/{folder.name}", "admissible": False,
@@ -111,6 +118,8 @@ def select_proposals(workdir):
                     raise DataError([Issue("erreur", "proposition_configuration", folder.name,
                                           f"{filename} doit être commun et placé à la racine du dossier de travail")])
             ctx = analyse(workdir, complete=True, weeks=load_weeks(folder))
+            if any(rid not in originals or ctx.recipes.get(rid) != originals[rid] for rid in protected):
+                raise DataError([Issue("erreur", "recette_verrouillee", folder.name, "proposition modifiant ou retirant une recette verrouillée")])
             row["ecarts"] = [i.__dict__ for i in ctx.issues]
             row["motifs_rejet"] = [f"{i.where} · {i.code} : {i.msg}" for i in ctx.issues if i.level == "erreur"]
             if required_budget_unverified(ctx):

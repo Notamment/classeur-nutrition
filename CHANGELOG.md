@@ -7,6 +7,10 @@
 - Dossiers locaux pseudonymes, duplication, journal et revue humaine invalidée après modification.
 - Corpus de 24 scénarios fictifs, protocole d'exécution explicite et séparation entre contrôles automatiques et revue humaine.
 - Installation locale via paquet Python et commande `classeur-nutrition` ; diagnostics d'installation hors réseau.
+- Adaptations avec aperçu et application transactionnelle, verrouillage de recettes et bibliothèque privée après revue.
+- Exports client/production HTML et CSV, PDF optionnel ; revue actuelle exigée pour livraison, brouillons explicites.
+- Calendrier opérationnel facultatif versionné : portions par occurrence, préparations, capacités déclarées, composants, lots datés et budgets par semaine ISO.
+- Recherche déterministe bornée dans la bibliothèque, frontière de compromis, rejets détaillés et verrouillages respectés par la sélection.
 
 Les données historiques restent inchangées. Les données Ciqual non couvertes restent inconnues lorsque le jeu sourcé est activé. Aucun résultat de benchmark réel ni validation clinique n'est revendiqué. Cette version de développement reste à valider en CI distante et en pilote professionnel.
 

@@ -18,6 +18,18 @@ from manifest import snapshot, verify_snapshot
 
 
 class TestStructuredDiagnostics(unittest.TestCase):
+    def test_legacy_render_keeps_missing_sourced_proteins_explicit(self):
+        with workspace({"version": 1}) as d:
+            week_path = d / "weeks/S01.json"
+            week = json.loads(week_path.read_text(encoding="utf-8"))
+            week["cuisine"] = "Exemple fictif"
+            week_path.write_text(json.dumps(week), encoding="utf-8")
+            (d / "provenance.yaml").write_text("version: 1\nexiger_sources: true\naliments: {}\n", encoding="utf-8")
+            result = cli(d, "render")
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("valeur inconnue, jamais zéro", (d / "out/classeur.md").read_text(encoding="utf-8"))
+            self.assertIn("nutrition_absente", {i["code"] for i in json.loads(result.stdout)})
+
     def test_translating_messages_never_changes_preference_counts(self):
         with workspace({"repas": {"difficulte_max": "facile", "duree_active_max_min": 1},
                         "exigences": {"difficulte": "preference", "duree_active": "preference"}}) as d:

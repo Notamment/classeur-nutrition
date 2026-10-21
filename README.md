@@ -6,6 +6,14 @@ Skills pour agents IA qui génèrent des **classeurs de recettes personnalisés*
 
 Les nouveaux profils utilisent `version: 2`, avec des défauts neutres. Les profils `version: 1` et sans version conservent leur comportement. Aucun objectif nutritionnel, régime, quota ni label bio n'est imposé en v2.
 
+Les [parcours professionnels locaux](skills/meal-binder/references/professional.md)
+ajoutent dossiers pseudonymes, sources et produits datés, archives reproductibles,
+revue liée à la version, adaptation des portions et bibliothèque privée. Les
+exports HTML/PDF/CSV distinguent client et production. Un calendrier facultatif
+gère services, préparations, composants et lots datés ; une recherche bornée
+compare les compromis de recettes fournies. Ces fonctions de développement
+restent à valider en pilote professionnel et en CI distante.
+
 ## Configurer son classeur
 
 Partir de [`profile.template.yaml`](skills/meal-setup/assets/profile.template.yaml). Exemple :
@@ -153,7 +161,7 @@ Non contrôlé par script : authenticité, saison, labels des produits réels, g
 - `analyse()` calcule les mêmes écarts pour `check-week`, `check-all`, `render`, `audit` et `evals/score.py`. Un budget dépassé est une erreur s'il est impératif, une alerte s'il est préférentiel. Un budget incomplet reste explicitement non vérifié.
 - `--json` écrit une liste d'écarts seule sur stdout pour les contrôles, le rendu et l'audit. `show-profile` renvoie un objet `profil`/`origines`/`ecarts` ; `list-presets` et `list-options` renvoient leurs catalogues ; `select` renvoie son rapport. Codes de sortie : `0` sans erreur détectée (ou sélection réussie), `1` données non conformes (ou aucune proposition admissible), `2` entrée illisible/manquante ou sortie protégée, `3` panne interne. **Le code 0 n'atteste pas les points signalés non vérifiés.** Les fichiers de diagnostic peuvent être rendus malgré des erreurs de conformité.
 
-Les schémas déclaratifs sont centralisés dans `skills/meal-binder/scripts/schemas.py` ; les règles métier dans `checks.py` ; les conversions dans `core.py` ; le stock, les emballages et le budget dans `shopping.py`. Aucune dépendance ajoutée. Voir les [formats et conventions détaillés](skills/meal-binder/references/recipe-format.md).
+Les schémas des profils et recettes sont centralisés dans `skills/meal-binder/scripts/schemas.py` ; les règles métier dans `checks.py` ; les conversions dans `core.py` ; le stock, les emballages et le budget dans `shopping.py`. PyYAML reste la seule dépendance obligatoire ; les imports Excel et exports PDF ont des dépendances optionnelles. Voir les [formats et conventions détaillés](skills/meal-binder/references/recipe-format.md).
 
 ## Données nutritionnelles
 

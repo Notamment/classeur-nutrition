@@ -14,6 +14,13 @@
   python binder.py diagnose      --dir DIR     → analyse JSON versionnée
   python binder.py snapshot      --dir DIR --output ARCHIVE [--date YYYY-MM-DD]
   python binder.py verify-snapshot --dir ARCHIVE
+  python binder.py doctor                     → installation et données embarquées
+  python binder.py init|clone|review|review-status|archive|history --help
+  python binder.py scale|replace|lock-recipe|unlock-recipe --help
+  python binder.py save-recipe|library|favorite --help
+  python binder.py export --help              → HTML / CSV / PDF, client ou production
+  python binder.py schedule --help            → calendrier, préparations et lots datés
+  python binder.py search --help              → combinaisons bornées de la bibliothèque
 
 Codes : 0 sans erreur, 1 données non conformes, 2 entrée illisible/manquante,
 3 panne interne ou Python < 3.10. Avec --json, les contrôles renvoient une liste d'écarts ;
@@ -71,6 +78,9 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     values = list(sys.argv[1:] if argv is None else argv)
+    if values and values[0] == "search":
+        from search import main as search_main
+        return search_main(values)
     if values and values[0] == "schedule":
         from planning import main as planning_main
         return planning_main(values)

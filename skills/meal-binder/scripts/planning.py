@@ -103,6 +103,8 @@ def report(directory, *, ctx=None):
             raise BinderError("limite de lot antérieure à sa disponibilité")
         item.update(disponible_le=start.isoformat(), limite=limit.isoformat())
         item["reste"] = None if item["quantite"] is None else to_base(ctx.foods[fid], item["quantite"], item["unite"])
+        if item["reste"] is not None and not math.isfinite(item["reste"]):
+            raise BinderError("quantité de lot hors capacité numérique")
         ledger.append(item)
     jobs, service_ids, used_preps = [], set(), set()
     components = data.get("composants", {})
@@ -207,7 +209,10 @@ def report(directory, *, ctx=None):
         outputs.append({"id": where, "preparation": cooking.isoformat(), "service": serving.isoformat(),
             "recette_id": recipe["id"], "plat": recipe["nom"],
             "portions": rc.portions, "proteines_par_portion": rc.prot_pp, "kcal_par_portion": rc.kcal_pp,
-            "lots_mobilises": allocations, "caisse_connue": shop.montant_caisse, "budget_verifiable": shop.budget_verifiable,
+            "lots_mobilises": allocations,
+            "lots_non_mobilisables": [{"lot": lot["id"], "motif": "disponibilité future" if day < lot["disponible_le"] else "limite dépassée"}
+                                     for lot in ledger if lot not in active and lot["food"] in {line.food.id for line in rc.lines}],
+            "caisse_connue": shop.montant_caisse, "budget_verifiable": shop.budget_verifiable,
             "achats": [{"food": line.food.id, "besoin": line.besoin, "achat": line.achat, "unite": line.food.unite_achat,
                         "reste_non_reporte": line.reste, "conditionnements": line.packs} for line in shop.lines]})
     for shop in weekly.values():

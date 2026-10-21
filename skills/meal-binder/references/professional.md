@@ -206,6 +206,8 @@ fichier ne doit pas être confondu avec une version courante.
 
 Le [format du calendrier de production](planning-format.md) décrit les portions
 par service, préparations, équipements, composants et lots datés facultatifs.
+La [recherche bornée](search-format.md) compare des combinaisons de la bibliothèque
+avec le même moteur, en conservant les compromis et les rejets.
 
 `python -m pip install .` installe la commande `classeur-nutrition`, utilisable
 hors du checkout. `python -m classeur_nutrition` fonctionne aussi depuis les

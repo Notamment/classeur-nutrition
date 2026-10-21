@@ -374,7 +374,8 @@ def audit_rows(ctx, shops) -> list:
         e = errs("proteines", "poids_servi", "kcal")
         rows.append(("Protéines et poids servi",
                      f"{p['repas']['proteines_g_par_portion']} g ; {p['repas']['poids_servi_g_par_portion']} g",
-                     f"prot. {fr(min(prot))}–{fr(max(prot))} g ; poids {r10(min(poids))}–{r10(max(poids))} g ; "
+                     ("prot. non vérifiées ; " if any(value is None for value in prot) else f"prot. {fr(min(prot))}–{fr(max(prot))} g ; ")
+                     + f"poids {r10(min(poids))}–{r10(max(poids))} g ; "
                      f"exceptions : {ids(e)}", st(e, "estimation")))
     leg = [rc for rc in calcs if rc.has_legumes]
     e = errs("legumineuses_g", "legumineuses_consecutives")

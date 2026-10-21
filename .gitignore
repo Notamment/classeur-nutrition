@@ -23,6 +23,7 @@ history.jsonl
 .transaction-*
 locks.yaml
 bibliotheque/
+search.yaml
 
 # Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
 !/examples/**
