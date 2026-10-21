@@ -1,0 +1,108 @@
+{
+  "version": 2,
+  "titre": "DÉMO ADAPTATION — PRIX FICTIFS",
+  "selectionne": "economique",
+  "priorites": [
+    "budget",
+    "temps_actif",
+    "difficulte",
+    "variete"
+  ],
+  "methode": [
+    "Rejeter les violations impératives, données invalides et budgets impératifs invérifiables.",
+    "Minimiser les écarts préférentiels, y compris les préférences actives invérifiables : un écart par règle et portée (recette, semaine ou classeur).",
+    "Départager dans l'ordre de selection.priorites : minimiser budget, temps actif et difficulté ; maximiser variété.",
+    "Pour chaque critère, une mesure inconnue est classée après une mesure connue, jamais comme zéro.",
+    "À égalité, ordre alphabétique des identifiants. Comparaison limitée aux propositions fournies."
+  ],
+  "classement": [
+    "economique",
+    "rapide"
+  ],
+  "propositions": [
+    {
+      "id": "avec_soja",
+      "source": "propositions/avec_soja",
+      "admissible": false,
+      "preferences_non_satisfaites": 0,
+      "preferences_non_verifiables": 0,
+      "mesures": {
+        "budget": 6.48,
+        "temps_actif": 40.0,
+        "difficulte": 1,
+        "variete": 2
+      },
+      "ecarts": [
+        {
+          "level": "erreur",
+          "code": "famille_exclue",
+          "where": "S01-R01",
+          "msg": "soja : Pâte miso",
+          "kind": "violation",
+          "requirement": "imperative"
+        }
+      ],
+      "motifs_rejet": [
+        "S01-R01 · famille_exclue : soja : Pâte miso"
+      ]
+    },
+    {
+      "id": "economique",
+      "source": "propositions/economique",
+      "admissible": true,
+      "preferences_non_satisfaites": 0,
+      "preferences_non_verifiables": 0,
+      "mesures": {
+        "budget": 6.24,
+        "temps_actif": 40.0,
+        "difficulte": 1,
+        "variete": 2
+      },
+      "ecarts": [],
+      "motifs_rejet": [],
+      "rang": 1,
+      "cle_classement": [
+        0,
+        false,
+        6.24,
+        false,
+        40.0,
+        false,
+        1,
+        false,
+        -2,
+        "economique"
+      ]
+    },
+    {
+      "id": "rapide",
+      "source": "propositions/rapide",
+      "admissible": true,
+      "preferences_non_satisfaites": 0,
+      "preferences_non_verifiables": 0,
+      "mesures": {
+        "budget": 12.02,
+        "temps_actif": 30.0,
+        "difficulte": 1,
+        "variete": 2
+      },
+      "ecarts": [],
+      "motifs_rejet": [],
+      "rang": 2,
+      "cle_classement": [
+        0,
+        false,
+        12.02,
+        false,
+        30.0,
+        false,
+        1,
+        false,
+        -2,
+        "rapide"
+      ],
+      "departage": "economique devance rapide : Montant caisse total inférieur (6,24 EUR contre 12,02 EUR)."
+    }
+  ],
+  "explication": "Proposition « economique » retenue : 0 préférence(s) non satisfaite(s), 0 non vérifiable(s). economique devance rapide : Montant caisse total inférieur (6,24 EUR contre 12,02 EUR)."
+}

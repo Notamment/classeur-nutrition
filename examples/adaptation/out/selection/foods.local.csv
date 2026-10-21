@@ -1,0 +1,13 @@
+id,nom,rayon,nature,categorie,tags,prot_g_100g,kcal_100g,etat_ref,g_par_piece,densite_g_ml,rendement,unite_achat,conditionnements,report_ok,prix_eur,source
+boulgour,Boulgour,Épicerie salée,vegetal,,feculent:boulgour,12,350,sec,,,2.6,g,500,1,3.20,placeholder
+carotte,Carotte,Fruits et légumes,vegetal,racine,,0.8,38,cru,,,1,g,,1,1.60,placeholder
+champignon_paris,Champignons de Paris,Fruits et légumes,vegetal,,fragile,3,22,cru,,,0.6,g,250|500,0,6,placeholder
+citron_jus,Citron (jus),Fruits et légumes,vegetal,,vitc,0.4,25,net,40,1.03,1,piece,,1,0.50,placeholder
+cottage_cheese,Cottage cheese,Crèmerie,laitier,,,11,100,net,,,1,g,200,0,8,placeholder
+huile_olive,Huile d'olive vierge extra,Huiles et condiments,vegetal,,,0,900,net,,0.92,1,ml,500|750|1000,1,8,placeholder
+lentille_verte_seche,Lentilles vertes sèches,Épicerie salée,vegetal,,legumineuse|fer_vegetal|feculent:legumineuse,24,330,sec,,,2.5,g,500,1,3,placeholder
+miso,Pâte miso,Produits du monde,vegetal,,soja_condiment,12,200,net,,,1,g,,1,12,placeholder
+oeuf,Œuf calibre M,Œufs,oeuf,oeuf,fer,12.6,143,net,50,,1,piece,6|12,1,0.35,placeholder
+oignon,Oignon jaune,Fruits et légumes,vegetal,,,1.2,40,cru,,,1,g,,1,1.80,placeholder
+pois_chiche_egoutte,Pois chiches en conserve,Conserves,vegetal,,legumineuse|fer_vegetal|feculent:legumineuse,8,135,egoutte,,,1,g,240,0,4,placeholder
+pomme_de_terre,Pomme de terre,Fruits et légumes,vegetal,tubercule,feculent:pomme_de_terre,2,80,cru,,,1,g,1000|2500,1,1.80,placeholder

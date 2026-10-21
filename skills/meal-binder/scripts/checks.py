@@ -9,7 +9,9 @@ from pathlib import Path
 from core import (BinderError, DataError, Issue, compute_alternatives, compute_recipe,
                   load_foods, load_profile, load_weeks, load_yaml, schema_issues, to_base, week_order)
 from schemas import PANTRY, PANTRY_ENTRY, PLAN, PLAN_V2, STORES, WEEK, WEEK_V2, arr, profile_schema
-from profiles import apply_requirements, categories, forbidden_natures, nutrition_mode, nutrition_targets
+from profiles import apply_requirements, categories, forbidden_natures, nutrition_mode, nutrition_targets, requirement
+from catalogs import check_family_references, load_catalogs
+from adaptation import (check_food_families, check_recipe_adaptation, check_repeated_dishes, check_week_variety)
 
 ID_RE = re.compile(r"^S\d{2}-R\d{2}$")
 WEEK_RE = re.compile(r"^S\d{2}$")
@@ -30,11 +32,20 @@ def _range(p: dict, path: str) -> list | None:
 
 # ---------------------------------------------------------------- profil
 
-def check_profile(p: dict, foods: dict) -> list:
+def check_profile(p: dict, foods: dict, catalogs=None) -> list:
     out = schema_issues(p, profile_schema(p), "profil", "schema_profil")
     if out:
         return out
     pr = p["projet"]
+    if p["version"] == 2:
+        catalogs = catalogs or load_catalogs()
+        out += check_family_references(p, foods, catalogs)
+        priorities = p["selection"]["priorites"]
+        if len(priorities) != len(set(priorities)):
+            out.append(Issue("erreur", "configuration_adaptation", "profil", "selection.priorites contient des doublons"))
+        minimum = p["variete"]["recettes_distinctes_min_par_semaine"]
+        if minimum is not None and minimum > pr["recettes_par_semaine"]:
+            out.append(Issue("erreur", "configuration_adaptation", "profil", "plus de plats distincts demandés que de recettes par semaine"))
     total = pr["semaines"] * pr["recettes_par_semaine"]
     rep = p["repartition"]
     if rep is not None and sum(rep.get(c, 0) for c in categories(p)) != total:
@@ -98,6 +109,7 @@ def check_plan(plan: dict, p: dict) -> list:
     if out:
         return out
     pr, var, leg = p["projet"], p["variete"], p["legumineuses"]
+    catalogs = load_catalogs() if p["version"] == 2 else None
     weeks = plan.get("semaines") or []
     if len(weeks) > pr["semaines"]:
         out.append(Issue("erreur", "semaines", "plan", f"{len(weeks)} semaines > {pr['semaines']}"))
@@ -129,6 +141,8 @@ def check_plan(plan: dict, p: dict) -> list:
         prev_leg = None
         for r in rs:
             rid = r.get("id", "?")
+            if catalogs:
+                out += check_recipe_adaptation(r, p, catalogs, plan=True)[1]
             if not ID_RE.match(str(rid)) or not str(rid).startswith(str(wid)):
                 out.append(Issue("erreur", "id_recette", rid, f"format attendu {wid}-RYY"))
             if rid in seen:
@@ -157,12 +171,16 @@ def check_plan(plan: dict, p: dict) -> list:
                     out.append(Issue("erreur", "espece_doublon", rid, f"« {sp} » déjà en {species[sp]}"))
                 species.setdefault(sp, rid)
             industrial += bool(r.get("substitut_industriel"))
+        if catalogs:
+            out += check_week_variety(rs, p, wid, catalogs)
         if var["riz_max_par_semaine"] is not None and rice > var["riz_max_par_semaine"]:
             out.append(Issue("erreur", "riz", wid, f"{rice} recettes au riz > {var['riz_max_par_semaine']}"))
         if len(starches) < var["feculents_distincts_min_par_semaine"]:
             out.append(Issue("erreur", "feculents", wid,
                              f"{len(starches)} féculents distincts < {var['feculents_distincts_min_par_semaine']}"))
     complete = len(weeks) == pr["semaines"]
+    if catalogs:
+        out += check_repeated_dishes([r for w in weeks for r in w["recettes"]], p, "plan")
     for c in categories(p) if p["repartition"] is not None else ():
         target = p["repartition"].get(c, 0)
         if counts[c] > target or (complete and counts[c] != target):
@@ -197,7 +215,7 @@ def check_recipe(rc, r: dict, p: dict, position: int, alts: list) -> list:
         if limits is None:
             continue
         if value is None:
-            out.append(Issue("erreur", code, rid, f"{label}/portion : objectif non vérifiable, données absentes"))
+            out.append(Issue("erreur", code, rid, f"{label}/portion : objectif non vérifiable, données absentes", kind="unknown"))
         elif not limits[0] <= value <= limits[1]:
             out.append(Issue("erreur", code, rid, f"{value:.1f} {label}/portion hors {limits} (estimation)"))
     t = r.get("temps_total_min")
@@ -233,7 +251,7 @@ def check_recipe(rc, r: dict, p: dict, position: int, alts: list) -> list:
         if ln.food.id in excluded:
             out.append(Issue("erreur", "aliment_exclu", rid, f"{ln.food.nom} est exclu par le profil"))
         if ln.food.id in p["aliments"].get("a_eviter", []):
-            out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : {ln.food.nom} est à éviter"))
+            out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : {ln.food.nom} est à éviter", requirement="preference"))
         if ln.food.nature in forbidden_natures(p):
             out.append(Issue("erreur", "regime", rid, f"{ln.food.nom} incompatible avec le régime alimentaire"))
     mode = nut["fer_vitamine_c"] if nutrition_targets(p) else "non"
@@ -256,7 +274,7 @@ def check_recipe(rc, r: dict, p: dict, position: int, alts: list) -> list:
             if a["food"] in excluded:
                 out.append(Issue("erreur", "alternative_invalide", rid, f"{a['nom']} : aliment exclu"))
             if a["food"] in p["aliments"].get("a_eviter", []):
-                out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : alternative {a['nom']} à éviter"))
+                out.append(Issue("alerte", "aliment_a_eviter", rid, f"Préférence non satisfaite : alternative {a['nom']} à éviter", requirement="preference"))
             for field, key, label in (("prot_pp", "proteines_g_par_portion", "protéines"),
                                       ("poids_pp", "poids_servi_g_par_portion", "poids servi"),
                                       ("kcal_pp", "kcal_par_portion", "kcal")):
@@ -292,14 +310,21 @@ class Context:
     declared: set = field(default_factory=set)
     shops: list = field(default_factory=list)
     final_stock: dict = field(default_factory=dict)
+    catalogs: object = None
+    adaptations: dict = field(default_factory=dict)
+    products: dict | None = None
+    schedule: dict | None = None
 
 
-def analyse(workdir: Path, complete: bool = False) -> Context:
+def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:
     p = load_profile(workdir)
     foods, food_issues = load_foods(workdir)
-    weeks = load_weeks(workdir)
+    weeks = load_weeks(workdir) if weeks is None else weeks
     ctx = Context(workdir, p, foods, weeks, issues=list(food_issues))
-    ctx.issues += check_profile(p, foods)
+    from products import load_products
+    ctx.products = load_products(workdir)
+    ctx.catalogs = load_catalogs() if p["version"] == 2 else None
+    ctx.issues += check_profile(p, foods, ctx.catalogs)
     if any(i.code == "schema_profil" for i in ctx.issues):
         raise DataError(ctx.issues)
     ctx.pantry, pantry_issues = load_pantry(workdir, foods)
@@ -324,6 +349,11 @@ def analyse(workdir: Path, complete: bool = False) -> Context:
     from shopping import build_shopping
     ctx.shops, ctx.final_stock, shopping_issues = build_shopping(ctx)
     ctx.issues = apply_requirements(ctx.issues + shopping_issues, p)
+    if (workdir / "schedule.yaml").exists():
+        from planning import report as schedule_report
+        ctx.schedule = schedule_report(workdir, ctx=ctx)
+        ctx.issues += [Issue(**value) for value in ctx.schedule["ecarts"]]
+        ctx.schedule["admissible"] = not any(i.level == "erreur" for i in ctx.issues) and not required_budget_unverified(ctx)
     return ctx
 
 
@@ -361,6 +391,12 @@ def _check_week(ctx: Context, w: dict, portions: int) -> list:
         ctx.recipes[rid], ctx.calcs[rid], ctx.alts[rid] = r, rc, alts
         ctx.week_of[rid], ctx.position[rid] = wid, pos
         out += check_recipe(rc, r, p, pos, alts)
+        if ctx.catalogs:
+            metadata, issues = check_recipe_adaptation(r, p, ctx.catalogs)
+            ctx.adaptations[rid] = metadata
+            out += issues + check_food_families(r, rc, ctx.foods, p, ctx.catalogs, products=ctx.products)
+    if ctx.catalogs:
+        out += check_week_variety([ctx.recipes[rid] for rid in order if rid in ctx.recipes], p, wid, ctx.catalogs)
     calcs = [ctx.calcs[i] for i in order if i in ctx.calcs]
     prev = None
     for rc in calcs:
@@ -396,6 +432,8 @@ def _check_week(ctx: Context, w: dict, portions: int) -> list:
 def _check_classeur(ctx: Context, complete: bool) -> list:
     p, var = ctx.profile, ctx.profile["variete"]
     out = []
+    if ctx.catalogs:
+        out += check_repeated_dishes(list(ctx.recipes.values()), p, "classeur")
     n_weeks, target = len(ctx.weeks), p["projet"]["semaines"]
     if n_weeks > target:
         out.append(Issue("erreur", "semaines", "classeur", f"{n_weeks} semaines > {target}"))
@@ -433,3 +471,24 @@ def load_plan(workdir: Path) -> dict:
     if not path.exists():
         raise BinderError(f"fichier manquant : {path}")
     return load_yaml(path)
+
+
+def required_budget_unverified(ctx):
+    """Même admissibilité pour la sélection et l'évaluation, sans modifier la CLI historique."""
+    return (ctx.profile["budget"]["plafond_eur_semaine"] is not None
+            and requirement(ctx.profile, "budget_depasse") == "imperative"
+            and (any(not shop.budget_verifiable for shop in ctx.shops)
+                 or bool(ctx.schedule and ctx.schedule["budget_imperatif_inverifiable"])))
+
+
+def preference_counts(ctx):
+    """Un écart par règle et portée ; un échec connu prime sur une incertitude."""
+    failed, unknown = set(), set()
+    for issue in ctx.issues:
+        if issue.requirement == "preference":
+            target = unknown if issue.kind == "unknown" else failed
+            target.add((issue.code, issue.where))
+    if (ctx.profile["budget"]["plafond_eur_semaine"] is not None
+            and requirement(ctx.profile, "budget_depasse") == "preference"):
+        unknown.update(("budget_depasse", i.where) for i in ctx.issues if i.code == "budget_non_verifie")
+    return len(failed), len(unknown - failed)

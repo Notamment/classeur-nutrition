@@ -5,12 +5,30 @@ stores.yaml
 plan.yaml
 foods.local.csv
 weeks/
+propositions/
 out/
 .privacy-patterns
+professional.yaml
+provenance.yaml
+products.yaml
+schedule.yaml
+snapshot.json
+analyse.json
+.runtime/
+dossiers/
+archives/
+history.jsonl
+.dossier.lock
+.backup-*
+.transaction-*
+locks.yaml
+bibliotheque/
+search.yaml
 
 # Exceptions : exemples et données d'évaluation fictifs, publiés volontairement
 !/examples/**
 !/evals/pantry.yaml
+!/skills/meal-binder/data/ciqual2025/provenance.yaml
 
 # Évaluations : publier seulement evals/results.md
 evals/runs/
@@ -19,3 +37,7 @@ evals/runs/
 __pycache__/
 *.pyc
 .venv/
+build/
+*.egg-info/
+/dist/*.whl
+/dist/*.tar.gz

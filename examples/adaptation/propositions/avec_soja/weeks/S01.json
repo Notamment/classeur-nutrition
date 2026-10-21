@@ -1,0 +1,131 @@
+{
+  "semaine": "S01",
+  "theme": "avec_soja",
+  "saison": "Légumes de garde, champignons et épicerie pour octobre–novembre.",
+  "recettes": [
+    {
+      "nom": "Lentilles aux carottes et au miso",
+      "plat_id": "lentilles_carottes_miso",
+      "ingredients_principaux": [
+        "lentille_verte_seche",
+        "carotte"
+      ],
+      "ingredients": [
+        {
+          "food": "lentille_verte_seche",
+          "qte": 160,
+          "unite": "g"
+        },
+        {
+          "food": "carotte",
+          "qte": 300,
+          "unite": "g"
+        },
+        {
+          "food": "oignon",
+          "qte": 100,
+          "unite": "g"
+        },
+        {
+          "food": "huile_olive",
+          "qte": 10,
+          "unite": "ml"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 20,
+          "unite": "ml"
+        },
+        {
+          "food": "miso",
+          "qte": 20,
+          "unite": "g"
+        }
+      ],
+      "etapes": [
+        "Rincer les lentilles. Éplucher les carottes et l’oignon ; couper les carottes en dés de 1 cm et émincer l’oignon.",
+        "Chauffer les 10 ml d’huile à feu moyen dans une casserole. Faire revenir l’oignon 3 min en remuant, sans le brunir.",
+        "Ajouter les carottes et les lentilles. Couvrir d’eau à hauteur de 2 cm au-dessus des ingrédients. Porter à frémissement puis cuire à feu doux 25 à 30 min, jusqu’à ce que les lentilles soient tendres. Ajouter un peu d’eau si nécessaire.",
+        "Avant d’égoutter, réserver deux cuillères à soupe d’eau de cuisson. Hors du feu, y délayer les 20 g de miso puis mélanger aux lentilles égouttées avec les 20 ml de jus de citron. Répartir en deux portions."
+      ],
+      "temps_actif_min": 20,
+      "temps_total_min": 40,
+      "execution": {
+        "techniques": [
+          "decoupe_simple",
+          "cuisson_poele",
+          "mijotage"
+        ],
+        "taches_simultanees": 1
+      },
+      "appareils": [
+        "plaque"
+      ],
+      "service": "chaud",
+      "sel_ajoute": false,
+      "gamelle": "Réserver au frais après refroidissement rapide ; transporter au froid et réchauffer au micro-ondes.",
+      "motif_ordre": "Ingrédients de garde ; suivre les dates des produits et ouvrir les emballages au moment de cuisiner.",
+      "references": {
+        "culinaire": "Création de démonstration du projet, sans revendication traditionnelle"
+      },
+      "id": "S01-R01"
+    },
+    {
+      "nom": "Omelette aux pommes de terre et aux oignons",
+      "plat_id": "omelette_pommes_de_terre",
+      "ingredients_principaux": [
+        "oeuf",
+        "pomme_de_terre"
+      ],
+      "ingredients": [
+        {
+          "food": "oeuf",
+          "qte": 4,
+          "unite": "piece"
+        },
+        {
+          "food": "pomme_de_terre",
+          "qte": 400,
+          "unite": "g"
+        },
+        {
+          "food": "oignon",
+          "qte": 100,
+          "unite": "g"
+        },
+        {
+          "food": "huile_olive",
+          "qte": 15,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Éplucher les pommes de terre et les couper en dés de 1 cm. Les mettre dans une casserole, couvrir d’eau et cuire 8 à 10 min après reprise de l’ébullition, jusqu’à ce qu’elles soient presque tendres. Égoutter.",
+        "Pendant la cuisson passive, émincer l’oignon. Dans une poêle antiadhésive, chauffer les 15 ml d’huile à feu moyen. Faire revenir l’oignon 4 min puis les pommes de terre 5 min, en remuant.",
+        "Battre les quatre œufs dans un bol. Les verser sur les légumes, baisser le feu et couvrir. Cuire 5 à 7 min, jusqu’à ce que les œufs soient pris au centre. Si nécessaire, prolonger à feu doux.",
+        "Découper en deux parts égales et servir."
+      ],
+      "temps_actif_min": 20,
+      "temps_total_min": 35,
+      "execution": {
+        "techniques": [
+          "decoupe_simple",
+          "cuisson_eau",
+          "cuisson_poele"
+        ],
+        "taches_simultanees": 1
+      },
+      "appareils": [
+        "plaque"
+      ],
+      "service": "chaud",
+      "sel_ajoute": false,
+      "gamelle": "Réserver au frais après refroidissement rapide ; transporter au froid et réchauffer au micro-ondes.",
+      "motif_ordre": "Ingrédients de garde ; suivre les dates des produits et ouvrir les emballages au moment de cuisiner.",
+      "references": {
+        "culinaire": "Création de démonstration du projet, sans revendication traditionnelle"
+      },
+      "id": "S01-R02"
+    }
+  ]
+}

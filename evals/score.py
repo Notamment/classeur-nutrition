@@ -25,9 +25,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "skills" / "meal-binder" / "scripts"))
 
-from checks import analyse  # noqa: E402
+from checks import analyse, preference_counts, required_budget_unverified  # noqa: E402
 from core import BinderError, utf8_stdio  # noqa: E402
-from profiles import requirement  # noqa: E402
 
 BLOCKING = {"aliment_inconnu", "etat", "unite", "quantite", "conversion", "champ_manquant", "id_doublon"}
 
@@ -44,10 +43,9 @@ def score_run(workdir: Path) -> dict:
     bad = {i.where for i in errs if i.where in rids}
     clean = len(set(ctx.calcs) - bad)
     global_errors = sum(i.where not in rids for i in errs)
-    budget_unknown = (ctx.profile["budget"]["plafond_eur_semaine"] is not None
-                      and requirement(ctx.profile, "budget_depasse") == "imperative"
-                      and any(not shop.budget_verifiable for shop in ctx.shops))
+    budget_unknown = required_budget_unverified(ctx)
     recipe_rate = min(clean / expected, 1.0) if expected else 0.0
+    missed, unknown = preference_counts(ctx)
     return {
         "run": workdir,
         "attendues": expected,
@@ -58,8 +56,9 @@ def score_run(workdir: Path) -> dict:
         "conforme": not errs and not budget_unknown and len(ctx.calcs) == expected,
         "budget": "non conforme" if any(i.code == "budget_depasse" for i in errs)
                   else "préférence non satisfaite" if any(i.code == "budget_depasse" for i in ctx.issues)
-                  else "non vérifié" if any(not s.budget_verifiable for s in ctx.shops) else "estimation",
-        "preferences_non_satisfaites": sum(i.msg.startswith("Préférence non satisfaite") for i in ctx.issues),
+                  else "non vérifié" if any(i.code == "budget_non_verifie" for i in ctx.issues) else "estimation",
+        "preferences_non_satisfaites": missed,
+        "preferences_non_verifiables": unknown,
         "err_recettes": sum(i.where in rids for i in errs),
         "err_globales": global_errors,
         "bloquantes": sum(i.code in BLOCKING or i.code.startswith(("schema_", "foods_")) for i in errs),
@@ -79,7 +78,7 @@ def main() -> int:
         return 1
     lines = ["# Résultats d'évaluation", "",
              "Le score vaut zéro en cas d'erreur globale ou de plafond budgétaire impératif invérifiable. Les préférences restent distinctes du score de conformité.", "",
-             "| Modèle | Profil | Recettes | Taux local | Score | Conforme aux contrôles | Budget | Err. globales | Préférences non satisfaites | Codes fréquents |",
+             "| Modèle | Profil | Recettes | Taux local | Score | Conforme aux contrôles | Budget | Err. globales | Préférences non satisfaites / invérifiables | Codes fréquents |",
              "|---|---|---:|---:|---:|---|---|---:|---:|---|"]
     by_model: dict = {}
     for d in runs:
@@ -91,7 +90,7 @@ def main() -> int:
             continue
         top = ", ".join(f"{c}×{n}" for c, n in s["codes"].most_common(3)) or "—"
         lines.append(f"| {model} | {profile} | {s['produites']}/{s['attendues']} | {s['taux_recettes']:.0%} | "
-                     f"{s['taux']:.0%} | {'oui' if s['conforme'] else 'non'} | {s['budget']} | {s['err_globales']} | {s['preferences_non_satisfaites']} | {top} |")
+                     f"{s['taux']:.0%} | {'oui' if s['conforme'] else 'non'} | {s['budget']} | {s['err_globales']} | {s['preferences_non_satisfaites']} / {s['preferences_non_verifiables']} | {top} |")
         by_model.setdefault(model, []).append(s["taux"])
     lines += ["", "| Modèle | Exécutions | Score moyen |", "|---|---:|---:|"]
     for m, rates in sorted(by_model.items()):
