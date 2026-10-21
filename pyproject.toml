@@ -13,6 +13,7 @@ dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
 ciqual = ["openpyxl>=3.1", "xlrd>=2.0"]
+exports = ["weasyprint>=63.1"]
 
 [project.scripts]
 classeur-nutrition = "classeur_nutrition:main"

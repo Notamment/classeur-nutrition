@@ -178,6 +178,30 @@ La bibliothèque et `locks.yaml` restent privés et ignorés par Git. Une recett
 revue dans un dossier ne possède aucune validation transférable à un autre profil.
 Les favoris servent au rangement ; ils n'annulent aucune contrainte.
 
+## Exports client et production
+
+```bash
+classeur-nutrition export --dir dossiers/client_001 --audience client --format html --format csv
+classeur-nutrition export --dir dossiers/client_001 --audience production --format html
+classeur-nutrition export --dir dossiers/client_001 --audience client --format pdf
+```
+
+Les fichiers restent sous `out/exports/<public>/`. Une livraison exige une revue
+humaine actuelle avec décision `revu`. `--draft` permet un aperçu explicitement
+marqué « BROUILLON — NON VALIDÉ », en conservant les écarts. Le manifeste minimal
+livrable contient version, date et empreintes ; il omet profil, notes et pseudonymes.
+Les exports client contiennent recettes, consignes, sources et codes des limites.
+Les exports production ajoutent courses, stock mobilisé, sous-totaux et diagnostics
+détaillés. Relire les textes libres des recettes avant toute transmission.
+
+Le HTML est autonome, échappe le texte libre et propose une mise en page imprimable.
+Les CSV sont en UTF-8 avec BOM, avec cellules de texte protégées contre les formules
+de tableur. Le PDF exige `pip install '.[exports]'` et les dépendances système de
+WeasyPrint ; aucune ressource externe n'est chargée par le générateur. On peut
+également imprimer le HTML en PDF depuis un navigateur. Pour remplacer un export,
+garder les mêmes formats ou archiver préalablement l'ancien dossier : un ancien
+fichier ne doit pas être confondu avec une version courante.
+
 ## Installation et mises à jour
 
 `python -m pip install .` installe la commande `classeur-nutrition`, utilisable
