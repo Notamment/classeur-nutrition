@@ -38,7 +38,7 @@ def _summary(ctx):
     from checks import preference_counts
     known = bool(ctx.shops) and all(s.budget_verifiable for s in ctx.shops)
     return {"budget_caisse": math.fsum(s.montant_caisse for s in ctx.shops) if known else None,
-            "preferences": preference_counts(ctx), "ecarts": [i.__dict__ for i in ctx.issues],
+            "preferences": preference_counts(ctx), "ecarts": [i.__dict__ for i in ctx.issues], "planning": ctx.schedule,
             "recettes": {rid: {"proteines_par_portion": c.prot_pp, "kcal_par_portion": c.kcal_pp,
                                "poids_par_portion": c.poids_pp} for rid, c in ctx.calcs.items()}}
 

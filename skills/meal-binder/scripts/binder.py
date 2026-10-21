@@ -71,6 +71,9 @@ def recipe_table(ctx, wid: str) -> None:
 
 def main(argv=None) -> int:
     values = list(sys.argv[1:] if argv is None else argv)
+    if values and values[0] == "schedule":
+        from planning import main as planning_main
+        return planning_main(values)
     if values and values[0] == "export":
         from exports import main as exports_main
         return exports_main(values)

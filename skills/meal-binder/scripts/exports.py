@@ -89,6 +89,13 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
             body.append("</table><h2>Contrôles</h2><ul>")
             body.extend(f"<li>{e(i.level)} / {e(i.kind)} / {e(i.requirement)} : {e(i.where)} — {e(i.code)} : {e(i.msg)}</li>" for i in ctx.issues)
             body.append("</ul>")
+        if ctx.schedule:
+            body.append("<h2>Calendrier des services</h2><p>Les fiches donnent les quantités pour leurs portions sources. Le calendrier indique les portions de chaque service ; consulter la production pour les achats recalculés.</p><ul>")
+            for job in ctx.schedule["services"]:
+                body.append(f"<li>{e(job['service'])} — {e(job['plat'])} : {job['portions']} portions.</li>")
+                if audience == "production":
+                    body.append(f"<li>Préparation : {e(job['preparation'])}. Achats : {e(encode(job['achats']))}. Lots mobilisés : {e(encode(job['lots_mobilises']))}.</li>")
+            body.append("</ul>")
         document = (f"<!doctype html><!-- {MARKER} --><html lang='fr'><meta charset='utf-8'><title>{title}</title>"
                     "<style>body{font:16px sans-serif;max-width:70rem;margin:2rem auto;padding:1rem}"
                     "td,th{border:1px solid #aaa;padding:.4rem}table{border-collapse:collapse}.etat{font-weight:bold}"

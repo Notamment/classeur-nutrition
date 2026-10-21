@@ -61,6 +61,7 @@ def analysis_payload(ctx):
             "recettes": {rid: {"proteines": c.prot_pp, "kcal": c.kcal_pp,
                                "poids_servi": c.poids_pp, "categorie": c.categorie}
                          for rid, c in sorted(ctx.calcs.items())},
+            "planning": ctx.schedule,
             "courses": [{"semaine": s.semaine, "montant_caisse": s.montant_caisse,
                          "verifiable": s.budget_verifiable,
                          "lignes": [{"food": l.food.id, "besoin": l.besoin, "achat": l.achat,

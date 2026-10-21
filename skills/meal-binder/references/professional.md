@@ -204,6 +204,9 @@ fichier ne doit pas être confondu avec une version courante.
 
 ## Installation et mises à jour
 
+Le [format du calendrier de production](planning-format.md) décrit les portions
+par service, préparations, équipements, composants et lots datés facultatifs.
+
 `python -m pip install .` installe la commande `classeur-nutrition`, utilisable
 hors du checkout. `python -m classeur_nutrition` fonctionne aussi depuis les
 sources. `doctor` vérifie Python, PyYAML et la présence des données embarquées,

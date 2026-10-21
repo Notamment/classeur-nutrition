@@ -548,6 +548,18 @@ def products_block(ctx):
     return out
 
 
+def schedule_block(ctx):
+    if not ctx.schedule:
+        return []
+    out = ["## Planning opérationnel", "", "Les fiches ci-dessus gardent leurs portions sources. Les services ont leurs portions explicites.", "",
+           "| Service | Plat | Préparation | Service prévu | Portions | Caisse connue EUR | Budget vérifiable |",
+           "|---|---|---|---|---:|---:|---|"]
+    for job in ctx.schedule["services"]:
+        out.append(f"| {esc(job['id'])} | {esc(job['plat'])} | {esc(job['preparation'])} | {esc(job['service'])} | {job['portions']} | {fr(job['caisse_connue'], 2)} | {'oui' if job['budget_verifiable'] else 'non'} |")
+    out += ["", *["- " + esc(s) for s in ctx.schedule["limites"]], ""]
+    return out
+
+
 def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None) -> str:
     p = ctx.profile
     issues = ctx.issues + [i for i in extra_issues if i not in ctx.issues]
@@ -568,12 +580,12 @@ def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None)
     shop_by_week = {ws.semaine: ws for ws in shops}
     for w in ctx.weeks:
         out += week_blocks(ctx, w, shop_by_week[w.get("semaine")], issues)
-    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + products_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + products_block(ctx) + schedule_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)
 
 
 def render_audit(ctx, shops, *, generated_on=None) -> str:
     out = [f"# Audit — {esc(ctx.profile['projet']['titre'])}", "",
            f"Généré le {generated_on or dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
-    out += index_block(ctx) + products_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + products_block(ctx) + schedule_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)

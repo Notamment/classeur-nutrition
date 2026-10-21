@@ -313,6 +313,7 @@ class Context:
     catalogs: object = None
     adaptations: dict = field(default_factory=dict)
     products: dict | None = None
+    schedule: dict | None = None
 
 
 def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:
@@ -348,6 +349,11 @@ def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:
     from shopping import build_shopping
     ctx.shops, ctx.final_stock, shopping_issues = build_shopping(ctx)
     ctx.issues = apply_requirements(ctx.issues + shopping_issues, p)
+    if (workdir / "schedule.yaml").exists():
+        from planning import report as schedule_report
+        ctx.schedule = schedule_report(workdir, ctx=ctx)
+        ctx.issues += [Issue(**value) for value in ctx.schedule["ecarts"]]
+        ctx.schedule["admissible"] = not any(i.level == "erreur" for i in ctx.issues) and not required_budget_unverified(ctx)
     return ctx
 
 
@@ -471,7 +477,8 @@ def required_budget_unverified(ctx):
     """Même admissibilité pour la sélection et l'évaluation, sans modifier la CLI historique."""
     return (ctx.profile["budget"]["plafond_eur_semaine"] is not None
             and requirement(ctx.profile, "budget_depasse") == "imperative"
-            and any(not shop.budget_verifiable for shop in ctx.shops))
+            and (any(not shop.budget_verifiable for shop in ctx.shops)
+                 or bool(ctx.schedule and ctx.schedule["budget_imperatif_inverifiable"])))
 
 
 def preference_counts(ctx):

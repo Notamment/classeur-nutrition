@@ -106,7 +106,7 @@ def select_proposals(workdir):
         try:
             if folder.is_symlink() or not re.fullmatch(r"[a-z][a-z0-9_-]*", folder.name):
                 raise DataError([Issue("erreur", "proposition_id", folder.name, "dossier simple requis, identifiant a-z, chiffres, _ ou -")])
-            for filename in ("profile.yaml", "pantry.yaml", "stores.yaml", "foods.local.csv", "provenance.yaml", "products.yaml", "professional.yaml", "schedule.yaml"):
+            for filename in ("profile.yaml", "pantry.yaml", "stores.yaml", "foods.local.csv", "provenance.yaml", "products.yaml", "professional.yaml", "schedule.yaml", "locks.yaml"):
                 if (folder / filename).exists():
                     raise DataError([Issue("erreur", "proposition_configuration", folder.name,
                                           f"{filename} doit être commun et placé à la racine du dossier de travail")])
@@ -211,7 +211,7 @@ def save_selection(selection, workdir, *, generated_on=None):
                 (stage / "stores.yaml").write_text(yaml.safe_dump(ctx.stores, allow_unicode=True, sort_keys=False), encoding="utf-8")
             if (workdir / "foods.local.csv").exists():
                 shutil.copy2(workdir / "foods.local.csv", stage / "foods.local.csv")
-            for name in ("provenance.yaml", "products.yaml", "professional.yaml"):
+            for name in ("provenance.yaml", "products.yaml", "professional.yaml", "schedule.yaml", "locks.yaml"):
                 if (workdir / name).exists():
                     shutil.copy2(workdir / name, stage / name)
             (stage / "weeks").mkdir()
