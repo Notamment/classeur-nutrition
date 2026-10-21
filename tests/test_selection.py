@@ -265,12 +265,15 @@ class TestSelectionOutput(unittest.TestCase):
             shutil.copyfile(ROOT / ".gitignore", d / ".gitignore")
             subprocess.run(["git", "init", "--quiet", str(d)], check=True, capture_output=True)
             paths = ["propositions/economique/notes.md", "mon-classeur/propositions/rapide/notes.md",
-                     "mon-classeur/out/selection/rapport.json", "mon-classeur/profile.yaml"]
+                     "mon-classeur/out/selection/rapport.json", "mon-classeur/profile.yaml",
+                     "mon-classeur/propositions/été/notes privées.md"]
             public = "examples/adaptation/propositions/rapide/weeks/S01.json"
-            result = subprocess.run(["git", "check-ignore", "--stdin"], cwd=d,
-                                    input="\n".join(paths + [public]) + "\n", capture_output=True,
-                                    text=True, encoding="utf-8", check=True)
-            self.assertEqual(result.stdout.splitlines(), paths)
+            # Git traite CR comme un caractère du chemin : éviter la conversion
+            # LF -> CRLF de subprocess en mode texte sur Windows.
+            result = subprocess.run(["git", "check-ignore", "-z", "--stdin"], cwd=d,
+                                    input=("\0".join(paths + [public]) + "\0").encode("utf-8"),
+                                    capture_output=True, check=True)
+            self.assertEqual(result.stdout.decode("utf-8").split("\0")[:-1], paths)
 
     def test_documented_example_changes_winner_with_priority_and_rejects_soy(self):
         with tempfile.TemporaryDirectory() as temp:
