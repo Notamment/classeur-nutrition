@@ -1,0 +1,34 @@
+# Profil public fictif ; prix de démonstration, sans valeur commerciale.
+version: 2
+projet:
+  titre: DÉMO ADAPTATION — PRIX FICTIFS
+  semaines: 1
+  recettes_par_semaine: 2
+  portions_par_recette: 2
+  mois:
+  - octobre
+  - novembre
+alimentation:
+  regime: vegetarien
+repas:
+  difficulte_max: facile
+  duree_active_max_min: 20
+  duree_totale_max_min: 40
+variete:
+  recettes_distinctes_min_par_semaine: 2
+  ingredient_principal_max_par_semaine: 2
+  techniques_distinctes_min_par_semaine: 2
+  repetition_plat_max: 1
+aliments:
+  familles_exclues:
+  - soja
+budget:
+  plafond_eur_semaine: 25
+selection:
+  priorites:
+  - budget
+  - temps_actif
+  - difficulte
+  - variete
+materiel:
+- plaque

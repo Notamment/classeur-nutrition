@@ -6,6 +6,7 @@ from dataclasses import replace
 
 from core import fmt_qty, week_order
 from profiles import nutrition_mode, nutrition_targets, requirement, week_title
+from recipe_views import recipe_views, used_foods
 
 CAT_LABEL = {"vegetarien": "végétarien", "poisson": "poisson", "viande": "viande", "mixte": "MIXTE"}
 STATUS = ("conforme", "estimation", "non vérifié", "non conforme")
@@ -68,8 +69,9 @@ def store_for(food, stores: dict) -> str:
 
 # ---------------------------------------------------------------- blocs
 
-def recipe_block(ctx, rid: str, issues: list) -> list:
-    r, rc, p = ctx.recipes[rid], ctx.calcs[rid], ctx.profile
+def recipe_block(ctx, rid: str, issues: list, *, view=None) -> list:
+    r, rc = (view.recipe, view.calc) if view else (ctx.recipes[rid], ctx.calcs[rid])
+    p = ctx.profile
     nutrition = nutrition_mode(p) != "desactive"
     cat = CAT_LABEL.get(rc.categorie, rc.categorie)
     if rc.especes_poisson:
@@ -77,8 +79,16 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
     head = [r.get("nom_fr") and f"*{esc(r['nom_fr'])}*", esc(r.get("origine")), cat, esc(r.get("service")),
             f"actif {r.get('temps_actif_min', '?')} min · total {r.get('temps_total_min', '?')} min",
             esc(", ".join(r.get("appareils") or []))]
-    out = [f"### {rid} — {esc(r.get('nom'))}", "", " · ".join(x for x in head if x), "",
-           "| Ingrédient | Quantité | État |", "|---|---|---|"]
+    out = [f"### {rid} — {esc(r.get('nom'))}", "", " · ".join(x for x in head if x), ""]
+    metadata = ctx.adaptations.get(rid, {})
+    if view and ctx.catalogs:
+        from adaptation import recipe_metadata
+        metadata = recipe_metadata(r, ctx.catalogs)[0]
+    if metadata.get("difficulte"):
+        out += [f"**Difficulté estimée** — {metadata['difficulte']} ; " + " ; ".join(esc(s) for s in metadata["raisons"]) + ".", ""]
+    elif p["repas"].get("difficulte_max") or r.get("execution"):
+        out += ["**Difficulté** — non vérifiable ; voir l'audit.", ""]
+    out += ["| Ingrédient | Quantité | État |", "|---|---|---|"]
     for ln in rc.lines:
         out.append(f"| {esc(ln.food.nom)} | {qty_text(ln)} | {ln.etat} |")
     out += ["", "**Étapes**", ""]
@@ -108,7 +118,7 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
         out.append(f"- **Adaptation** — {esc(r['adaptation'])}")
     if r.get("gamelle"):
         out.append(f"- **Gamelle** — {esc(r['gamelle'])}")
-    alts = ctx.alts.get(rid) or []
+    alts = view.alternatives if view else (ctx.alts.get(rid) or [])
     if alts:
         out += ["", "**Alternatives poisson** (achats non inclus)", "",
                 "| Poisson | Quantité | " + ("Prot./portion | kcal | " if nutrition else "") + "Poids servi | Note |",
@@ -130,7 +140,7 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
         out.append("")
     out.append(f"- **Références** — culinaire : {esc(refs.get('culinaire') or 'non renseignée')}"
                + (f" ; nutrition : {esc(nut)}" if nutrition else "") + ".")
-    errs = [i for i in issues if i.where == rid and i.level == "erreur"]
+    errs = [i for i in issues if (i.where == rid or (view and i.where.startswith(rid + ":"))) and i.level == "erreur"]
     if errs:
         out.append("- **Non conforme** — " + " ; ".join(f"{i.code} : {esc(i.msg)}" for i in errs) + ".")
     return out + [""]
@@ -161,7 +171,31 @@ def week_blocks(ctx, w, shop, issues) -> list:
         macros = f"{fr(rc.prot_pp)} g | {r10(rc.kcal_pp)} | " if nutrition else ""
         out.append(f"| {rid} | {esc(rc.nom)} | {CAT_LABEL.get(rc.categorie)} | {macros}"
                    f"{r10(rc.poids_pp)} g | {leg} | {'oui' if rc.soja else 'non'} |")
-    out += ["", *shopping_block(ctx, shop), ""]
+    out += ["", *adaptation_block(ctx, w), *shopping_block(ctx, shop), ""]
+    return out
+
+
+def adaptation_block(ctx, week) -> list:
+    if not ctx.catalogs:
+        return []
+    recipes = [ctx.recipes[rid] for rid in week_order(week) if rid in ctx.recipes]
+    active_rules = any(ctx.profile["repas"].get(key) is not None for key in ("difficulte_max", "duree_active_max_min"))
+    active_rules |= any(ctx.profile["variete"].get(key) is not None for key in (
+        "recettes_distinctes_min_par_semaine", "ingredient_principal_max_par_semaine",
+        "techniques_distinctes_min_par_semaine", "repetition_plat_max"))
+    if not active_rules and not any(r.get("execution") or r.get("plat_id") or r.get("ingredients_principaux") for r in recipes):
+        return []
+    out = [f"### Adaptation {week['semaine']}", "",
+           "| Recette | Temps actif (min) | Difficulté estimée | Ingrédients principaux déclarés |",
+           "|---|---:|---|---|"]
+    for r in recipes:
+        metadata = ctx.adaptations.get(r["id"], {})
+        principal = [ctx.foods[f].nom if f in ctx.foods else f for f in r.get("ingredients_principaux", [])]
+        out.append(f"| {esc(r['nom'])} | {fr(r.get('temps_actif_min'), 1)} | {metadata.get('difficulte') or '—'} | "
+                   f"{esc(', '.join(principal) or '—')} |")
+    complete = len(recipes) == ctx.profile["projet"]["recettes_par_semaine"]
+    distinct = str(len({r["plat_id"] for r in recipes})) if complete and all(r.get("plat_id") for r in recipes) else "non vérifiable"
+    out += ["", f"Plats distincts : {distinct}, selon les identifiants déclarés. — signifie non renseigné ou non vérifiable.", ""]
     return out
 
 
@@ -220,6 +254,9 @@ def shopping_block(ctx, shop) -> list:
 
 
 def budget_text(ctx, shop) -> str:
+    if ctx.schedule is not None:
+        return (f"**Achats de référence {shop.semaine}** — sous-total connu {fr(shop.montant_caisse, 2)} EUR ; "
+                "fiches sources uniquement. Le plafond est contrôlé sur les services du calendrier ; ces achats ne sont pas à ajouter à ceux des services.")
     cur = ctx.profile["budget"].get("devise", "EUR")
     if shop.prix_manquants and len(shop.prix_manquants) == len([s for s in shop.lines if not s.negligeable]):
         return f"**Budget {shop.semaine}** — non vérifié, non chiffré : aucun prix de référence applicable (`prix_eur`)."
@@ -287,7 +324,7 @@ def shared_block(ctx, shops, final_stock) -> list:
 
 def hypotheses_block(ctx, shops) -> list:
     out = ["## Hypothèses et éléments non vérifiés", ""]
-    ph = sorted({n for rc in ctx.calcs.values() for n in rc.placeholders})
+    ph = sorted({n for view in recipe_views(ctx, include_sources=True) for n in view.calc.placeholders})
     if ph and nutrition_mode(ctx.profile) != "desactive":
         out.append(f"- Valeurs nutritionnelles **provisoires** (`source=placeholder`) : {', '.join(ph)}. "
                    "Remplacer par Ciqual ou l'étiquette (`build_foods.py`).")
@@ -298,9 +335,14 @@ def hypotheses_block(ctx, shops) -> list:
         out.append(f"- Stock présent, quantité inconnue : {', '.join(unknown)}.")
     missing = sorted({n for ws in shops for n in ws.prix_manquants})
     if missing:
-        out.append(f"- Prix de référence manquants ({len(missing)}) : budget incomplet.")
+        out.append(f"- Prix de référence manquants ({len(missing)}) : "
+                   + ("fiches sources uniquement ; voir le budget du calendrier." if ctx.schedule is not None else "budget incomplet."))
     if ctx.pantry:
         out.append("- Déductions de stock valables pour la première rotation uniquement.")
+    if ctx.catalogs and any(r.get("execution") or r.get("plat_id") or r.get("ingredients_principaux") for r in ctx.recipes.values()):
+        out.append("- Difficulté : maximum du niveau des techniques et de la simultanéité déclarées ; temps et variété dépendent des métadonnées renseignées, sans lecture automatique des étapes.")
+    if ctx.catalogs and (ctx.profile["aliments"]["familles_exclues"] or ctx.profile["aliments"]["familles_a_eviter"]):
+        out.append("- Familles culinaires : correspondances de la base et des tags renseignés, avec leurs familles parentes ; composition réelle et traces non vérifiées.")
     return out + [""]
 
 
@@ -341,7 +383,8 @@ def audit_rows(ctx, shops) -> list:
         e = errs("proteines", "poids_servi", "kcal")
         rows.append(("Protéines et poids servi",
                      f"{p['repas']['proteines_g_par_portion']} g ; {p['repas']['poids_servi_g_par_portion']} g",
-                     f"prot. {fr(min(prot))}–{fr(max(prot))} g ; poids {r10(min(poids))}–{r10(max(poids))} g ; "
+                     ("prot. non vérifiées ; " if any(value is None for value in prot) else f"prot. {fr(min(prot))}–{fr(max(prot))} g ; ")
+                     + f"poids {r10(min(poids))}–{r10(max(poids))} g ; "
                      f"exceptions : {ids(e)}", st(e, "estimation")))
     leg = [rc for rc in calcs if rc.has_legumes]
     e = errs("legumineuses_g", "legumineuses_consecutives")
@@ -374,9 +417,11 @@ def audit_rows(ctx, shops) -> list:
     missing = sum(len(ws.prix_manquants) for ws in shops)
     e = errs("budget_depasse")
     cap = p["budget"]["plafond_eur_semaine"]
+    from checks import budget_summary
+    summary = budget_summary(ctx)
     rows.append(("Budget", f"montant caisse ; plafond {cap if cap is not None else 'non fixé'} EUR",
-                 f"{missing} prix manquant(s) ; dépassements : {ids(e)}",
-                 st(e, "non vérifié" if data_errors or any(not ws.budget_verifiable for ws in shops) else "estimation")))
+                 ("services par semaine ISO ; " if ctx.schedule is not None else f"{missing} prix manquant(s) ; ") + f"dépassements : {ids(e)}",
+                 st(e, "non vérifié" if data_errors or not summary["verifiable"] else "estimation")))
     rows.append(("Sources et méthode", "Ciqual / étiquettes ; contrôle automatisé",
                  f"binder.py ; données provisoires : {'oui' if placeholders else 'non'}",
                  "estimation"))
@@ -392,7 +437,7 @@ def audit_rows_v2(ctx, shops) -> list:
     rows = []
     data_incomplete = len(ctx.calcs) != len(ctx.declared) or any(
         i.level == "erreur" and (i.code.startswith(("schema_", "foods_")) or i.code in
-        {"aliment_inconnu", "etat", "conversion", "achat", "unite", "portions", "id_doublon"}) for i in issues)
+        {"aliment_inconnu", "etat", "conversion", "achat", "unite", "portions", "id_doublon", "metadata_recette", "technique_inconnue"}) for i in issues)
 
     def add(label, expected, codes, active=True, fallback="conforme", policy=None):
         matching = [i for i in issues if i.code in codes]
@@ -400,7 +445,7 @@ def audit_rows_v2(ctx, shops) -> list:
         if active:
             if any(i.level == "erreur" for i in matching):
                 status = "non conforme"
-            elif any(i.msg.startswith("Préférence non satisfaite") for i in matching):
+            elif any(i.preference_failed for i in matching):
                 status = "préférence non satisfaite"
             elif matching or data_incomplete:
                 status = "non vérifié"
@@ -414,6 +459,10 @@ def audit_rows_v2(ctx, shops) -> list:
     add("Régime et exclusions", f"{p['alimentation']['regime']} ; {p['aliments']['exclus']}",
         {"regime", "aliment_exclu", "alternative_invalide"}, fallback="selon la base d'aliments")
     add("Ingrédients à éviter", p["aliments"]["a_eviter"], {"aliment_a_eviter"}, bool(p["aliments"]["a_eviter"]))
+    add("Familles exclues", p["aliments"]["familles_exclues"], {"famille_exclue", "famille_inconnue", "foods_famille", "famille_non_verifiable"},
+        bool(p["aliments"]["familles_exclues"]), fallback="selon la base d'aliments")
+    add("Familles à éviter", p["aliments"]["familles_a_eviter"], {"famille_a_eviter", "famille_inconnue", "foods_famille"},
+        bool(p["aliments"]["familles_a_eviter"]), fallback="selon la base d'aliments")
     rows.append(("Nutrition", nutrition_mode(p), "valeurs absentes affichées —" if nutrition_mode(p) != "desactive" else "aucun calcul nutritionnel",
                  "non demandé" if nutrition_mode(p) == "desactive" else
                  "non vérifié" if any(i.code == "nutrition_absente" for i in issues) else "estimation"))
@@ -421,6 +470,8 @@ def audit_rows_v2(ctx, shops) -> list:
         "repartition": ("Répartition", p["repartition"], p["repartition"] is not None),
         "poids_servi": ("Poids servi / portion", p["repas"]["poids_servi_g_par_portion"], p["repas"]["poids_servi_g_par_portion"] is not None),
         "duree": ("Temps total maximal", p["repas"]["duree_totale_max_min"], p["repas"]["duree_totale_max_min"] is not None),
+        "duree_active": ("Temps actif maximal", p["repas"]["duree_active_max_min"], p["repas"]["duree_active_max_min"] is not None),
+        "difficulte": ("Difficulté maximale", p["repas"]["difficulte_max"], p["repas"]["difficulte_max"] is not None),
         "legumineuses_g": ("Légumineuses / portion", p["legumineuses"]["g_cuits_par_portion"], p["legumineuses"]["g_cuits_par_portion"] is not None),
         "legumineuses_consecutives": ("Alternance des légumineuses", "non consécutives", not p["legumineuses"]["consecutives_autorisees"]),
         "sel": ("Sel ajouté", p["aliments"]["sans_sel_ajoute_si"], bool(p["aliments"]["sans_sel_ajoute_si"])),
@@ -439,13 +490,17 @@ def audit_rows_v2(ctx, shops) -> list:
         ("cruciferes", "cruciferes_min_par_semaine", "Crucifères : minimum / semaine"),
         ("ala", "ala_min_par_semaine", "Sources d'ALA : minimum / semaine"),
         ("diversite", "especes_vegetales_min_par_semaine", "Diversité végétale : minimum / semaine"),
+        ("variete_plats", "recettes_distinctes_min_par_semaine", "Plats distincts : minimum / semaine"),
+        ("ingredient_recurrent", "ingredient_principal_max_par_semaine", "Même ingrédient principal : maximum / semaine"),
+        ("variete_techniques", "techniques_distinctes_min_par_semaine", "Techniques distinctes : minimum / semaine"),
+        ("repetition_plat", "repetition_plat_max", "Même plat : maximum / classeur"),
     ):
         value = p["variete"][key]
-        active = value is not None if code in ("riz", "substituts") else bool(value)
+        active = value is not None if code in ("riz", "substituts", "ingredient_recurrent", "repetition_plat") else bool(value)
         rules[code] = (label, value, active)
     for code, (label, expected, active) in rules.items():
         add(label, expected if expected is not None else "non fixé", {code}, active,
-            "estimation" if code in {"proteines", "kcal", "poids_servi", "duree", "legumineuses_g"} else "conforme", code if active else None)
+            "estimation" if code in {"proteines", "kcal", "poids_servi", "duree", "duree_active", "difficulte", "legumineuses_g"} else "conforme", code if active else None)
     add("Matériel", p["materiel"], {"materiel"}, p["materiel"] is not None)
     add("Organisation et authenticité", f"{p['projet']['organisation']} ; {p['projet']['authenticite']}",
         {"organisation", "authenticite", "cuisine_exclue"}, fallback="non vérifié")
@@ -453,6 +508,9 @@ def audit_rows_v2(ctx, shops) -> list:
         fallback="non vérifié" if any(s.incomplet or s.stocks_inconnus for s in shops) else "conforme")
     add("Budget", f"plafond {p['budget']['plafond_eur_semaine']} EUR" if p["budget"]["plafond_eur_semaine"] is not None else "plafond non fixé",
         {"budget_depasse", "budget_non_verifie"}, fallback="estimation", policy="budget_depasse" if p["budget"]["plafond_eur_semaine"] is not None else None)
+    if ctx.schedule is not None:
+        label, expected, result, status = rows[-1]
+        rows[-1] = (label, expected + " ; services par semaine ISO", result, status)
     rows.append(("Saison, conservation et labels", "choix du profil", "vérification humaine des produits et du contenu", "non vérifié"))
     return rows
 
@@ -484,7 +542,60 @@ def stores_block(ctx) -> list:
     return out
 
 
-def render_classeur(ctx, shops, final_stock, extra_issues) -> str:
+def products_block(ctx):
+    if not ctx.products:
+        return []
+    from products import product_report
+    report = product_report(ctx.workdir, ctx.foods)
+    used = used_foods(ctx, include_sources=True)
+    notes = []
+    out = ["## Produits et prix déclarés", "", f"Date de référence : {report['date_reference']}.", "",
+           "| Aliment | Référence | Fournisseur | Prix observé | Date | Composition |", "|---|---|---|---|---|---|"]
+    for fid, item in sorted(report["produits"].items()):
+        if fid not in used:
+            continue
+        price = "non vérifié" if item["perime"] or item["prix_eur"] is None else f"{fr(item['prix_eur'], 2)} EUR / {item['prix_pour']:g} {item['unite']}"
+        out.append("| " + " | ".join(esc(x) for x in (ctx.foods[fid].nom, item["reference"], item["fournisseur"], price,
+                                                       item["observe_le"], item["composition"]["statut"])) + " |")
+        notes.append(f"Source {esc(item['reference'])} : {esc(item['source'])}.")
+    out += ["", *notes, "", "Les compositions sont déclaratives ; familles culinaires et informations d'allergènes restent distinctes. "
+            "L'absence de mention ne garantit pas l'absence d'allergène ou de traces.", ""]
+    return out
+
+
+def schedule_block(ctx):
+    if not ctx.schedule:
+        return []
+    out = ["## Planning opérationnel", "", "Les fiches hebdomadaires gardent leurs portions sources. Les fiches de service ci-dessous donnent les quantités recalculées pour chaque service.", "",
+           "| Service | Plat | Préparation | Service prévu | Portions | Caisse connue EUR | Budget vérifiable |",
+           "|---|---|---|---|---:|---:|---|"]
+    for job in ctx.schedule["services"]:
+        out.append(f"| {esc(job['id'])} | {esc(job['plat'])} | {esc(job['preparation'])} | {esc(job['service'])} | {job['portions']} | {fr(job['caisse_connue'], 2)} | {'oui' if job['budget_verifiable'] else 'non'} |")
+    out += ["", "**Budget contrôlé : services du calendrier, par semaine ISO**", ""]
+    for wid, amounts in ctx.schedule["semaines_achat"].items():
+        out.append(f"- {esc(wid)} : caisse connue {fr(amounts['caisse_connue'], 2)} EUR ; {'estimation complète' if amounts['verifiable'] else 'NON VÉRIFIÉ — sous-total uniquement'}.")
+    out += ["", *["- " + esc(s) for s in ctx.schedule["limites"]], ""]
+    for view in recipe_views(ctx):
+        out += [f"**Service {esc(view.identifier)}** — {esc(view.origin)} ; {view.calc.portions} portions ; "
+                f"préparation {esc(view.preparation)} ; service {esc(view.service)}.", ""]
+        out += recipe_block(ctx, view.identifier, ctx.issues, view=view)
+    return out
+
+
+def sources_block(ctx):
+    from sources import load_sources
+    used = used_foods(ctx, include_sources=True)
+    registry = load_sources(ctx.workdir)
+    rows = [(fid, item) for fid, item in sorted(registry.items()) if fid in used]
+    if not rows:
+        return []
+    out = ["## Sources des aliments utilisés", ""]
+    out += [f"- {esc(ctx.foods[fid].nom)} : {esc(item['source'])} ; édition {esc(item['edition'])} ; licence {esc(item['licence'])}."
+            for fid, item in rows]
+    return out + [""]
+
+
+def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None) -> str:
     p = ctx.profile
     issues = ctx.issues + [i for i in extra_issues if i not in ctx.issues]
     ctx = replace(ctx, issues=issues)
@@ -492,7 +603,7 @@ def render_classeur(ctx, shops, final_stock, extra_issues) -> str:
     mois = ", ".join(p["projet"].get("mois") or []) or "mois non renseignés"
     out = [f"# {esc(p['projet']['titre'])}", "",
            f"{len(ctx.weeks)} semaine{'s' if len(ctx.weeks) > 1 else ''} · {mois} · {p['projet']['portions_par_recette']} portions par recette "
-           f"({esc(p['projet']['usage'])}). Généré le {dt.date.today().isoformat()} par meal-binder.",
+           f"({esc(p['projet']['usage'])}). Généré le {generated_on or dt.date.today().isoformat()} par meal-binder.",
            "",
            ("> Poids = estimation calculée. " if nutrition_mode(p) == "desactive" else "> Protéines, kcal et poids = estimations calculées par script. ")
            + (f"**{errs} écart(s) non conforme(s)** : voir l'audit." if errs else "Aucun écart bloquant ; voir l'audit pour les points non vérifiés."),
@@ -504,12 +615,12 @@ def render_classeur(ctx, shops, final_stock, extra_issues) -> str:
     shop_by_week = {ws.semaine: ws for ws in shops}
     for w in ctx.weeks:
         out += week_blocks(ctx, w, shop_by_week[w.get("semaine")], issues)
-    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + products_block(ctx) + schedule_block(ctx) + sources_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)
 
 
-def render_audit(ctx, shops) -> str:
+def render_audit(ctx, shops, *, generated_on=None) -> str:
     out = [f"# Audit — {esc(ctx.profile['projet']['titre'])}", "",
-           f"Généré le {dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
-    out += index_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+           f"Généré le {generated_on or dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
+    out += index_block(ctx) + products_block(ctx) + schedule_block(ctx) + sources_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)

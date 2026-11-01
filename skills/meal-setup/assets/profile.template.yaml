@@ -20,16 +20,29 @@ projet:
 #   mode: information              # desactive (défaut), information ou cibles
 # repas:
 #   duree_totale_max_min: 30
+#   duree_active_max_min: 15         # préparation et gestes demandant de l'attention
+#   difficulte_max: facile          # facile, intermediaire, avancee ; null sans limite
 #   proteines_g_par_portion: [25, 40]  # seulement en mode cibles, choix personnel
 # budget:
 #   plafond_eur_semaine: 40         # caisse pour les recettes générées, épicerie incluse
 # exigences:
 #   budget_depasse: preference      # dépassement visible, non bloquant
 #   duree: imperative              # défaut de toute règle active
+#   variete_plats: preference       # autorise un manque de variété signalé
 # alimentation:
 #   regime: vegetarien             # libre, vegetarien, vegetalien ou pescetarien
 # aliments:
 #   exclus: [champignon_paris]      # interdiction stricte, identifiants de foods.csv
 #   a_eviter: [brocoli]             # préférence, écart visible
+#   familles_exclues: [soja]        # interdiction incluant les dérivés identifiés
+#   familles_a_eviter: [champignons]
+# variete:
+#   recettes_distinctes_min_par_semaine: 4
+#   ingredient_principal_max_par_semaine: 2
+#   techniques_distinctes_min_par_semaine: 2
+#   repetition_plat_max: 1          # occurrences du même plat dans tout le classeur
+# selection:
+#   priorites: [budget, temps_actif, difficulte, variete]  # ordre de départage
+# Catalogue : binder.py list-options ; détails : meal-binder/references/adaptation.md.
 # materiel: [plaque, airfryer]       # null : non renseigné ; [] : aucun appareil
 # repartition: null                 # pas de quota par défaut

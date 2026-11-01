@@ -14,8 +14,8 @@ Ces fichiers sont **personnels**. Ne jamais les copier dans un dépôt public ni
 1. Fichiers existants : les lire ; ne demander que ce qui change. Conserver `version: 1` et les profils sans version, sauf demande de migration. Lire `../meal-binder/references/profiles.md` pour les règles de résolution.
 2. Sinon, partir de `assets/profile.template.yaml` (`version: 2`). Proposer les préréglages de `../meal-binder/data/presets/`, puis une interview courte seulement sur les informations manquantes utiles. Ne pas poser de questions déjà résolues par la demande :
    1. **Projet** : semaines, recettes par semaine, portions, mois, usage (dîner + gamelle ?).
-   2. **Priorités** : durée et budget, impératifs ou préférences ; nutrition désactivée, informative ou avec cibles choisies par l'utilisateur.
-   3. **Alimentation** : régime, aliments strictement exclus ou simplement à éviter ; quotas, alternance et cuisines distinctes seulement sur demande.
+   2. **Priorités** : temps actif et total, difficulté, budget, impératifs ou préférences ; nutrition désactivée, informative ou avec cibles choisies par l'utilisateur. Si un compromis est demandé, renseigner l'ordre de `selection.priorites`.
+   3. **Alimentation et variété** : régime, ingrédients ou familles strictement exclus ou simplement à éviter ; répétition des plats, ingrédients principaux et techniques selon la demande. Utiliser `../meal-binder/references/adaptation.md` et le catalogue `list-options` pour les identifiants valides. Quotas, alternance et cuisines distinctes seulement sur demande.
    4. **Achats** : labels et origine uniquement si demandés. Aucun achat bio ni commerce équitable imposé par défaut.
    5. **Matériel** : plaques, four, airfryer, blender, congélateur ; micro-ondes et frigo au bureau.
    6. **Stock** : liste libre → `pantry.yaml`.
@@ -34,6 +34,7 @@ Ces fichiers sont **personnels**. Ne jamais les copier dans un dépôt public ni
 - Boîte « 400 g » sans poids égoutté : `quantite: null` et `note: "400 g net annoncés, égoutté inconnu"`.
 - Produit absent de `../meal-binder/data/foods.csv` : l'ajouter à `<dir>/foods.local.csv` (format : `../meal-binder/references/recipe-format.md`), `source=placeholder`. Renseigner `nature` avec soin : un produit de poisson (ex. katsuobushi) rend une recette non végétarienne.
 - Produit à composition incertaine (ex. une sauce sans étiquette) : le noter tel quel ; ne pas l'assimiler à un autre produit.
+- En v2, compléter les produits composites avec des tags `famille:<id>` uniquement d'après la composition renseignée. Ne pas déduire une absence de dérivés ou de traces d'une famille non taguée.
 
 ## Magasins
 

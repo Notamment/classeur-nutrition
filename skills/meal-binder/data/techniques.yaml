@@ -1,0 +1,17 @@
+techniques:
+  assemblage: {nom: Assemblage sans cuisson, niveau: facile}
+  decoupe_simple: {nom: Découpe simple, niveau: facile}
+  cuisson_eau: {nom: Cuisson à l'eau, niveau: facile}
+  cuisson_vapeur: {nom: Cuisson vapeur, niveau: facile}
+  cuisson_poele: {nom: Cuisson à la poêle, niveau: facile}
+  cuisson_four: {nom: Cuisson au four ou airfryer, niveau: facile}
+  mijotage: {nom: Mijotage, niveau: facile}
+  mixage: {nom: Mixage, niveau: facile}
+  panure: {nom: Panure, niveau: intermediaire}
+  friture: {nom: Friture, niveau: intermediaire}
+  pate_maison: {nom: Pâte maison simple, niveau: intermediaire}
+  lever_filets: {nom: Lever des filets de poisson, niveau: intermediaire}
+  caramel: {nom: Cuisson du caramel, niveau: intermediaire}
+  emulsion_chaude: {nom: Émulsion chaude, niveau: avancee}
+  pate_feuilletee: {nom: Pâte feuilletée maison, niveau: avancee}
+  desossage: {nom: Désossage, niveau: avancee}

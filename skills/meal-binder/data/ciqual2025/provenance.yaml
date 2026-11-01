@@ -1,0 +1,659 @@
+version: 1
+aliments:
+  ail:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 5.31
+        maximum: 5.31
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 109.0
+        maximum: 109.0
+      lipides_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 18.6
+        maximum: 18.6
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 5.8
+        maximum: 5.8
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 9.0
+        maximum: 9.0
+    code: '11000'
+    nom_source: Ail, cru
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  banane:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 1.06
+        maximum: 1.06
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 87.6
+        maximum: 87.6
+      lipides_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 19.7
+        maximum: 19.7
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 2.7
+        maximum: 2.7
+      sodium_mg:
+        statut: borne
+        unite: mg
+        minimum: 0
+        maximum: 5.0
+    code: '13005'
+    nom_source: Banane, chair sans peau, crue
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  boulgour:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: sec
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 11.7
+        maximum: 11.7
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 347.0
+        maximum: 347.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 1.42
+        maximum: 1.42
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 65.8
+        maximum: 65.8
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 10.5
+        maximum: 10.5
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 17.0
+        maximum: 17.0
+    code: '9690'
+    nom_source: Boulgour de blé, cru
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  carotte:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 0.78
+        maximum: 0.78
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 30.2
+        maximum: 30.2
+      lipides_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 5.16
+        maximum: 5.16
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 2.9
+        maximum: 2.9
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 49.0
+        maximum: 49.0
+    code: '20009'
+    nom_source: Carotte, crue
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  champignon_paris:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 2.11
+        maximum: 2.11
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 21.0
+        maximum: 21.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 0.36
+        maximum: 0.36
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 1.83
+        maximum: 1.83
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 1.0
+        maximum: 1.0
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 39.0
+        maximum: 39.0
+    code: '20056'
+    nom_source: Champignon de Paris ou champignon de couche, cru
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  huile_olive:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: net
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 0.25
+        maximum: 0.25
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 899.0
+        maximum: 899.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 99.9
+        maximum: 99.9
+      glucides_g:
+        statut: traces
+        unite: g
+        minimum: 0
+        maximum: null
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 0.0
+        maximum: 0.0
+      sodium_mg:
+        statut: borne
+        unite: mg
+        minimum: 0
+        maximum: 5.0
+    code: '17270'
+    nom_source: Huile d'olive vierge extra
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  lait_demi_ecreme:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: net
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 3.48
+        maximum: 3.48
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 47.7
+        maximum: 47.7
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 1.56
+        maximum: 1.56
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 5.0
+        maximum: 5.0
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 0.0
+        maximum: 0.0
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 35.0
+        maximum: 35.0
+    code: '19041'
+    nom_source: Lait demi-écrémé, UHT
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  lentille_verte_seche:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: sec
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 25.1
+        maximum: 25.1
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 327.0
+        maximum: 327.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 1.8
+        maximum: 1.8
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 44.5
+        maximum: 44.5
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 16.4
+        maximum: 16.4
+      sodium_mg:
+        statut: borne
+        unite: mg
+        minimum: 0
+        maximum: 5.0
+    code: '20585'
+    nom_source: Lentille verte, sèche
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  miso:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: net
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 11.7
+        maximum: 11.7
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 188.0
+        maximum: 188.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 6.01
+        maximum: 6.01
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 18.1
+        maximum: 18.1
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 5.4
+        maximum: 5.4
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 3730.0
+        maximum: 3730.0
+    code: '20916'
+    nom_source: Miso
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  oignon:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 1.19
+        maximum: 1.19
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 35.9
+        maximum: 35.9
+      lipides_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 6.39
+        maximum: 6.39
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 2.6
+        maximum: 2.6
+      sodium_mg:
+        statut: borne
+        unite: mg
+        minimum: 0
+        maximum: 5.0
+    code: '20239'
+    nom_source: Oignon jaune, cru
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  oignon_rouge:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 1.31
+        maximum: 1.31
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 35.0
+        maximum: 35.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 0.4
+        maximum: 0.4
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 5.63
+        maximum: 5.63
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 2.5
+        maximum: 2.5
+      sodium_mg:
+        statut: borne
+        unite: mg
+        minimum: 0
+        maximum: 5.0
+    code: '20238'
+    nom_source: Oignon rouge, cru
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  pois_chiche_egoutte:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: egoutte
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 6.74
+        maximum: 6.74
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 122.0
+        maximum: 122.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 2.68
+        maximum: 2.68
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 15.0
+        maximum: 15.0
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 5.45
+        maximum: 5.45
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 216.0
+        maximum: 216.0
+    code: '20532'
+    nom_source: Pois chiche, appertisé, égoutté
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  pomme_de_terre:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: cru
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 2.02
+        maximum: 2.02
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 80.0
+        maximum: 80.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 0.09
+        maximum: 0.09
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 16.2
+        maximum: 16.2
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 2.2
+        maximum: 2.2
+      sodium_mg:
+        statut: borne
+        unite: mg
+        minimum: 0
+        maximum: 0.44
+    code: '4008'
+    nom_source: Pomme de terre, sans peau, crue
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  sauce_soja:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: net
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 7.25
+        maximum: 7.25
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 39.9
+        maximum: 39.9
+      lipides_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 1.72
+        maximum: 1.72
+      fibres_g:
+        statut: exact
+        unite: g
+        minimum: 0.9
+        maximum: 0.9
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 5250.0
+        maximum: 5250.0
+    code: '11104'
+    nom_source: Sauce soja, préemballée
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  tofu_ferme:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: net
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 13.4
+        maximum: 13.4
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 147.0
+        maximum: 147.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 8.5
+        maximum: 8.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 2.87
+        maximum: 2.87
+      fibres_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 10.0
+        maximum: 10.0
+    code: '20904'
+    nom_source: Tofu nature, préemballé
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+  tofu_fume:
+    source: https://zenodo.org/records/17550133
+    edition: Ciqual 2025, 2025-11-03
+    date: '2026-10-20'
+    licence: CC BY 4.0
+    etat_ref: net
+    nutriments:
+      proteines_g:
+        statut: exact
+        unite: g
+        minimum: 14.9
+        maximum: 14.9
+      energie_kcal:
+        statut: exact
+        unite: kcal
+        minimum: 164.0
+        maximum: 164.0
+      lipides_g:
+        statut: exact
+        unite: g
+        minimum: 9.5
+        maximum: 9.5
+      glucides_g:
+        statut: exact
+        unite: g
+        minimum: 2.91
+        maximum: 2.91
+      fibres_g:
+        statut: borne
+        unite: g
+        minimum: 0
+        maximum: 0.5
+      sodium_mg:
+        statut: exact
+        unite: mg
+        minimum: 295.0
+        maximum: 295.0
+    code: '20912'
+    nom_source: Tofu fumé, préemballé
+    hypothese: Correspondance générique de même forme comestible ; vérifier le produit
+      réel.
+exiger_sources: true

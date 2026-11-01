@@ -1,0 +1,9 @@
+stock:
+- id: huile_olive
+  quantite: 100
+  unite: ml
+  etat: net
+- id: citron_jus
+  quantite: 2
+  unite: piece
+  etat: net

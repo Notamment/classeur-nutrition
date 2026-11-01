@@ -1,3 +1,80 @@
+# Corrections d'intégration — 1 novembre 2026
+
+- Duplication : source verrouillée et empreintes comparées avec la copie avant publication ; refus des états mélangés.
+- Nutrition : rapport des préparations effectivement servies et de leurs portions, composants compris ; format version 2 avec calendrier, format historique conservé sans calendrier.
+- Budget : plafond appliqué aux services du calendrier par semaine ISO, sans second contrôle sur les coûts des fiches sources ; portée partagée par analyse, sélection et aperçu d'adaptation, explicitée dans les documents.
+- Étapes quantifiées : refus des changements d'échelle détectés qui conserveraient des doses textuelles obsolètes ; diagnostic explicite sans modification des entrées.
+
+---
+
+# Coordination des écritures — 1 novembre 2026
+
+- Verrou commun aux commandes de publication et de modification ; refus explicite des écritures concurrentes et préservation d'un verrou remplacé.
+- Sélections liées aux empreintes de leurs entrées et du moteur ; refus des résultats obsolètes avant remplacement des sorties.
+- Document et manifeste publiés dans un même lot avec restauration en cas d'exception ; manifeste d'audit distinct pour conserver celui du classeur relu.
+- Régressions sur les conflits entre processus CLI, modifications pendant calcul/publication, restauration après panne et maintien de la revue après audit.
+
+Le verrou reste coopératif ; les modifications externes et interruptions brutales ne deviennent pas des transactions isolées ou durables.
+
+---
+
+# Corrections de la revue — 1 novembre 2026
+
+- R1 : les sorties de l'agent ne deviennent jamais des revues humaines. Import explicite depuis et vers un stockage externe, lié aux empreintes ; les bilans ignorent les revues du dossier de génération.
+- R2 : représentation commune des recettes et composants servis ; fiches, quantités, étapes, sources et limites présentes dans le document relu et les exports.
+- R3 : confidentialité contrôlée dans le dépôt de destination, y compris worktrees et paquet installé ; politique partagée pour les sorties privées, avec test d'installation hors checkout en CI.
+- R4 : refus des segments parents et des liens/jonctions ; écritures POSIX relatives à des répertoires ouverts sans suivi de lien.
+- R5 : groupe POSIX ou Job Object Windows pour les processus de l'agent, arrêt au timeout et nettoyage des workers ; journaux bornés à 1 Mio par flux.
+- R6 : schéma complet des composants validé avant utilisation, avec diagnostics JSON au lieu d'exceptions de types.
+
+Ces protections ne constituent pas un sandbox ni une preuve d'identité humaine.
+Les répertoires de revue doivent être inaccessibles à l'agent ; les limites de
+concurrence Windows et de processus volontairement détachés sont documentées.
+
+---
+
+# Parcours professionnels — développement — 20 octobre 2026
+
+- Diagnostics structurés indépendants des messages et protection atomique des sorties.
+- Manifeste, date fixable, archives privées autonomes et vérification des empreintes/calculs.
+- Provenance nutritionnelle avec bornes et inconnues ; import strict et jeu optionnel Anses Ciqual 2025 (16 aliments, six métriques).
+- Produits et tarifs datés, conditionnements, compositions déclarées et exclusions invérifiables explicites.
+- Dossiers locaux pseudonymes, duplication, journal et revue humaine invalidée après modification.
+- Corpus de 24 scénarios fictifs, protocole d'exécution explicite et séparation entre contrôles automatiques et revue humaine.
+- Installation locale via paquet Python et commande `classeur-nutrition` ; diagnostics d'installation hors réseau.
+- Adaptations avec aperçu et application transactionnelle, verrouillage de recettes et bibliothèque privée après revue.
+- Exports client/production HTML et CSV, PDF optionnel ; revue actuelle exigée pour livraison, brouillons explicites.
+- Calendrier opérationnel facultatif versionné : portions par occurrence, préparations, capacités déclarées, composants, lots datés et budgets par semaine ISO.
+- Recherche déterministe bornée dans la bibliothèque, frontière de compromis, rejets détaillés et verrouillages respectés par la sélection.
+
+Les données historiques restent inchangées. Les données Ciqual non couvertes restent inconnues lorsque le jeu sourcé est activé. Aucun résultat de benchmark réel ni validation clinique n'est revendiqué. Cette version de développement reste à valider en CI distante et en pilote professionnel.
+
+---
+
+# Adaptation du classeur — étape 2 — 20 octobre 2026
+
+## Fonctionnalités
+
+- Options v2 facultatives pour difficulté, temps actif, plats distincts, répétitions, ingrédients principaux récurrents et techniques variées.
+- Difficulté estimée depuis un catalogue de techniques et les tâches simultanées, avec raisons visibles ; données absentes distinguées des limites dépassées.
+- Familles d'ingrédients exclues ou à éviter, héritage des familles parentes et tags explicites pour les produits composites ; contrôle des alternatives poisson inclus.
+- Commandes `list-options` et `select`. Comparaison de 1 à 30 classeurs complets : impératifs, nombre d'écarts préférentiels, puis priorités ordonnées budget/temps/difficulté/variété.
+- Budget fondé sur le montant caisse calculé avec stock, emballages et reports ; plafond conservé par semaine. Un budget impératif invérifiable interdit la sélection.
+- Rapports Markdown et JSON expliquant rejets et premier critère décisif ; copie du classeur retenu et de ses données, sans modification des sources.
+- Remplacement atomique des sorties générées ; absence de gagnant explicite et protection des dossiers non reconnus.
+- Décompte partagé sélection/évaluation : `preferences_non_satisfaites` compte les violations connues par règle et portée ; nouveau champ `preferences_non_verifiables`. Les données inconnues ne sont plus incluses dans le premier compteur.
+- Documentation, modèles, skills et prompt monolithique alignés ; catalogues embarqués depuis leur source. Exemple de trois propositions à prix fictifs.
+
+## Vérification et compatibilité
+
+142 tests passent sous Python 3.12 : 95 conservés, 42 issus de l'étape 2 et 5 régressions d'intégration (défauts neutres, achats bruts après stock, reports, stock inconnu et confidentialité des propositions). Profils v1 et v2 antérieurs, exemples généralistes et écarts intentionnels de la démo conservés. Base d'aliments, moteur de conversion, calcul des achats et quantités historiques inchangés.
+
+Les adaptations UTF-8 Windows, la CI Ubuntu/Windows sur Python 3.10/3.13 et les fins de ligne LF sont préservées. Les propositions privées sont ignorées par Git à tous les niveaux, avec une exception pour les exemples publics fictifs.
+
+La sélection compare l'ensemble fourni ; elle ne génère pas les recettes et ne garantit pas un optimum global. Les métadonnées sont déclaratives, les familles ne certifient ni allergènes ni traces et les prix de démonstration n'ont pas de valeur commerciale.
+
+---
+
 # Généralisation du produit — étape 1 — 18 octobre 2026
 
 ## Fonctionnalités

@@ -1,5 +1,72 @@
 # Évaluations
 
+## Protocole professionnel
+
+`corpus.yaml` définit **24 scénarios fictifs**, 12 nutrition et 12 restauration.
+Il décrit les points de relecture sans prétendre que ces scénarios ont été exécutés.
+
+```bash
+python evals/protocol.py prepare --dir evals/runs/pilote --repetitions 3
+python evals/protocol.py summarize --dir evals/runs/pilote
+```
+
+Pour un pilote économique avant les 72 générations, préparer un seul scénario
+avec `--case N10 --repetitions 1`. Répéter le même scénario dans un autre dossier
+pour un autre modèle, avec les mêmes entrées. Une génération par outil constitue
+un essai de parcours, pas un benchmark statistique.
+
+La préparation crée 72 dossiers indépendants, leurs consignes et des grilles
+humaines vides. Elle n'attribue aucun score. Les générations et leurs journaux
+restent privés sous `evals/runs/` ou dans un dossier extérieur au dépôt.
+
+Pour exécuter un dossier, fournir explicitement un agent installé, le modèle et
+une commande sous forme de liste JSON : `protocol.py run --dir <cas> --agent <nom>
+--model <modèle> --agent-command '<liste JSON>'`. La liste peut utiliser `{task}`
+pour la consigne et `{dir}` pour le chemin. Aucun shell n'est lancé implicitement.
+Configurer le modèle, les autorisations et les limites de coût dans l'agent choisi
+avant exécution. Le délai par défaut est de 600 s, réglable via `--timeout`.
+Le runner lance une session/groupe POSIX ou un Job Object Windows (rattaché
+avant de laisser démarrer l'agent), arrête ses processus au timeout et nettoie
+les workers restants à la fin. Les deux flux sont drainés en continu ; chaque
+journal conserve au plus 1 Mio. `run.json.journaux` indique les octets lus,
+conservés et la troncature. Des logs tronqués ne donnent pas un total partiel de tokens.
+Ce mécanisme ne remplace pas un sandbox système : les processus volontairement
+détachés du groupe POSIX ou lancés par un service externe nécessitent une isolation externe.
+
+Le protocole garde modèle, agent, durée mesurée, code de sortie et empreintes
+du moteur, corpus et consigne. Un agent ne peut pas modifier les profils, stocks
+et sources imposés pour améliorer son score, ni ajouter un tarif ou une autre
+configuration non prévue. Les empreintes de la consigne, du moteur portable
+et de ses références sont vérifiées avant lancement et après exécution. Les tentatives échouées restent
+enregistrées et ne sont pas relancées dans le même dossier. Les coûts et tokens
+non observés restent `null`, jamais zéro. Sans recette produite, le champ
+`automatique` reste `null` : un échec d'environnement n'est pas un score de
+qualité du modèle. Le bilan distingue tentatives lancées et générations produites.
+
+`evaluate --dir <cas>` recalcule uniquement le score automatique. Tout `human.json`
+ou champ humain placé dans `evaluation.json` par l'agent est ignoré, y compris
+par `summarize`. Après l'exécution et une relecture réelle, l'opérateur copie
+la grille vide `human.template.json` **hors de tout le dossier d'exécution**,
+renseigne le relecteur, les cinq notes et les défauts, puis l'importe explicitement :
+
+```bash
+python evals/protocol.py review --dir evals/runs/pilote/N10-1 --review-file /chemin/prive/grille.json --reviews-dir /chemin/prive/revues
+python evals/protocol.py summarize --dir evals/runs/pilote --reviews-dir /chemin/prive/revues
+```
+
+L'import conserve la revue dans ce répertoire externe et la lie aux empreintes
+des entrées, de l'exécution et du document. Une modification invalide son décompte.
+Le stockage des revues doit être inaccessible à l'agent via ses permissions ou
+son sandbox ; cette CLI n'installe pas cette isolation et ne prouve pas l'identité
+d'un humain partageant le même compte système. Le runner n'importe jamais de
+revue lui-même. Sans `--reviews-dir`, aucune revue humaine n'est comptée.
+Aucune grille humaine n'est remplie par le protocole. Publier uniquement un bilan
+anonymisé ; aucune performance réelle n'est revendiquée tant que les générations
+et relectures n'ont pas eu lieu. Les tests du runner utilisent des agents factices
+et ne constituent pas une évaluation de modèle.
+
+## Protocole historique
+
 Mesurer, modèle par modèle, la conformité aux contrôles implémentés de `meal-binder`. Le même pipeline calcule les recettes, les courses et le budget pour la CLI et pour l'évaluation.
 
 ## Métriques
@@ -8,7 +75,8 @@ Mesurer, modèle par modèle, la conformité aux contrôles implémentés de `me
 - `taux` (score principal) : taux local, ramené à zéro en présence d'une erreur globale (semaine, quotas, base d'aliments, budget…) ou d'un plafond budgétaire impératif impossible à vérifier.
 - `conforme` : toutes les recettes attendues calculées, aucune erreur locale/globale et aucun plafond budgétaire impératif invérifiable.
 - `budget` : non conforme, préférence non satisfaite, non vérifié ou estimation. Des prix fictifs ne doivent jamais être utilisés pour noter une génération réelle.
-- `preferences_non_satisfaites` : nombre d'écarts explicitement préférentiels ; séparé de la conformité aux impératifs. Une préférence invérifiable reste signalée dans l'audit ; elle ne doit pas être présentée comme satisfaite.
+- `preferences_non_satisfaites` : nombre de règles préférentielles connues comme violées, comptées une fois par règle et portée (recette, semaine ou classeur), séparé de la conformité aux impératifs.
+- `preferences_non_verifiables` : préférences actives sans données suffisantes, dont un budget préférentiel incomplet. Une règle déjà connue comme violée à cette portée n'est pas comptée une seconde fois. Même décompte que la sélection ; les détails restent dans l'audit.
 
 Un classeur qui dépasse un budget impératif ne reçoit pas un score de 100 %. Sans prix, le profil historique `budget-omnivore` ne peut pas obtenir de score positif. Les profils sans plafond impératif gardent leur taux, avec budget explicitement non vérifié. Les profils historiques restent en v1 ; les trois dossiers de `examples/generaliste/` démontrent les parcours v2.
 

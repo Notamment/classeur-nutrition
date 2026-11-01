@@ -5,8 +5,8 @@
 Entrée : dossier de travail existant (`plan.yaml`, `weeks/`), cibles (`S03-R02`, `S03`), changement demandé.
 
 1. Résoudre le profil avec `show-profile`, puis lire les fichiers des semaines ciblées. Conserver leur version et les niveaux d'exigence.
-2. Appliquer le changement dans `weeks/SXX.json` ; garder les `id`. Mettre à jour `plan.yaml` si catégorie, féculent ou légumineuses changent. Si le nombre de portions change, redimensionner explicitement les ingrédients : changer le profil seul ne multiplie pas les quantités.
-3. `check-plan`, puis `check-week` sur chaque semaine touchée.
+2. Appliquer le changement dans `weeks/SXX.json` ; garder les `id`. Mettre à jour `plan.yaml` s'il existe et que catégorie, féculent, légumineuses ou métadonnées d'adaptation changent. En v2, relire les temps, techniques et ingrédients principaux ; ne changer `plat_id` que si le plat change réellement. Si le nombre de portions change, redimensionner explicitement les ingrédients : changer le profil seul ne multiplie pas les quantités.
+3. `check-plan` si le plan existe, puis `check-week` sur chaque semaine touchée et `check-all` pour les répétitions globales. Pour des propositions, relancer `select` à la racine commune ; la sortie générée sera remplacée, donc modifier les sources.
 4. `render` : courses, stock des semaines suivantes, budget, index et audit sont recalculés automatiquement.
 5. Livrer `out/classeur.md` + liste des modifications (≤ 5 lignes).
 

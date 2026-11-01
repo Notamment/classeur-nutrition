@@ -61,19 +61,20 @@ Les plages présentes hors mode `cibles` sont signalées `cibles_inactives`. Poi
 
 ## Contraintes et préférences
 
-Une règle configurée est `imperative` par défaut. `exigences.<code>: preference` transforme son écart en alerte explicite, visible dans le classeur et l'audit. Le profil n'est jamais réécrit pour masquer un écart. Il n'y a pas encore de classement pondéré ni d'optimiseur : l'agent cherche à satisfaire les préférences ; le script constate les résultats.
+Une règle configurée est `imperative` par défaut. `exigences.<code>: preference` transforme son écart en alerte explicite, visible dans le classeur et l'audit. Le profil n'est jamais réécrit pour masquer un écart. La commande `select` compare des propositions complètes selon ces écarts et des priorités ordonnées, sans poids cachés : voir [adaptation et sélection](adaptation.md).
 
-Codes configurables : `proteines`, `kcal`, `poids_servi`, `duree`, `repartition`, `legumineuses_g`, `legumineuses_consecutives`, `riz`, `feculents`, `substituts`, `espece_doublon`, `cruciferes`, `ala`, `diversite`, `cuisine_doublon`, `fer_vitc`, `sel`, `budget_depasse`.
+Codes configurables : `proteines`, `kcal`, `poids_servi`, `duree`, `duree_active`, `difficulte`, `repartition`, `legumineuses_g`, `legumineuses_consecutives`, `riz`, `feculents`, `substituts`, `espece_doublon`, `cruciferes`, `ala`, `diversite`, `cuisine_doublon`, `variete_plats`, `repetition_plat`, `ingredient_recurrent`, `variete_techniques`, `fer_vitc`, `sel`, `budget_depasse`.
 
 Toujours stricts : schémas, identifiants, unités, quantités, conversions, temps actif supérieur au total, matériel renseigné, exclusions et régime. La somme d'une répartition configurée doit correspondre au nombre de recettes, même si la répartition est préférentielle. Les données de configuration incohérentes ne sont jamais déclassées.
 
 - `aliments.exclus` : interdiction stricte par identifiant d'aliment.
 - `aliments.a_eviter` : préférence fixe, ne pas confondre avec une allergie.
+- `aliments.familles_exclues` / `familles_a_eviter` : mêmes politiques pour des familles et leurs dérivés identifiés ; catalogue via `list-options` et [référence](adaptation.md).
 - `alimentation.regime` : `libre`, `vegetarien`, `vegetalien`, `pescetarien`. Contrôle selon `foods.csv.nature` ; vérifier les ingrédients composites et les étiquettes. Pas de moteur d'allergènes, de traces ou de certifications.
 - `repartition: null` : aucun quota ; sinon nombres de recettes `vegetarien`, `poisson`, `viande`, et `mixte` facultatif (défaut 0). `mixte` signifie viande + poisson ; une recette végétalienne reste dans la catégorie `vegetarien`.
 - `materiel: null` : équipement non renseigné ; `[]` : aucun appareil autorisé, à part `aucun`. Les instructions ne doivent pas inventer un équipement connu absent.
 
-Budget : le plafond porte sur les achats des repas du classeur, épicerie incluse, et non toutes les dépenses du foyer. Un prix ou stock inconnu reste « non vérifié ». Dans l'évaluation, un plafond impératif invérifiable empêche la conformité ; une préférence invérifiable ne bloque pas les autres contraintes et reste signalée.
+Budget : le plafond porte sur les achats des repas du classeur, épicerie incluse, et non toutes les dépenses du foyer. Un prix ou stock inconnu reste « non vérifié ». Dans l'évaluation et la sélection, un plafond impératif invérifiable empêche la conformité ; une préférence invérifiable ne bloque pas les autres contraintes et reste signalée. Les commandes de contrôle historiques conservent une alerte pour un budget inconnu : leur code 0 ne signifie pas qu'il est vérifié.
 
 ## Organisation
 

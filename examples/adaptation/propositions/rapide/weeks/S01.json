@@ -1,0 +1,132 @@
+{
+  "semaine": "S01",
+  "theme": "rapide",
+  "saison": "Légumes de garde, champignons et épicerie pour octobre–novembre.",
+  "recettes": [
+    {
+      "nom": "Boulgour aux champignons et pois chiches",
+      "ingredients": [
+        {
+          "food": "boulgour",
+          "qte": 120,
+          "unite": "g"
+        },
+        {
+          "food": "champignon_paris",
+          "qte": 300,
+          "unite": "g"
+        },
+        {
+          "food": "pois_chiche_egoutte",
+          "qte": 240,
+          "unite": "g"
+        },
+        {
+          "food": "huile_olive",
+          "qte": 10,
+          "unite": "ml"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 20,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Porter une casserole d’eau à ébullition. Ajouter le boulgour, cuire selon l’emballage, environ 10 à 12 min, puis égoutter.",
+        "Pendant ce temps, émincer les champignons. Chauffer l’huile dans une poêle à feu moyen-vif ; cuire les champignons 8 à 10 min, en remuant, jusqu’à évaporation de leur eau.",
+        "Rincer et égoutter les pois chiches, peser 240 g. Les ajouter aux champignons et chauffer 3 min.",
+        "Ajouter le boulgour égoutté. Mélanger 1 min à feu doux, retirer du feu et ajouter le jus de citron. Répartir entre les portions."
+      ],
+      "temps_total_min": 25,
+      "temps_actif_min": 15,
+      "appareils": [
+        "plaque"
+      ],
+      "service": "chaud",
+      "sel_ajoute": false,
+      "references": {
+        "culinaire": "Exemple original du projet, sans revendication traditionnelle"
+      },
+      "id": "S01-R01",
+      "motif_ordre": "Produits frais à utiliser selon leur date limite ; conserve ouverte lors de la préparation.",
+      "plat_id": "boulgour_champignons_pois_chiches",
+      "ingredients_principaux": [
+        "boulgour",
+        "champignon_paris",
+        "pois_chiche_egoutte"
+      ],
+      "execution": {
+        "techniques": [
+          "decoupe_simple",
+          "cuisson_eau",
+          "cuisson_poele"
+        ],
+        "taches_simultanees": 2
+      }
+    },
+    {
+      "nom": "Salade de pois chiches, œufs, pommes de terre et cottage cheese",
+      "ingredients": [
+        {
+          "food": "oeuf",
+          "qte": 4,
+          "unite": "piece"
+        },
+        {
+          "food": "pomme_de_terre",
+          "qte": 300,
+          "unite": "g"
+        },
+        {
+          "food": "pois_chiche_egoutte",
+          "qte": 200,
+          "unite": "g"
+        },
+        {
+          "food": "cottage_cheese",
+          "qte": 200,
+          "unite": "g"
+        },
+        {
+          "food": "citron_jus",
+          "qte": 20,
+          "unite": "ml"
+        }
+      ],
+      "etapes": [
+        "Couper les pommes de terre en dés de 2 cm. Les couvrir d’eau, porter à ébullition puis cuire 12 à 15 min jusqu’à tendreté. Égoutter.",
+        "Dans une seconde casserole, plonger les œufs dans l’eau frémissante. Cuire 10 min, refroidir sous l’eau froide puis écaler et couper en quartiers.",
+        "Rincer les pois chiches puis peser la quantité égouttée. Mélanger le cottage cheese et le jus de citron.",
+        "Mélanger les pommes de terre tiédies et les pois chiches avec la sauce ; ajouter les quartiers d’œuf. Répartir entre les portions."
+      ],
+      "temps_total_min": 30,
+      "temps_actif_min": 15,
+      "appareils": [
+        "plaque"
+      ],
+      "service": "froid",
+      "sel_ajoute": false,
+      "references": {
+        "culinaire": "Exemple original du projet, sans revendication traditionnelle"
+      },
+      "gamelle": "Servir froid ; réserver une portion au réfrigérateur après refroidissement rapide et transporter au froid.",
+      "id": "S01-R02",
+      "motif_ordre": "Produits frais à utiliser selon leur date limite ; conserve ouverte lors de la préparation.",
+      "plat_id": "salade_pois_chiches_oeufs",
+      "ingredients_principaux": [
+        "pois_chiche_egoutte",
+        "oeuf",
+        "cottage_cheese"
+      ],
+      "execution": {
+        "techniques": [
+          "decoupe_simple",
+          "cuisson_eau",
+          "assemblage"
+        ],
+        "taches_simultanees": 2
+      }
+    }
+  ]
+}

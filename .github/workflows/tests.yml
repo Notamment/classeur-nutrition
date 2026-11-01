@@ -25,6 +25,12 @@ jobs:
         run: python -m unittest discover tests -v
       - name: Démo reproductible
         run: python tools/check_demo.py
+      - name: Installation du paquet et données embarquées
+        run: |
+          python -m pip install .
+          classeur-nutrition doctor
+          classeur-nutrition --version
+          python -I tools/check_installed.py
       - name: dist/prompt.md à jour
         if: runner.os == 'Linux'
         run: |

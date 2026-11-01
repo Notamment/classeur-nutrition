@@ -230,6 +230,6 @@ def check_budget(shop: WeekShop, profile: dict) -> list:
             why.append(f"{len(shop.stocks_inconnus)} stock(s) de quantité inconnue")
         if shop.incomplet:
             why.append("courses incomplètes ou incohérentes")
-        issues.append(Issue("alerte", "budget_non_verifie", shop.semaine, "; ".join(why)))
+        issues.append(Issue("alerte", "budget_non_verifie", shop.semaine, "; ".join(why), kind="unknown"))
     from profiles import apply_requirements
     return apply_requirements(issues, profile)

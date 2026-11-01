@@ -12,6 +12,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "skills/meal-binder/scripts"))
 from core import DEFAULT_PROFILE
 from profiles import NEUTRAL_PROFILE, list_presets
+from catalogs import load_catalogs
+from schemas import SELECTION_CRITERIA
 REFS = ROOT / "skills" / "meal-binder" / "references"
 PARTS = [
     ROOT / "tools" / "prompt_header.md",
@@ -62,7 +64,8 @@ def main() -> None:
         chunks.append(text)
         if i == 0:
             config = {"defauts_v1": DEFAULT_PROFILE, "defauts_v2": NEUTRAL_PROFILE,
-                      "prereglages_disponibles": list_presets()}
+                      "prereglages_disponibles": list_presets(),
+                      "options_adaptation": load_catalogs().as_dict() | {"criteres_selection": list(SELECTION_CRITERIA)}}
             chunks.append("## Configuration embarquée\n\nValeurs de référence, à surcharger par mon profil.\n\n```yaml\n"
                           + yaml.safe_dump(config, allow_unicode=True, sort_keys=False) + "```")
     out = ROOT / "dist" / "prompt.md"

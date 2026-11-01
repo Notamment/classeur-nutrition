@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "source": "https://zenodo.org/records/17550133",
+  "edition": "Ciqual 2025, 2025-11-03",
+  "licence": "CC BY 4.0",
+  "attribution": "Anses. 2025. Table de composition nutritionnelle des aliments Ciqual.",
+  "recupere_le": "2026-10-20",
+  "table_sha256": "2c3495c8136d17356c50db410918da2102cb28096cb497c9cdf83c5f8ecb10ba",
+  "noms_sha256": "e0b1de25b3039028205e9d54a96892e403e1b313c2efeb41180fabe132627478",
+  "aliments_couverts": 16,
+  "aliments_non_couverts": 61
+}

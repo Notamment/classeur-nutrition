@@ -1,0 +1,373 @@
+version: 1
+cas:
+- id: N01
+  metier: nutrition
+  titre: Profil neutre
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+  relecture:
+  - Ne pas inventer de cibles ni de restrictions.
+- id: N02
+  metier: nutrition
+  titre: Végétarien informatif
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    alimentation:
+      regime: vegetarien
+    nutrition:
+      mode: information
+  relecture:
+  - Respecter le régime ; apports provisoires explicités.
+- id: N03
+  metier: nutrition
+  titre: Végétalien
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    alimentation:
+      regime: vegetalien
+  relecture:
+  - Contrôler dérivés et composition déclarée des produits.
+- id: N04
+  metier: nutrition
+  titre: Pescétarien
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    alimentation:
+      regime: pescetarien
+  relecture:
+  - Ne pas proposer de viande ni de dérivés non autorisés.
+- id: N05
+  metier: nutrition
+  titre: Cible protéique
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    nutrition:
+      mode: cibles
+    repas:
+      proteines_g_par_portion:
+      - 20
+      - 35
+  relecture:
+  - Les cibles sont des choix de scénario, pas des recommandations médicales.
+- id: N06
+  metier: nutrition
+  titre: Données Ciqual partielles
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    nutrition:
+      mode: information
+  relecture:
+  - Activer le jeu Ciqual fourni ; signaler les aliments non couverts.
+- id: N07
+  metier: nutrition
+  titre: Soja exclu
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    aliments:
+      familles_exclues:
+      - soja
+  relecture:
+  - Vérifier miso, sauce soja et produits composites.
+- id: N08
+  metier: nutrition
+  titre: Budget impératif sans prix
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    budget:
+      plafond_eur_semaine: 20
+  relecture:
+  - Aucun prix inventé ; budget invérifiable explicite.
+- id: N09
+  metier: nutrition
+  titre: Temps actif préférentiel
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    repas:
+      duree_active_max_min: 10
+    exigences:
+      duree_active: preference
+  relecture:
+  - Distinguer préférence dépassée et donnée manquante.
+- id: N10
+  metier: nutrition
+  titre: Difficulté facile
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    repas:
+      difficulte_max: facile
+  relecture:
+  - Techniques et simultanéité crédibles.
+- id: N11
+  metier: nutrition
+  titre: Variété sur deux semaines
+  profil:
+    version: 2
+    projet:
+      semaines: 2
+      recettes_par_semaine: 2
+      portions_par_recette: 2
+      mois:
+      - octobre
+    variete:
+      repetition_plat_max: 1
+      recettes_distinctes_min_par_semaine: 2
+  relecture:
+  - Identifiants stables ; ne pas masquer une répétition par renommage.
+- id: N12
+  metier: nutrition
+  titre: Compatibilité historique
+  profil:
+    version: 1
+    projet:
+      semaines: 1
+      recettes_par_semaine: 5
+      portions_par_recette: 2
+      mois:
+      - octobre
+    repartition:
+      vegetarien: 5
+      poisson: 0
+      viande: 0
+  relecture:
+  - Conserver les règles v1 ; expliquer les écarts non résolus.
+- id: R01
+  metier: restauration
+  titre: Production douze portions
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+  relecture:
+  - Quantités pour douze portions, pas par portion.
+- id: R02
+  metier: restauration
+  titre: Buffet végétalien
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 20
+      mois:
+      - octobre
+    alimentation:
+      regime: vegetalien
+  relecture:
+  - Vérifier les quantités et la faisabilité des préparations.
+- id: R03
+  metier: restauration
+  titre: Durée limitée
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+    repas:
+      duree_totale_max_min: 40
+      duree_active_max_min: 20
+  relecture:
+  - Durées plausibles à cet effectif, pas reprises de deux portions.
+- id: R04
+  metier: restauration
+  titre: Service froid
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+      usage: Service froid ; transport au froid à organiser
+  relecture:
+  - Service et conditions de conservation relus humainement.
+- id: R05
+  metier: restauration
+  titre: Matériel limité
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+    materiel:
+    - plaque
+    plaques: 1
+  relecture:
+  - Pas de matériel absent ; simultanéité réaliste sur une plaque.
+- id: R06
+  metier: restauration
+  titre: Exclusion de produits laitiers
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+    aliments:
+      familles_exclues:
+      - produits_laitiers
+  relecture:
+  - Ne pas confondre exclusion culinaire et certification allergènes.
+- id: R07
+  metier: restauration
+  titre: Budget préférentiel sans tarifs
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+    budget:
+      plafond_eur_semaine: 60
+    exigences:
+      budget_depasse: preference
+  relecture:
+  - Prix absents explicites ; ne pas annoncer une caisse vérifiée.
+- id: R08
+  metier: restauration
+  titre: Stock de quantité inconnue
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+  relecture:
+  - Ne pas considérer un stock inconnu comme disponible ou nul.
+- id: R09
+  metier: restauration
+  titre: Préférences et impératifs
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+    aliments:
+      familles_exclues:
+      - soja
+      familles_a_eviter:
+      - champignons
+  relecture:
+  - La préférence ne peut jamais compenser l’exclusion.
+- id: R10
+  metier: restauration
+  titre: Variété des techniques
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+    variete:
+      techniques_distinctes_min_par_semaine: 3
+  relecture:
+  - Déclarer les techniques réellement employées.
+- id: R11
+  metier: restauration
+  titre: Rotation sur deux semaines
+  profil:
+    version: 2
+    projet:
+      semaines: 2
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+  relecture:
+  - Stock reportable distingué de stock non reportable.
+- id: R12
+  metier: restauration
+  titre: Cuisine documentée
+  profil:
+    version: 2
+    projet:
+      semaines: 1
+      recettes_par_semaine: 2
+      portions_par_recette: 12
+      mois:
+      - octobre
+      organisation: cuisines
+      authenticite: documentee
+  relecture:
+  - Références et adaptations explicites ; ne pas inventer de source culinaire.
