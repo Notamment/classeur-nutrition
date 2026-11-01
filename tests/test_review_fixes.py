@@ -46,7 +46,7 @@ class TestConsistentClone(unittest.TestCase):
             attempted = []
             def copying(src, dst, *args, **kwargs):
                 result = original(src, dst, *args, **kwargs)
-                if Path(src) == source_dir / "profile.yaml":
+                if Path(src).resolve() == (source_dir / "profile.yaml").resolve():
                     attempted.append(cli(source_dir, "scale", "--portions", "4", "--apply"))
                 return result
             with patch("workflow.shutil.copyfile", side_effect=copying):
@@ -61,7 +61,7 @@ class TestConsistentClone(unittest.TestCase):
             original = workflow.shutil.copyfile
             def copying(src, dst, *args, **kwargs):
                 result = original(src, dst, *args, **kwargs)
-                if Path(src) == source_dir / "profile.yaml":
+                if Path(src).resolve() == (source_dir / "profile.yaml").resolve():
                     with (source_dir / "profile.yaml").open("a", encoding="utf-8") as stream:
                         stream.write("\n# external change\n")
                 return result
