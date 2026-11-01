@@ -81,3 +81,23 @@ class TestProtectedPaths(unittest.TestCase):
                 self.assertEqual(list(external.iterdir()), [])
             finally:
                 link.rmdir()
+
+    @unittest.skipUnless(os.name == "nt", "Windows 8.3 paths")
+    def test_short_and_long_paths_have_the_same_canonical_destination(self):
+        import ctypes
+        from ctypes import wintypes
+        api = ctypes.WinDLL("kernel32", use_last_error=True).GetShortPathNameW
+        api.argtypes = [wintypes.LPCWSTR, wintypes.LPWSTR, wintypes.DWORD]
+        api.restype = wintypes.DWORD
+        with tempfile.TemporaryDirectory() as temp:
+            long = Path(temp).resolve() / "long_directory_name_for_regression"
+            long.mkdir()
+            length = api(str(long), None, 0)
+            self.assertGreater(length, 0)
+            buffer = ctypes.create_unicode_buffer(length)
+            self.assertGreater(api(str(long), buffer, length), 0)
+            short = Path(buffer.value)
+            if short == long:
+                self.skipTest("8.3 aliases disabled on this filesystem")
+            self.assertEqual(safe_destination(short / "missing" / "leaf"),
+                             safe_destination(long / "missing" / "leaf"))

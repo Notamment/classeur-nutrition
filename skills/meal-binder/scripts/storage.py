@@ -10,11 +10,7 @@ from pathlib import Path
 from core import BinderError
 
 
-def safe_destination(path):
-    # Reject traversal before resolution: absent/../link hides a link from lstat.
-    if ".." in Path(path).parts:
-        raise BinderError("sortie protégée : segment parent '..' interdit")
-    path = Path(path).absolute()
+def _reject_links(path):
     for part in (*reversed(path.parents), path):
         try:
             info = part.lstat()
@@ -22,6 +18,19 @@ def safe_destination(path):
             continue
         if stat.S_ISLNK(info.st_mode) or getattr(info, "st_file_attributes", 0) & 0x400:
             raise BinderError(f"sortie protégée : lien ou point de réanalyse {part.name}")
+
+
+def safe_destination(path):
+    # Reject traversal before resolution: absent/../link hides a link from lstat.
+    if ".." in Path(path).parts:
+        raise BinderError("sortie protégée : segment parent '..' interdit")
+    path = Path(path).absolute()
+    _reject_links(path)
+    if os.name == "nt":
+        # Windows 8.3 aliases (RUNNER~1) must compare equal to long paths in
+        # containment checks. Inspect both spellings; never resolve first.
+        path = path.resolve()
+        _reject_links(path)
     return path
 
 
