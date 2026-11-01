@@ -40,7 +40,7 @@ python skills/meal-binder/scripts/binder.py verify-snapshot --dir archives/class
 ```
 
 `diagnose` fournit un rapport JSON `version: 2`. Le rendu et l'audit ajoutent
-`out/manifest.json` : date, profil effectif, empreintes SHA-256 des entrées,
+`out/manifest.json` pour le rendu et `out/audit.manifest.json` pour l'audit : date, profil effectif, empreintes SHA-256 des entrées,
 des scripts et des catalogues, empreinte des résultats. `--date` fixe la date
 du rendu et du manifeste ; sans option, la date du jour est utilisée.
 
@@ -140,6 +140,25 @@ ni les anciennes revues, ni le journal, ni les notes non déclarées comme entr�
 conserve les opérations de création et de revue. Le fichier `.dossier.lock`
 empêche les opérations concurrentes de ce workflow. Ne retirer un verrou abandonné
 qu'après vérification de l'absence du processus qui l'a créé.
+
+Le verrou est commun au rendu, à l'audit, à la sélection, à l'activation des
+données, à l'archivage CLI et aux commandes de modification, revue, export et
+recherche. Il est détenu avant le chargement des données et jusqu'à la publication.
+Une commande concurrente rend le code 2, sans remplacement de sortie. Le verrou
+contient un PID et un jeton ; il n'est jamais supprimé automatiquement comme
+« périmé ». Un verrou remplacé pendant l'opération est conservé et signalé.
+
+La sélection vérifie aussi les empreintes des entrées communes, propositions
+et fichiers moteur avant et après comparaison, puis avant publication. Une
+sélection calculée avant une modification doit être recalculée, y compris via
+l'API Python. Les fichiers modifiés hors du protocole de verrouillage ne sont
+pas isolés : ce verrou est coopératif, pas un verrou système sur chaque entrée.
+
+Le document et son manifeste sont publiés dans un même lot avec restauration
+en cas d'exception. Cela ne constitue pas une transaction durable en cas
+d'arrêt brutal, ni une garantie pour les lecteurs qui ignorent le verrou.
+L'audit écrit son propre `out/audit.manifest.json` ; `out/manifest.json` reste
+celui de `out/classeur.md`, pour préserver la correspondance avec la revue.
 
 Une revue référence les entrées, le moteur, les calculs et le document exact.
 Le rendu doit être à jour ; erreurs et budget impératif invérifiable empêchent

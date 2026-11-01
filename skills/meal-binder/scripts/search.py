@@ -19,7 +19,7 @@ from schemas import FOOD_ID, RECIPE_ID, arr, obj
 from selection import LABELS, _measurements, _ranking
 from storage import safe_destination
 from privacy import private_destination
-from workflow import locked
+from coordination import locked
 
 FORMAT = obj({"version": {"kind": "integer", "minimum": 1, "values": [1]},
               "emplacements": arr(obj({"id": RECIPE_ID, "choix": arr(FOOD_ID, 1, 20)}, ("id", "choix")), 1, 8)},

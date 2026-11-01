@@ -1,3 +1,14 @@
+# Coordination des écritures — 1 novembre 2026
+
+- Verrou commun aux commandes de publication et de modification ; refus explicite des écritures concurrentes et préservation d'un verrou remplacé.
+- Sélections liées aux empreintes de leurs entrées et du moteur ; refus des résultats obsolètes avant remplacement des sorties.
+- Document et manifeste publiés dans un même lot avec restauration en cas d'exception ; manifeste d'audit distinct pour conserver celui du classeur relu.
+- Régressions sur les conflits entre processus CLI, modifications pendant calcul/publication, restauration après panne et maintien de la revue après audit.
+
+Le verrou reste coopératif ; les modifications externes et interruptions brutales ne deviennent pas des transactions isolées ou durables.
+
+---
+
 # Corrections de la revue — 1 novembre 2026
 
 - R1 : les sorties de l'agent ne deviennent jamais des revues humaines. Import explicite depuis et vers un stockage externe, lié aux empreintes ; les bilans ignorent les revues du dossier de génération.

@@ -32,6 +32,11 @@ def main():
         example = ROOT / "examples/generaliste/quotidien_famille"
         shutil.copyfile(example / "profile.yaml", source / "profile.yaml")
         shutil.copytree(example / "weeks", source / "weeks", dirs_exist_ok=True)
+        cli("render", "--dir", source, "--date", "2026-01-02", "--json")
+        rendered_manifest = (source / "out/manifest.json").read_bytes()
+        cli("audit", "--dir", source, "--date", "2026-01-03", "--json")
+        if (source / "out/manifest.json").read_bytes() != rendered_manifest:
+            raise AssertionError("audit replaced the rendered document's manifest")
         target = repository / "examples" / "client_fixture"
         commands = [("init", "--dir", target), ("clone", "--dir", target, "--source", source),
                     ("search", "--dir", source, "--output", target),

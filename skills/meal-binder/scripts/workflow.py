@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import contextlib
 import datetime as dt
 import json
 import os
@@ -19,22 +18,9 @@ from core import BinderError, DataError, load_json
 from privacy import private_destination
 from manifest import encode, input_files, make_manifest, hashes, snapshot
 from storage import atomic_batch, atomic_text, safe_destination
+from coordination import locked
 
 COMMANDS = {"init", "clone", "review", "review-status", "archive", "history"}
-
-
-@contextlib.contextmanager
-def locked(directory):
-    path = safe_destination(Path(directory) / ".dossier.lock")
-    try:
-        descriptor = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    except FileExistsError as exc:
-        raise BinderError("dossier occupé ; vérifier le processus propriétaire avant de retirer .dossier.lock") from exc
-    os.close(descriptor)
-    try:
-        yield
-    finally:
-        path.unlink()
 
 
 def journal(directory, action, details):

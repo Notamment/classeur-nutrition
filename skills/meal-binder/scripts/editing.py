@@ -15,7 +15,8 @@ from core import BinderError, DataError, load_json, load_yaml
 from manifest import encode, hashes, input_files
 from storage import atomic_batch, safe_destination
 from privacy import private_destination
-from workflow import journal, locked, review_status
+from workflow import journal, review_status
+from coordination import locked
 
 COMMANDS = {"scale", "replace", "lock-recipe", "unlock-recipe", "save-recipe", "library", "favorite"}
 

@@ -44,8 +44,9 @@ from checks import analyse, check_plan, check_profile, load_pantry, load_plan  #
 from core import BinderError, DataError, Issue, load_foods, load_profile, utf8_stdio, week_order  # noqa: E402
 from render import render_audit, render_classeur  # noqa: E402
 from profiles import list_presets, load_resolved, nutrition_mode, week_title  # noqa: E402
-from storage import write_render  # noqa: E402
-from storage import atomic_text, safe_destination  # noqa: E402
+from contextlib import nullcontext
+from coordination import locked  # noqa: E402
+from storage import atomic_text, atomic_batch, render_bytes, safe_destination  # noqa: E402
 from manifest import analysis_payload, encode, make_manifest, snapshot, verify_snapshot  # noqa: E402
 
 
@@ -117,118 +118,8 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
     try:
         wd = safe_destination(a.dir)
-        if a.command == "use-data":
-            from core import SKILL_DIR
-            if a.edition is None:
-                raise BinderError("use-data nécessite --edition ciqual2025")
-            destination = wd / "provenance.yaml"
-            if destination.exists():
-                raise BinderError("provenance.yaml existe : fusion manuelle requise pour préserver les sources locales")
-            atomic_text(destination, (SKILL_DIR / "data" / a.edition / "provenance.yaml").read_text(encoding="utf-8"))
-            print(encode({"version": 1, "edition": a.edition, "sources_exigees": True}), end="")
-            return 0
-        if a.command == "verify-snapshot":
-            result = verify_snapshot(wd)
-            print(encode(result), end="")
-            return 0 if result["integre"] else 1
-        if a.command == "list-options":
-            from catalogs import load_catalogs
-            from schemas import SELECTION_CRITERIA
-            options = load_catalogs().as_dict() | {"criteres_selection": list(SELECTION_CRITERIA)}
-            print(json.dumps(options, ensure_ascii=False, indent=2, allow_nan=False) if a.json
-                  else yaml.safe_dump(options, allow_unicode=True, sort_keys=False), end="\n" if a.json else "")
-            return 0
-        if a.command == "select":
-            from selection import select_proposals, save_selection
-            selected = select_proposals(wd)
-            path = save_selection(selected, wd, generated_on=a.date)
-            if a.json:
-                print(json.dumps(selected.report, ensure_ascii=False, indent=2, allow_nan=False))
-            else:
-                print(selected.report["explication"])
-                print(f"Rapport : {path / 'rapport.md'}")
-                if selected.chosen:
-                    print(f"Classeur : {path / 'out/classeur.md'}")
-            return 0 if selected.chosen else 1
-        if a.command == "list-presets":
-            presets = list_presets()
-            if a.json:
-                print(json.dumps(presets, ensure_ascii=False, indent=2, allow_nan=False))
-            else:
-                for name, preset in presets.items():
-                    print(f"{name} — {preset['nom']} : {preset['description']}")
-            return 0
-        if a.command == "products":
-            from products import product_report
-            foods, issues = load_foods(wd)
-            print(encode(product_report(wd, foods)), end="")
-            return int(any(i.level == "erreur" for i in issues))
-        if a.command == "show-profile":
-            resolved = load_resolved(wd)
-            foods, issues = load_foods(wd)
-            issues += check_profile(resolved.profile, foods)
-            result = {"profil": resolved.profile, "origines": resolved.origins,
-                      "ecarts": [i.__dict__ for i in issues]}
-            if a.json:
-                print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
-            else:
-                print(yaml.safe_dump(result, allow_unicode=True, sort_keys=False), end="")
-            return int(any(i.level == "erreur" for i in issues))
-        if a.command == "check-profile":
-            foods, issues = load_foods(wd)
-            issues += check_profile(load_profile(wd), foods)
-            _, pantry_issues = load_pantry(wd, foods)
-            issues += pantry_issues
-            return report(issues, a.json)
-        if a.command == "check-plan":
-            foods, issues = load_foods(wd)
-            profile = load_profile(wd)
-            issues += check_profile(profile, foods)
-            if not any(i.code == "schema_profil" for i in issues):
-                issues += check_plan(load_plan(wd), profile)
-            return report(issues, a.json)
-        if a.command == "check-week":
-            if not a.week:
-                raise BinderError("préciser la semaine : check-week S01")
-            ctx = analyse(wd)
-            if not any(w["semaine"] == a.week for w in ctx.weeks):
-                raise BinderError(f"semaine {a.week} introuvable dans weeks/")
-            if not a.json:
-                recipe_table(ctx, a.week)
-            other = {rid for rid, w in ctx.week_of.items() if w != a.week}
-            other |= {w["semaine"] for w in ctx.weeks if w["semaine"] != a.week}
-            scoped = [i for i in ctx.issues if i.where not in other]
-            return report(scoped, a.json)
-        ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit", "diagnose", "snapshot", "nutrients"))
-        if a.command == "nutrients":
-            from sources import nutrient_report
-            print(encode(nutrient_report(ctx)), end="")
-            return int(any(i.level == "erreur" for i in ctx.issues))
-        if a.command == "diagnose":
-            print(encode({"version": 2, **analysis_payload(ctx)}), end="")
-            return int(any(i.level == "erreur" for i in ctx.issues))
-        if a.command == "snapshot":
-            if a.output is None:
-                raise BinderError("snapshot nécessite --output vers un dossier nouveau")
-            print(encode(snapshot(ctx, a.output, a.date)), end="")
-            return int(any(i.level == "erreur" for i in ctx.issues))
-        if a.command == "check-all":
-            if not a.json:
-                for w in ctx.weeks:
-                    recipe_table(ctx, w.get("semaine"))
-            return report(ctx.issues, a.json)
-        shops, final_stock = ctx.shops, ctx.final_stock
-        out_dir = wd / "out"
-        out_dir.mkdir(exist_ok=True)
-        if a.command == "render":
-            path = out_dir / "classeur.md"
-            write_render(path, render_classeur(ctx, shops, final_stock, [], generated_on=a.date))
-        else:
-            path = out_dir / "audit.md"
-            write_render(path, render_audit(ctx, shops, generated_on=a.date))
-        atomic_text(out_dir / "manifest.json", encode(make_manifest(ctx, a.date)))
-        print(f"Écrit : {path}", file=sys.stderr if a.json else sys.stdout)
-        return report(ctx.issues, a.json)
+        with locked(wd) if a.command in {"render", "audit", "snapshot", "use-data"} else nullcontext():
+            return execute_command(a, wd)
     except DataError as e:
         return report(e.issues, a.json)
     except BinderError as e:
@@ -238,6 +129,121 @@ def main(argv=None) -> int:
         traceback.print_exc(file=sys.stderr)
         report([Issue("erreur", "erreur_interne", "programme", f"{type(e).__name__}: {e}")], a.json)
         return 3
+
+
+def execute_command(a, wd):
+    if a.command == "use-data":
+        from core import SKILL_DIR
+        if a.edition is None:
+            raise BinderError("use-data nécessite --edition ciqual2025")
+        destination = wd / "provenance.yaml"
+        if destination.exists():
+            raise BinderError("provenance.yaml existe : fusion manuelle requise pour préserver les sources locales")
+        atomic_text(destination, (SKILL_DIR / "data" / a.edition / "provenance.yaml").read_text(encoding="utf-8"))
+        print(encode({"version": 1, "edition": a.edition, "sources_exigees": True}), end="")
+        return 0
+    if a.command == "verify-snapshot":
+        result = verify_snapshot(wd)
+        print(encode(result), end="")
+        return 0 if result["integre"] else 1
+    if a.command == "list-options":
+        from catalogs import load_catalogs
+        from schemas import SELECTION_CRITERIA
+        options = load_catalogs().as_dict() | {"criteres_selection": list(SELECTION_CRITERIA)}
+        print(json.dumps(options, ensure_ascii=False, indent=2, allow_nan=False) if a.json
+              else yaml.safe_dump(options, allow_unicode=True, sort_keys=False), end="\n" if a.json else "")
+        return 0
+    if a.command == "select":
+        from selection import select_and_save
+        selected, path = select_and_save(wd, generated_on=a.date)
+        if a.json:
+            print(json.dumps(selected.report, ensure_ascii=False, indent=2, allow_nan=False))
+        else:
+            print(selected.report["explication"])
+            print(f"Rapport : {path / 'rapport.md'}")
+            if selected.chosen:
+                print(f"Classeur : {path / 'out/classeur.md'}")
+        return 0 if selected.chosen else 1
+    if a.command == "list-presets":
+        presets = list_presets()
+        if a.json:
+            print(json.dumps(presets, ensure_ascii=False, indent=2, allow_nan=False))
+        else:
+            for name, preset in presets.items():
+                print(f"{name} — {preset['nom']} : {preset['description']}")
+        return 0
+    if a.command == "products":
+        from products import product_report
+        foods, issues = load_foods(wd)
+        print(encode(product_report(wd, foods)), end="")
+        return int(any(i.level == "erreur" for i in issues))
+    if a.command == "show-profile":
+        resolved = load_resolved(wd)
+        foods, issues = load_foods(wd)
+        issues += check_profile(resolved.profile, foods)
+        result = {"profil": resolved.profile, "origines": resolved.origins,
+                  "ecarts": [i.__dict__ for i in issues]}
+        if a.json:
+            print(json.dumps(result, ensure_ascii=False, indent=2, allow_nan=False))
+        else:
+            print(yaml.safe_dump(result, allow_unicode=True, sort_keys=False), end="")
+        return int(any(i.level == "erreur" for i in issues))
+    if a.command == "check-profile":
+        foods, issues = load_foods(wd)
+        issues += check_profile(load_profile(wd), foods)
+        _, pantry_issues = load_pantry(wd, foods)
+        issues += pantry_issues
+        return report(issues, a.json)
+    if a.command == "check-plan":
+        foods, issues = load_foods(wd)
+        profile = load_profile(wd)
+        issues += check_profile(profile, foods)
+        if not any(i.code == "schema_profil" for i in issues):
+            issues += check_plan(load_plan(wd), profile)
+        return report(issues, a.json)
+    if a.command == "check-week":
+        if not a.week:
+            raise BinderError("préciser la semaine : check-week S01")
+        ctx = analyse(wd)
+        if not any(w["semaine"] == a.week for w in ctx.weeks):
+            raise BinderError(f"semaine {a.week} introuvable dans weeks/")
+        if not a.json:
+            recipe_table(ctx, a.week)
+        other = {rid for rid, w in ctx.week_of.items() if w != a.week}
+        other |= {w["semaine"] for w in ctx.weeks if w["semaine"] != a.week}
+        scoped = [i for i in ctx.issues if i.where not in other]
+        return report(scoped, a.json)
+    ctx = analyse(wd, complete=a.command in ("check-all", "render", "audit", "diagnose", "snapshot", "nutrients"))
+    if a.command == "nutrients":
+        from sources import nutrient_report
+        print(encode(nutrient_report(ctx)), end="")
+        return int(any(i.level == "erreur" for i in ctx.issues))
+    if a.command == "diagnose":
+        print(encode({"version": 2, **analysis_payload(ctx)}), end="")
+        return int(any(i.level == "erreur" for i in ctx.issues))
+    if a.command == "snapshot":
+        if a.output is None:
+            raise BinderError("snapshot nécessite --output vers un dossier nouveau")
+        print(encode(snapshot(ctx, a.output, a.date)), end="")
+        return int(any(i.level == "erreur" for i in ctx.issues))
+    if a.command == "check-all":
+        if not a.json:
+            for w in ctx.weeks:
+                recipe_table(ctx, w.get("semaine"))
+        return report(ctx.issues, a.json)
+    shops, final_stock = ctx.shops, ctx.final_stock
+    out_dir = wd / "out"
+    out_dir.mkdir(exist_ok=True)
+    if a.command == "render":
+        path = out_dir / "classeur.md"
+        document = render_classeur(ctx, shops, final_stock, [], generated_on=a.date)
+    else:
+        path = out_dir / "audit.md"
+        document = render_audit(ctx, shops, generated_on=a.date)
+    manifest_path = out_dir / ("manifest.json" if a.command == "render" else "audit.manifest.json")
+    atomic_batch({path: render_bytes(path, document), manifest_path: encode(make_manifest(ctx, a.date)).encode("utf-8")})
+    print(f"Écrit : {path}", file=sys.stderr if a.json else sys.stdout)
+    return report(ctx.issues, a.json)
 
 
 if __name__ == "__main__":

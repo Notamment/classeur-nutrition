@@ -11,7 +11,8 @@ from checks import analyse
 from core import BinderError
 from manifest import encode, make_manifest
 from storage import atomic_batch, safe_destination
-from workflow import locked, review_status
+from workflow import review_status
+from coordination import locked
 from recipe_views import recipe_views, used_foods
 
 MARKER = "meal-binder:export:v1"

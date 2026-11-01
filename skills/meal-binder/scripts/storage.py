@@ -156,7 +156,7 @@ def atomic_batch(contents):
                     _unlink(path.parent, parents[path.parent], backup)
 
 
-def write_render(path, text):
+def render_bytes(path, text):
     """Un document utilisateur n'est jamais assimilé à une sortie générée."""
     path = safe_destination(path)
     if path.exists():
@@ -165,4 +165,8 @@ def write_render(path, text):
         previous = path.read_text(encoding="utf-8")
         if "par meal-binder." not in previous or not previous.startswith("# "):
             raise BinderError(f"sortie protégée : {path.name} n'est pas un rendu reconnu")
-    atomic_text(path, text)
+    return text.replace("\r\n", "\n").encode("utf-8")
+
+
+def write_render(path, text):
+    atomic_write(path, render_bytes(path, text))

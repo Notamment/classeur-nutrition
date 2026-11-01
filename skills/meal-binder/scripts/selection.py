@@ -20,6 +20,7 @@ from checks import analyse, check_profile, preference_counts, required_budget_un
 from core import BinderError, DataError, Issue, load_foods, load_profile, load_weeks
 from render import esc, fr, render_classeur
 from storage import safe_destination
+from coordination import locked
 
 MAX_PROPOSALS = 30
 MARKER = "meal-binder:selection:v1\n"
@@ -32,6 +33,31 @@ UNITS = {"budget": " EUR", "temps_actif": " min", "difficulte": "", "variete": "
 class Selection:
     report: dict
     chosen: object = None
+    inputs: dict | None = None
+
+
+def selection_inputs(workdir):
+    from manifest import input_files, hashes, digest, engine_files
+    from core import SKILL_DIR
+    root = safe_destination(workdir)
+    result = hashes(input_files(root), root)
+    result["@engine"] = hashes(engine_files(), SKILL_DIR)
+    folders = sorted((root / "propositions").glob("*"))
+    result["@folders"] = [p.name for p in folders if p.is_dir()]
+    for folder in folders:
+        if folder.is_symlink():
+            result["@link/" + folder.name] = os.readlink(folder)
+            continue
+        if not folder.is_dir():
+            continue
+        paths = sorted([*folder.glob("*"), *folder.joinpath("weeks").glob("*.json")])
+        for path in paths:
+            key = path.relative_to(root).as_posix()
+            if path.is_symlink():
+                result[key] = {"link": os.readlink(path)}
+            elif path.is_file():
+                result[key] = digest(path.read_bytes())
+    return result
 
 
 def _measurements(ctx):
@@ -89,6 +115,7 @@ def _explain_pair(better, other, priorities):
 
 def select_proposals(workdir):
     workdir = Path(workdir)
+    inputs = selection_inputs(workdir)
     profile = load_profile(workdir)
     if profile["version"] != 2:
         raise DataError([Issue("erreur", "selection_version", "profil", "la sélection nécessite un profil v2")])
@@ -164,7 +191,9 @@ def select_proposals(workdir):
                          + (_explain_pair(winner, ranked[1], priorities) if len(ranked) > 1 else "Seule proposition admissible.")
                          if winner else "Aucune proposition admissible. Corriger les motifs de rejet ; aucun classeur n'est retenu."),
     }
-    return Selection(report, contexts[winner["id"]] if winner else None)
+    if selection_inputs(workdir) != inputs:
+        raise BinderError("entrées modifiées pendant la comparaison ; relancer select")
+    return Selection(report, contexts[winner["id"]] if winner else None, inputs)
 
 
 def render_selection(selection):
@@ -197,8 +226,21 @@ def render_selection(selection):
 
 
 def save_selection(selection, workdir, *, generated_on=None):
+    with locked(workdir):
+        return _save_selection(selection, workdir, generated_on=generated_on)
+
+
+def select_and_save(workdir, *, generated_on=None):
+    with locked(workdir):
+        selection = select_proposals(workdir)
+        return selection, _save_selection(selection, workdir, generated_on=generated_on)
+
+
+def _save_selection(selection, workdir, *, generated_on=None):
     """Sortie autonome atomique ; aucun fichier d'entrée n'est remplacé."""
     workdir = Path(workdir)
+    if selection.inputs is None or selection_inputs(workdir) != selection.inputs:
+        raise BinderError("sélection obsolète : entrées modifiées ; relancer select")
     out = safe_destination(workdir / "out")
     out.mkdir(exist_ok=True)
     target = out / "selection"
@@ -230,6 +272,8 @@ def save_selection(selection, workdir, *, generated_on=None):
             (stage / "out/classeur.md").write_text(render_classeur(ctx, ctx.shops, ctx.final_stock, [], generated_on=generated_on).rstrip() + "\n", encoding="utf-8")
             from manifest import make_manifest, encode
             (stage / "out/manifest.json").write_text(encode(make_manifest(analyse(stage, complete=True), generated_on)), encoding="utf-8")
+        if selection_inputs(workdir) != selection.inputs:
+            raise BinderError("entrées modifiées avant publication ; relancer select")
         if target.exists():
             backup = Path(tempfile.mkdtemp(prefix=".selection-backup-", dir=out))
             backup.rmdir()

@@ -15,6 +15,10 @@ compare les compromis de recettes fournies. Ces fonctions de développement
 restent à valider en pilote professionnel. La CI vérifie aussi les protections
 du paquet installé depuis un répertoire extérieur au checkout.
 
+Les commandes qui publient ou modifient un dossier partagent un verrou local.
+Une sélection obsolète est refusée ; un audit conserve le manifeste du classeur
+relu et écrit son propre manifeste.
+
 ## Configurer son classeur
 
 Partir de [`profile.template.yaml`](skills/meal-setup/assets/profile.template.yaml). Exemple :
