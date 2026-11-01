@@ -1,0 +1,8 @@
+version: 2
+projet:
+  titre: "EXEMPLE TECHNIQUE — QUANTITÉS LIÉES"
+  semaines: 1
+  recettes_par_semaine: 1
+  portions_par_recette: 2
+nutrition:
+  mode: desactive

@@ -46,6 +46,13 @@ def main():
             if "destination privée refusée" not in result["erreur"] or target.exists():
                 raise AssertionError("public destination was not rejected before writing")
         cli("clone", "--dir", repository / "dossiers" / "copy", "--source", source)
+        linked = repository / "dossiers" / "linked"
+        cli("clone", "--dir", linked, "--source", ROOT / "examples/etapes_liees")
+        cli("scale", "--dir", linked, "--portions", "4", "--apply")
+        cli("render", "--dir", linked, "--json")
+        text = (linked / "out/classeur.md").read_text(encoding="utf-8")
+        if "Râper 100 g" not in text or "Couper 300 g" not in text or "{{qte:" in text:
+            raise AssertionError("installed engine did not resolve scaled step quantities")
         visible = subprocess.check_output(["git", "-C", str(repository), "ls-files", "--others", "--exclude-standard", "-z"])
         if visible != b".gitignore\0":
             raise AssertionError("private files visible to Git")

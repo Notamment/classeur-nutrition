@@ -408,6 +408,9 @@ def compute_recipe(r: dict, foods: dict, portions: int, *, version=1,
     rid = str(r.get("id", "?")) if isinstance(r, dict) else "?"
     issues = schema_issues(r, RECIPE_V2 if version == 2 else RECIPE, rid, "schema_recette")
     issues += schema_issues(portions, POS_COUNT, rid, "portions")
+    if not issues:
+        from recipe_views import step_issues
+        issues += step_issues(r, version)
     if issues:
         return None, issues
 

@@ -152,6 +152,7 @@ RECIPE = obj({
     "references": obj({}, extra=TEXT),
 }, ("id", "nom", "ingredients", "etapes", "temps_total_min", "gamelle", "authenticite", "sel_ajoute"))
 RECIPE_V2 = copy.deepcopy(RECIPE)
+RECIPE_V2["properties"]["ingredients"]["items"]["properties"]["id_ligne"] = FOOD_ID
 RECIPE_V2["required"] = tuple(k for k in RECIPE["required"] if k not in ("gamelle", "authenticite"))
 EXECUTION = obj({"techniques": arr(FOOD_ID, 1), "taches_simultanees": POS_COUNT},
                 ("techniques", "taches_simultanees"))

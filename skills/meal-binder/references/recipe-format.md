@@ -2,7 +2,39 @@
 
 Une seule source de vérité : `plan.yaml` puis `weeks/SXX.json`. Tableaux, courses, budget et audit en sont dérivés par `binder.py`.
 
-La version des formats est déterminée par `profile.yaml.version`. Voir [profils et préréglages](profiles.md). En v2, `cuisine` n'est requis que pour l'organisation `cuisines` ; `theme` est requis pour `themes` ; les deux sont facultatifs en mode `libre`. Dans les recettes v2, `gamelle` est facultatif et `authenticite` n'est exigé qu'en mode `documentee`. Les autres champs obligatoires restent inchangés. Les exemples ci-dessous restent compatibles v1.
+La version des formats est déterminée par `profile.yaml.version`. Voir [profils et préréglages](profiles.md). En v2, `cuisine` n'est requis que pour l'organisation `cuisines` ; `theme` est requis pour `themes` ; les deux sont facultatifs en mode `libre`. Dans les recettes v2, `gamelle` est facultatif et `authenticite` n'est exigé qu'en mode `documentee`. Les autres champs obligatoires restent inchangés. Les exemples de plan et de semaine ci-dessous restent compatibles v1 ; les références de quantités sont réservées à v2.
+
+## Quantités liées dans les étapes — v2
+
+Une étape peut inclure `{{qte:identifiant}}`. Le rendu remplace cette référence
+par la quantité et l'unité de la ligne d'ingrédient courante. Par exemple :
+
+```json
+{
+  "ingredients": [
+    {"food": "carotte", "id_ligne": "sauce", "qte": 50, "unite": "g", "etat": "cru"},
+    {"food": "carotte", "id_ligne": "garniture", "qte": 150, "unite": "g", "etat": "cru"}
+  ],
+  "etapes": ["Râper {{qte:sauce}} pour la sauce.", "Cuire {{qte:garniture}} à feu moyen 12 minutes."]
+}
+```
+
+Pour quatre portions au lieu de deux, les étapes affichent 100 g et 300 g.
+Les données conservent les références ; seuls les documents affichent les valeurs.
+La même résolution est utilisée pour Markdown, HTML/PDF, calendrier et sélection.
+
+Sans `id_ligne`, le nom d'aliment sert de référence s'il identifie une seule ligne.
+Les identifiants explicites doivent être uniques. Une référence absente, ambiguë,
+mal formée ou réservée à un autre format produit une erreur de données. Les
+références ne sont ni du Python ni des expressions : aucun calcul libre n'est exécuté.
+Les quantités restent celles des ingrédients saisis, avant cuisson et conversion
+en achat brut. Une référence désigne la ligne entière, sans fraction implicite.
+
+Les instructions libres restent acceptées. Une dose littérale comme « 100 g »
+bloque toujours un changement d'échelle détecté, même si l'étape contient aussi
+des références. Ni les durées ni les températures ne sont redimensionnées.
+La cohérence des gestes et des utilisations répétées reste à relire. Les profils
+v1 n'acceptent pas cette syntaxe. [Exemple reproductible](../../../examples/etapes_liees/README.md).
 
 ## Plan — `<dir>/plan.yaml`
 

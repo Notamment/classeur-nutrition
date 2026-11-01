@@ -1,3 +1,12 @@
+# 0.4.0 — Quantités liées dans les étapes — 1 novembre 2026
+
+- Syntaxe v2 `{{qte:identifiant}}` : quantité et unité issues de la ligne d'ingrédient, résolues dans Markdown et les exports HTML/PDF.
+- Champ facultatif `id_ligne` pour distinguer un même aliment employé dans plusieurs préparations ; refus des références absentes, ambiguës ou mal formées.
+- Redimensionnement, remplacement, bibliothèque et calendrier conservent les références et rendent les quantités courantes. Les doses littérales détectées restent protégées.
+- Exemple public fictif reproductible ; les durées, températures, achats bruts et fractions ne sont pas déduits de la référence.
+
+---
+
 # Corrections d'intégration — 1 novembre 2026
 
 - Duplication : source verrouillée et empreintes comparées avec la copie avant publication ; refus des états mélangés.

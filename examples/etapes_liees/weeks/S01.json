@@ -1,0 +1,19 @@
+{
+  "semaine": "S01",
+  "recettes": [{
+    "id": "S01-R01",
+    "nom": "Carotte en sauce et garniture — exemple fictif",
+    "temps_actif_min": 10,
+    "temps_total_min": 20,
+    "sel_ajoute": false,
+    "ingredients": [
+      {"food": "carotte", "id_ligne": "sauce", "qte": 50, "unite": "g", "etat": "cru"},
+      {"food": "carotte", "id_ligne": "garniture", "qte": 150, "unite": "g", "etat": "cru"},
+      {"food": "huile_olive", "qte": 10, "unite": "ml", "etat": "net"}
+    ],
+    "etapes": [
+      "Râper {{qte:sauce}} de carotte pour la sauce.",
+      "Couper {{qte:garniture}} de carotte ; faire revenir avec {{qte:huile_olive}} d'huile à feu moyen 12 minutes, jusqu'à tendreté."
+    ]
+  }]
+}
