@@ -69,10 +69,9 @@ def _measurements(ctx):
     active = [r.get("temps_actif_min") for r in recipes]
     levels = [r.get("niveau") for r in adaptations]
     dishes = [r.get("plat_id") for r in recipes]
-    budget = math.fsum(s.montant_caisse for s in ctx.shops) if all(s.budget_verifiable for s in ctx.shops) else None
-    if ctx.schedule:
-        weeks_budget = list(ctx.schedule["semaines_achat"].values())
-        budget = math.fsum(v["caisse_connue"] for v in weeks_budget) if all(v["verifiable"] for v in weeks_budget) else None
+    from checks import budget_summary
+    summary = budget_summary(ctx)
+    budget = summary["caisse_connue"] if summary["verifiable"] else None
     return {
         "budget": budget,
         "temps_actif": math.fsum(active) if recipes and all(v is not None for v in active) else None,

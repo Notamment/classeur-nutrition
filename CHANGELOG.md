@@ -1,3 +1,12 @@
+# Corrections d'intégration — 1 novembre 2026
+
+- Duplication : source verrouillée et empreintes comparées avec la copie avant publication ; refus des états mélangés.
+- Nutrition : rapport des préparations effectivement servies et de leurs portions, composants compris ; format version 2 avec calendrier, format historique conservé sans calendrier.
+- Budget : plafond appliqué aux services du calendrier par semaine ISO, sans second contrôle sur les coûts des fiches sources ; portée partagée par analyse, sélection et aperçu d'adaptation, explicitée dans les documents.
+- Étapes quantifiées : refus des changements d'échelle détectés qui conserveraient des doses textuelles obsolètes ; diagnostic explicite sans modification des entrées.
+
+---
+
 # Coordination des écritures — 1 novembre 2026
 
 - Verrou commun aux commandes de publication et de modification ; refus explicite des écritures concurrentes et préservation d'un verrou remplacé.

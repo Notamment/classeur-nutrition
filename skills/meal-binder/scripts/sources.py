@@ -94,11 +94,13 @@ def apply_sources(foods, workdir=None):
 
 
 def nutrient_report(ctx):
+    from recipe_views import recipe_views
     sources = load_sources(ctx.workdir)
     metrics = set(UNITS) | {n for s in sources.values() for n in s["nutriments"]}
     recipes = {}
-    portions = ctx.profile["projet"]["portions_par_recette"]
-    for rid, calc in ctx.calcs.items():
+    views = recipe_views(ctx)
+    for view in views:
+        rid, calc, portions = view.identifier, view.calc, view.calc.portions
         result = {}
         for nutrient in sorted(metrics):
             bounds, missing, provenance = [], [], []
@@ -124,5 +126,11 @@ def nutrient_report(ctx):
                                 "statut": "absent" if missing or not bounds else "exact" if low == high else "borne",
                                 "aliments_non_renseignes": sorted(set(missing)), "sources": provenance}
         recipes[rid] = result
-    return {"version": 1, "recettes": recipes, "portions": portions,
-            "portee": "apports des seules préparations renseignées, selon les données déclarées"}
+    result = {"version": 1, "recettes": recipes, "portions": ctx.profile["projet"]["portions_par_recette"],
+              "portee": "fiches sources, selon les données déclarées"}
+    if ctx.schedule is not None:
+        result.update(version=2, portions={v.identifier: v.calc.portions for v in views},
+                      portee="préparations effectivement servies dans le calendrier",
+                      preparations={v.identifier: {"plat": v.recipe["nom"], "origine": v.origin,
+                                                    "service": v.service, "portions": v.calc.portions} for v in views})
+    return result

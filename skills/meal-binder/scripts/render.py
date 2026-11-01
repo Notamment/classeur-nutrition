@@ -254,6 +254,9 @@ def shopping_block(ctx, shop) -> list:
 
 
 def budget_text(ctx, shop) -> str:
+    if ctx.schedule is not None:
+        return (f"**Achats de référence {shop.semaine}** — sous-total connu {fr(shop.montant_caisse, 2)} EUR ; "
+                "fiches sources uniquement. Le plafond est contrôlé sur les services du calendrier ; ces achats ne sont pas à ajouter à ceux des services.")
     cur = ctx.profile["budget"].get("devise", "EUR")
     if shop.prix_manquants and len(shop.prix_manquants) == len([s for s in shop.lines if not s.negligeable]):
         return f"**Budget {shop.semaine}** — non vérifié, non chiffré : aucun prix de référence applicable (`prix_eur`)."
@@ -332,7 +335,8 @@ def hypotheses_block(ctx, shops) -> list:
         out.append(f"- Stock présent, quantité inconnue : {', '.join(unknown)}.")
     missing = sorted({n for ws in shops for n in ws.prix_manquants})
     if missing:
-        out.append(f"- Prix de référence manquants ({len(missing)}) : budget incomplet.")
+        out.append(f"- Prix de référence manquants ({len(missing)}) : "
+                   + ("fiches sources uniquement ; voir le budget du calendrier." if ctx.schedule is not None else "budget incomplet."))
     if ctx.pantry:
         out.append("- Déductions de stock valables pour la première rotation uniquement.")
     if ctx.catalogs and any(r.get("execution") or r.get("plat_id") or r.get("ingredients_principaux") for r in ctx.recipes.values()):
@@ -413,9 +417,11 @@ def audit_rows(ctx, shops) -> list:
     missing = sum(len(ws.prix_manquants) for ws in shops)
     e = errs("budget_depasse")
     cap = p["budget"]["plafond_eur_semaine"]
+    from checks import budget_summary
+    summary = budget_summary(ctx)
     rows.append(("Budget", f"montant caisse ; plafond {cap if cap is not None else 'non fixé'} EUR",
-                 f"{missing} prix manquant(s) ; dépassements : {ids(e)}",
-                 st(e, "non vérifié" if data_errors or any(not ws.budget_verifiable for ws in shops) else "estimation")))
+                 ("services par semaine ISO ; " if ctx.schedule is not None else f"{missing} prix manquant(s) ; ") + f"dépassements : {ids(e)}",
+                 st(e, "non vérifié" if data_errors or not summary["verifiable"] else "estimation")))
     rows.append(("Sources et méthode", "Ciqual / étiquettes ; contrôle automatisé",
                  f"binder.py ; données provisoires : {'oui' if placeholders else 'non'}",
                  "estimation"))
@@ -502,6 +508,9 @@ def audit_rows_v2(ctx, shops) -> list:
         fallback="non vérifié" if any(s.incomplet or s.stocks_inconnus for s in shops) else "conforme")
     add("Budget", f"plafond {p['budget']['plafond_eur_semaine']} EUR" if p["budget"]["plafond_eur_semaine"] is not None else "plafond non fixé",
         {"budget_depasse", "budget_non_verifie"}, fallback="estimation", policy="budget_depasse" if p["budget"]["plafond_eur_semaine"] is not None else None)
+    if ctx.schedule is not None:
+        label, expected, result, status = rows[-1]
+        rows[-1] = (label, expected + " ; services par semaine ISO", result, status)
     rows.append(("Saison, conservation et labels", "choix du profil", "vérification humaine des produits et du contenu", "non vérifié"))
     return rows
 
@@ -562,6 +571,9 @@ def schedule_block(ctx):
            "|---|---|---|---|---:|---:|---|"]
     for job in ctx.schedule["services"]:
         out.append(f"| {esc(job['id'])} | {esc(job['plat'])} | {esc(job['preparation'])} | {esc(job['service'])} | {job['portions']} | {fr(job['caisse_connue'], 2)} | {'oui' if job['budget_verifiable'] else 'non'} |")
+    out += ["", "**Budget contrôlé : services du calendrier, par semaine ISO**", ""]
+    for wid, amounts in ctx.schedule["semaines_achat"].items():
+        out.append(f"- {esc(wid)} : caisse connue {fr(amounts['caisse_connue'], 2)} EUR ; {'estimation complète' if amounts['verifiable'] else 'NON VÉRIFIÉ — sous-total uniquement'}.")
     out += ["", *["- " + esc(s) for s in ctx.schedule["limites"]], ""]
     for view in recipe_views(ctx):
         out += [f"**Service {esc(view.identifier)}** — {esc(view.origin)} ; {view.calc.portions} portions ; "

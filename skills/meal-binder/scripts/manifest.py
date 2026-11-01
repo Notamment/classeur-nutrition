@@ -54,11 +54,12 @@ def hashes(paths, root):
 
 
 def analysis_payload(ctx):
-    from checks import preference_counts, required_budget_unverified
+    from checks import preference_counts, required_budget_unverified, budget_summary
     return {"diagnostics_version": DIAGNOSTICS_VERSION, "profil": ctx.profile,
             "ecarts": [i.__dict__ for i in ctx.issues],
             "preferences": preference_counts(ctx),
             "budget_imperatif_inverifiable": required_budget_unverified(ctx),
+            "budget": budget_summary(ctx),
             "recettes": {rid: {"proteines": c.prot_pp, "kcal": c.kcal_pp,
                                "poids_servi": c.poids_pp, "categorie": c.categorie}
                          for rid, c in sorted(ctx.calcs.items())},

@@ -349,6 +349,8 @@ def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:
     # Point d'entrée partagé par CLI, rendu, audit et évaluations.
     from shopping import build_shopping
     ctx.shops, ctx.final_stock, shopping_issues = build_shopping(ctx)
+    if (workdir / "schedule.yaml").exists():
+        shopping_issues = [i for i in shopping_issues if i.code not in {"budget_depasse", "budget_non_verifie"}]
     ctx.issues = apply_requirements(ctx.issues + shopping_issues, p)
     if (workdir / "schedule.yaml").exists():
         from planning import report as schedule_report
@@ -474,12 +476,25 @@ def load_plan(workdir: Path) -> dict:
     return load_yaml(path)
 
 
+def budget_summary(ctx):
+    import math
+    if ctx.schedule is not None:
+        weeks = ctx.schedule["semaines_achat"]
+        scope = "calendrier_services"
+    else:
+        weeks = {s.semaine: {"caisse_connue": s.montant_caisse, "verifiable": s.budget_verifiable} for s in ctx.shops}
+        scope = "semaines_sources"
+    return {"portee": scope, "semaines": weeks,
+            "caisse_connue": math.fsum(w["caisse_connue"] for w in weeks.values()),
+            "verifiable": bool(weeks) and all(w["verifiable"] for w in weeks.values())}
+
+
 def required_budget_unverified(ctx):
     """Même admissibilité pour la sélection et l'évaluation, sans modifier la CLI historique."""
     return (ctx.profile["budget"]["plafond_eur_semaine"] is not None
             and requirement(ctx.profile, "budget_depasse") == "imperative"
-            and (any(not shop.budget_verifiable for shop in ctx.shops)
-                 or bool(ctx.schedule and ctx.schedule["budget_imperatif_inverifiable"])))
+            and (ctx.schedule["budget_imperatif_inverifiable"] if ctx.schedule is not None
+                 else any(not shop.budget_verifiable for shop in ctx.shops)))
 
 
 def preference_counts(ctx):

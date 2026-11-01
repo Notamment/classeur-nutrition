@@ -135,6 +135,9 @@ archives, recherche et bibliothèque privée. Utiliser par exemple un sous-dossi
 de `dossiers/` ou `archives/`. À l'extérieur d'un dépôt, choisir un emplacement
 privé approprié. Une cible existante n'est jamais remplacée. `clone` ne copie
 ni les anciennes revues, ni le journal, ni les notes non déclarées comme entrées.
+La source reste verrouillée pendant la duplication. Les empreintes de la source
+et de la copie sont vérifiées avant publication ; une modification externe
+détectée fait abandonner la copie sans créer la destination.
 
 `professional.yaml` conserve seulement l'identifiant et le métier. `history.jsonl`
 conserve les opérations de création et de revue. Le fichier `.dossier.lock`
@@ -200,6 +203,16 @@ Les quantités, formes brutes et eau retenue sont proportionnées ; durées, ges
 matériel et conservation nécessitent une nouvelle relecture. Le moteur n'invente
 pas de nouvelle instruction de cuisson. Une ancienne revue devient obsolète :
 refaire le rendu puis la revue.
+
+Une modification du nombre de portions est refusée avec le diagnostic
+`etapes_quantifiees` si les étapes contiennent des doses explicites détectées
+(chiffres et unités usuelles : g, ml, grammes, œufs, cuillères, etc.). Cela
+concerne redimensionnement, remplacement, réutilisation dans la recherche et
+portions du calendrier. Fournir alors une recette déjà adaptée aux portions
+cibles, avec ingrédients et étapes cohérents, via le remplacement explicite.
+Les instructions de durée ou température seules ne bloquent pas ce contrôle.
+Cette détection ne constitue pas une analyse sémantique exhaustive du texte ;
+la relecture des étapes reste nécessaire.
 
 L'ajout à `bibliotheque/` exige une revue humaine actuelle avec décision `revu`.
 La bibliothèque et `locks.yaml` restent privés et ignorés par Git. Une recette

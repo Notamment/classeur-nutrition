@@ -80,6 +80,8 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
         for source, edition, licence in sources:
             rows.append(["source", source, edition, licence, "", ""])
         if audience == "production":
+            if ctx.schedule is not None:
+                body.append("<p>Courses des fiches sources ci-dessous : références uniquement, sans contrôle du plafond et sans cumul avec les achats des services.</p>")
             body.append("<h2>Courses et budget</h2><table><tr><th>Semaine</th><th>Aliment</th><th>Besoin</th><th>Stock mobilisé</th><th>Achat emballé</th><th>Unité d'achat</th></tr>")
             rows.append(["semaine", "aliment", "besoin", "stock_mobilise", "achat", "unite_achat"])
             for shop in ctx.shops:
@@ -92,6 +94,13 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
             body.extend(f"<li>{e(i.level)} / {e(i.kind)} / {e(i.requirement)} : {e(i.where)} — {e(i.code)} : {e(i.msg)}</li>" for i in ctx.issues)
             body.append("</ul>")
         if ctx.schedule:
+            body.append("<h2>Budget du calendrier par semaine ISO</h2><ul>")
+            for wid, amounts in ctx.schedule["semaines_achat"].items():
+                status = "estimation complète" if amounts["verifiable"] else "NON VÉRIFIÉ — sous-total uniquement"
+                body.append(f"<li>{e(wid)} : {amounts['caisse_connue']:.2f} EUR ; {e(status)}.</li>" if audience == "production" else f"<li>Budget {e(wid)} : {e(status)}.</li>")
+                if audience == "production":
+                    rows.append(["budget_calendrier", wid, amounts["caisse_connue"], status, "EUR", ""])
+            body.append("</ul>")
             body.append("<h2>Calendrier des services</h2><p>Chaque fiche donne les quantités recalculées pour les portions du service identifié, composants compris.</p><ul>")
             for job in ctx.schedule["services"]:
                 body.append(f"<li>{e(job['service'])} — {e(job['plat'])} : {job['portions']} portions.</li>")

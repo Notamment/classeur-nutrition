@@ -18,6 +18,10 @@ du paquet installé depuis un répertoire extérieur au checkout.
 Les commandes qui publient ou modifient un dossier partagent un verrou local.
 Une sélection obsolète est refusée ; un audit conserve le manifeste du classeur
 relu et écrit son propre manifeste.
+Une duplication verrouille également sa source. Avec un calendrier, budget et
+rapport nutritionnel portent sur les préparations servies. Un changement
+d'échelle est refusé si des doses explicites détectées dans les étapes
+risquent de devenir incohérentes avec les ingrédients.
 
 ## Configurer son classeur
 

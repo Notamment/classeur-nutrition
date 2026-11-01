@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 import datetime as dt
 import json
 import os
@@ -32,6 +33,12 @@ def journal(directory, action, details):
 
 
 def create_workspace(target, *, source=None, identifier=None, profession="nutrition"):
+    source = safe_destination(source) if source is not None else None
+    with locked(source) if source is not None else nullcontext():
+        return _create_workspace(target, source=source, identifier=identifier, profession=profession)
+
+
+def _create_workspace(target, *, source=None, identifier=None, profession="nutrition"):
     target = private_destination(target)
     if target.exists():
         raise BinderError("dossier cible existant : création ou duplication refusée")
@@ -44,7 +51,7 @@ def create_workspace(target, *, source=None, identifier=None, profession="nutrit
     if source:
         if not (Path(source) / "profile.yaml").is_file():
             raise BinderError("source sans profile.yaml")
-        hashes(files, Path(source))  # Refuser les liens avant toute copie.
+        initial = hashes(files, source)  # Refuser les liens avant toute copie.
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".dossier-", dir=target.parent))
     try:
@@ -56,12 +63,17 @@ def create_workspace(target, *, source=None, identifier=None, profession="nutrit
                 destination = stage / path.relative_to(source)
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copyfile(path, destination)
+            expected = {name: value for name, value in initial.items() if name != "professional.yaml"}
+            if hashes(input_files(stage), stage) != expected or hashes(input_files(source), source) != initial:
+                raise BinderError("source modifiée pendant la duplication ; copie non publiée")
         else:
             atomic_text(stage / "profile.yaml", "version: 2\n")
             (stage / "weeks").mkdir()
         atomic_text(stage / "professional.yaml", yaml.safe_dump({"version": 1, "dossier_id": identifier, "metier": profession}))
         path, data = journal(stage, "duplication" if source else "creation", {"dossier_id": identifier})
         atomic_batch({path: data})
+        if source is not None and hashes(input_files(source), source) != initial:
+            raise BinderError("source modifiée avant publication ; copie non publiée")
         os.replace(stage, target)
         return {"version": 1, "dossier_id": identifier, "metier": profession, "dossier": str(target)}
     finally:

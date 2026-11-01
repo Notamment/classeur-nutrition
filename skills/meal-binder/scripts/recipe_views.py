@@ -1,5 +1,15 @@
 """Common calculated recipe views for review and delivery."""
 from dataclasses import dataclass, field
+import re
+
+
+def check_scalable_steps(recipe, ratio):
+    """Do not silently retain explicit doses when scaling free-text instructions."""
+    from core import DataError, Issue
+    dose = re.compile(r"[\d¼½¾]\s*(?:[.,/]\s*\d+)?\s*(?:kilogrammes?|milligrammes?|grammes?|millilitres?|centilitres?|d[eé]cilitres?|litres?|kg|mg|g|ml|cl|dl|l|pi[eè]ces?|[oœ]e?ufs?|cuill[eè]res?|c\.?\s*[àa]\s*(?:caf[eé]|soupe))\b", re.I)
+    if ratio != 1 and any(dose.search(step) for step in recipe.get("etapes", []) if isinstance(step, str)):
+        raise DataError([Issue("erreur", "etapes_quantifiees", recipe.get("id", "?"),
+                               "changement d'échelle refusé : quantités explicites dans les étapes ; fournir une recette aux portions cibles avec étapes et ingrédients cohérents")])
 
 
 @dataclass

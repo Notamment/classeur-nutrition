@@ -38,8 +38,10 @@ def _name(name):
 
 def _summary(ctx):
     from checks import preference_counts
-    known = bool(ctx.shops) and all(s.budget_verifiable for s in ctx.shops)
-    return {"budget_caisse": math.fsum(s.montant_caisse for s in ctx.shops) if known else None,
+    from checks import budget_summary
+    budget = budget_summary(ctx)
+    return {"budget_caisse": budget["caisse_connue"] if budget["verifiable"] else None,
+            "portee_budget": budget["portee"],
             "preferences": preference_counts(ctx), "ecarts": [i.__dict__ for i in ctx.issues], "planning": ctx.schedule,
             "recettes": {rid: {"proteines_par_portion": c.prot_pp, "kcal_par_portion": c.kcal_pp,
                                "poids_par_portion": c.poids_pp} for rid, c in ctx.calcs.items()}}
@@ -90,6 +92,8 @@ def adapt(directory, *, portions=None, recipe_id=None, replacement=None, source_
                         target = copy.deepcopy(replacement)
                         target["id"] = recipe_id
                         ratio = old_portions / source_portions
+                    from recipe_views import check_scalable_steps
+                    check_scalable_steps(target, ratio)
                     for line in target.get("ingredients", []):
                         if type(line.get("qte")) not in (int, float):
                             raise BinderError("quantité source invalide")

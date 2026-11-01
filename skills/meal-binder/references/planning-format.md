@@ -6,6 +6,19 @@ ni les quotas ni les défauts. `classeur-nutrition schedule --dir <dossier>` don
 son rapport JSON ; les mêmes contrôles alimentent analyse, sélection, rendu,
 audit, revue et évaluation lorsque le fichier existe.
 
+Lorsqu'un calendrier est présent, le plafond budgétaire porte exclusivement sur
+les achats des services, agrégés par semaine ISO. Les courses des semaines sources
+restent des références affichées ; elles ne s'ajoutent pas aux achats du calendrier
+et ne déclenchent pas un second contrôle du plafond. Prix manquants et dépassements
+des services restent bloquants selon la politique du profil. Sans calendrier,
+le plafond continue à porter sur les semaines sources.
+
+`nutrients` rend alors un rapport `version: 2`, indexé par identifiant de service
+et occurrence (`midi/1`, etc.), composants compris. `portions` donne le nombre
+propre à chaque occurrence ; `preparations` expose nom, origine et horaire.
+Sans calendrier, le rapport historique `version: 1` conserve les fiches sources
+et le nombre global de portions. Une donnée absente ne devient jamais zéro.
+
 Les recettes des composants sont validées avec le schéma du profil dès le
 chargement, avant toute lecture de durée ou d'équipement. Une donnée mal typée
 produit un diagnostic JSON `schema_recette` localisé et le code de sortie 1.
@@ -77,8 +90,8 @@ comptage. Les restes d'achats sont affichés, **sans report automatique** tant
 qu'un lot daté n'est pas déclaré. Les prix de `products.yaml` sont aussi vérifiés
 à la date de préparation ; un tarif hors période devient inconnu. Le budget
 opérationnel s'agrège par semaine ISO des préparations. Les calculs et plafonds
-des semaines sources restent contrôlés séparément ; aucun impératif historique
-n'est assoupli par l'ajout d'un calendrier. Les quotas et objectifs de variété
+des semaines sources sont des références ; le plafond porte sur les services
+lorsqu'un calendrier est présent. Les quotas et objectifs de variété
 ne sont pas réinterprétés en nouveaux objectifs de calendrier.
 
 Le calendrier, les lots et leurs sources restent privés. Ils font partie des

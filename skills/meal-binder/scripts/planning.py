@@ -42,6 +42,8 @@ def instant(value):
 
 
 def scaled(recipe, ratio):
+    from recipe_views import check_scalable_steps
+    check_scalable_steps(recipe, ratio)
     recipe = copy.deepcopy(recipe)
     for line in [*recipe.get("ingredients", []), *recipe.get("alternatives_poisson", [])]:
         line["qte"] *= ratio
