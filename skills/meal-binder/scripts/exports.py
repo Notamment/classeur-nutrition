@@ -13,7 +13,7 @@ from manifest import encode, make_manifest
 from storage import atomic_batch, safe_destination
 from workflow import review_status
 from coordination import locked
-from recipe_views import recipe_views, used_foods
+from recipe_views import recipe_views, used_foods, resolve_steps
 
 MARKER = "meal-binder:export:v1"
 
@@ -54,7 +54,7 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
                 body.append(f"<li>{e(line.qty)} {e(line.unit)} {e(line.food.nom)} ({e(line.etat)})</li>")
                 rows.append([rid, r["nom"], line.food.nom, line.qty, line.unit, line.etat])
             body.append("</ul><ol>")
-            body.extend(f"<li>{e(step)}</li>" for step in r["etapes"])
+            body.extend(f"<li>{e(step)}</li>" for step in resolve_steps(r, version=ctx.profile["version"]))
             body.append("</ol>")
             for key in ("gamelle", "conservation", "adaptation"):
                 if r.get(key):

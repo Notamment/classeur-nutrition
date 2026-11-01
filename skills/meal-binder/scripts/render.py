@@ -6,7 +6,7 @@ from dataclasses import replace
 
 from core import fmt_qty, week_order
 from profiles import nutrition_mode, nutrition_targets, requirement, week_title
-from recipe_views import recipe_views, used_foods
+from recipe_views import recipe_views, used_foods, resolve_steps
 
 CAT_LABEL = {"vegetarien": "végétarien", "poisson": "poisson", "viande": "viande", "mixte": "MIXTE"}
 STATUS = ("conforme", "estimation", "non vérifié", "non conforme")
@@ -92,7 +92,7 @@ def recipe_block(ctx, rid: str, issues: list, *, view=None) -> list:
     for ln in rc.lines:
         out.append(f"| {esc(ln.food.nom)} | {qty_text(ln)} | {ln.etat} |")
     out += ["", "**Étapes**", ""]
-    out += [f"{i}. {esc(s)}" for i, s in enumerate(r.get("etapes") or [], start=1)]
+    out += [f"{i}. {esc(s)}" for i, s in enumerate(resolve_steps(r, version=p["version"]), start=1)]
     out += ["", f"- **Poids estimé / portion** — {r10(rc.poids_pp)} g servis."]
     if nutrition:
         contrib = " · ".join(f"{esc(n)} {fr(g)} g" for n, g in rc.contributions())

@@ -23,6 +23,11 @@ rapport nutritionnel portent sur les préparations servies. Un changement
 d'échelle est refusé si des doses explicites détectées dans les étapes
 risquent de devenir incohérentes avec les ingrédients.
 
+En profil v2, les étapes peuvent employer `{{qte:carotte}}` pour afficher la
+quantité courante d'un ingrédient. Les références suivent le redimensionnement,
+y compris dans les services du calendrier ; `id_ligne` distingue plusieurs
+utilisations d'un même aliment. Voir l'[exemple reproductible](examples/etapes_liees/README.md).
+
 ## Configurer son classeur
 
 Partir de [`profile.template.yaml`](skills/meal-setup/assets/profile.template.yaml). Exemple :
