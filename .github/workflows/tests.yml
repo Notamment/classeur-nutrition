@@ -30,6 +30,7 @@ jobs:
           python -m pip install .
           classeur-nutrition doctor
           classeur-nutrition --version
+          python -I tools/check_installed.py
       - name: dist/prompt.md à jour
         if: runner.os == 'Linux'
         run: |

@@ -13,7 +13,8 @@ from checks import analyse, check_recipe
 from core import BinderError, DataError, Issue, compute_alternatives, compute_recipe, load_yaml, schema_issues, to_base
 from manifest import digest, encode, hashes, input_files
 from profiles import apply_requirements, nutrition_mode, requirement
-from schemas import TEXT, FOOD_ID, POS_COUNT, POSITIVE, STATES, arr, enum, nullable, num, obj
+from schemas import TEXT, FOOD_ID, POS_COUNT, POSITIVE, STATES, RECIPE, RECIPE_V2, arr, enum, nullable, num, obj
+from recipe_views import RecipeView
 from shopping import WeekShop, build_shopping, check_budget
 
 DATE = {"kind": "date"}
@@ -61,6 +62,13 @@ def report(directory, *, ctx=None):
     errors = schema_issues(data, FORMAT, "schedule", "schema_planning")
     if errors:
         raise DataError(errors)
+    components = data.get("composants", {})
+    for name, component in components.items():
+        errors += schema_issues(component["recette"], RECIPE_V2 if ctx.profile["version"] == 2 else RECIPE,
+                                f"schedule.composants.{name}.recette", "schema_recette")
+    if errors:
+        raise DataError(errors)
+    ctx.served_recipes = []
     if ctx.pantry:
         raise BinderError("planning en lots_exclusifs : convertir explicitement pantry.yaml en lots datés pour éviter tout double comptage")
     issues = []
@@ -107,7 +115,6 @@ def report(directory, *, ctx=None):
             raise BinderError("quantité de lot hors capacité numérique")
         ledger.append(item)
     jobs, service_ids, used_preps = [], set(), set()
-    components = data.get("composants", {})
     for service in data["services"]:
         sid = service["id"]
         if sid in service_ids:
@@ -127,6 +134,11 @@ def report(directory, *, ctx=None):
                 if entry["recette"] not in ctx.recipes:
                     raise BinderError("recette de service introuvable ou non calculable")
                 original, portions = ctx.recipes[entry["recette"]], ctx.profile["projet"]["portions_par_recette"]
+            # Validate before reading durations, equipment or multiplying quantities.
+            original_calc, invalid = compute_recipe(original, ctx.foods, portions, version=ctx.profile["version"], nutrition_mode=nutrition_mode(ctx.profile))
+            issues += invalid
+            if original_calc is None:
+                continue
             cooking = serving
             if entry.get("preparation"):
                 pid = entry["preparation"]
@@ -142,11 +154,6 @@ def report(directory, *, ctx=None):
                     issue("planning_equipement", where, "équipements de la recette non couverts par la préparation")
             else:
                 issue("planning_preparation", where, "préparation, durée et conservation non planifiées", unknown=True)
-            # Contrôle préalable avant toute multiplication de valeurs non validées.
-            original_calc, invalid = compute_recipe(original, ctx.foods, portions, version=ctx.profile["version"], nutrition_mode=nutrition_mode(ctx.profile))
-            issues += invalid
-            if original_calc is None:
-                continue
             recipe = scaled(original, entry["portions"] / portions)
             rc, invalid = compute_recipe(recipe, ctx.foods, entry["portions"], version=ctx.profile["version"], nutrition_mode=nutrition_mode(ctx.profile))
             issues += invalid
@@ -159,11 +166,13 @@ def report(directory, *, ctx=None):
                 local += check_recipe_adaptation(recipe, ctx.profile, ctx.catalogs)[1]
                 local += check_food_families(recipe, rc, ctx.foods, ctx.profile, ctx.catalogs, products=ctx.products)
             issues += [replace(i, where=where + ":" + i.where) for i in local]
-            jobs.append((cooking, where, serving, recipe, rc))
+            origin = "composant " + entry["composant"] if "composant" in entry else "recette " + entry["recette"]
+            jobs.append((cooking, where, serving, recipe, rc, alts, origin))
     for pid in preparations.keys() - used_preps:
         issue("planning_preparation_inutilisee", pid, "préparation sans service associé", error=False)
     outputs, weekly = [], {}
-    for cooking, where, serving, recipe, rc in sorted(jobs, key=lambda j: (j[0], j[1])):
+    for cooking, where, serving, recipe, rc, alts, origin in sorted(jobs, key=lambda j: (j[0], j[1])):
+        ctx.served_recipes.append(RecipeView(where, recipe, rc, alts, origin, cooking.isoformat(), serving.isoformat()))
         day = cooking.date().isoformat()
         active = [lot for lot in ledger if lot["disponible_le"] <= day <= lot["limite"]]
         pantry = []

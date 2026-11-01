@@ -1,3 +1,18 @@
+# Corrections de la revue — 1 novembre 2026
+
+- R1 : les sorties de l'agent ne deviennent jamais des revues humaines. Import explicite depuis et vers un stockage externe, lié aux empreintes ; les bilans ignorent les revues du dossier de génération.
+- R2 : représentation commune des recettes et composants servis ; fiches, quantités, étapes, sources et limites présentes dans le document relu et les exports.
+- R3 : confidentialité contrôlée dans le dépôt de destination, y compris worktrees et paquet installé ; politique partagée pour les sorties privées, avec test d'installation hors checkout en CI.
+- R4 : refus des segments parents et des liens/jonctions ; écritures POSIX relatives à des répertoires ouverts sans suivi de lien.
+- R5 : groupe POSIX ou Job Object Windows pour les processus de l'agent, arrêt au timeout et nettoyage des workers ; journaux bornés à 1 Mio par flux.
+- R6 : schéma complet des composants validé avant utilisation, avec diagnostics JSON au lieu d'exceptions de types.
+
+Ces protections ne constituent pas un sandbox ni une preuve d'identité humaine.
+Les répertoires de revue doivent être inaccessibles à l'agent ; les limites de
+concurrence Windows et de processus volontairement détachés sont documentées.
+
+---
+
 # Parcours professionnels — développement — 20 octobre 2026
 
 - Diagnostics structurés indépendants des messages et protection atomique des sorties.

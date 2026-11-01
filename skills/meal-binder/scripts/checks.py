@@ -314,6 +314,7 @@ class Context:
     adaptations: dict = field(default_factory=dict)
     products: dict | None = None
     schedule: dict | None = None
+    served_recipes: list = field(default_factory=list)
 
 
 def analyse(workdir: Path, complete: bool = False, *, weeks=None) -> Context:

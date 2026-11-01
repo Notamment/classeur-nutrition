@@ -6,7 +6,6 @@ import json
 import math
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import time
@@ -18,10 +17,12 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "skills/meal-binder/scripts"))
 from core import BinderError, DataError, load_json, load_yaml, utf8_stdio  # noqa: E402
 from checks import analyse  # noqa: E402
-from manifest import INPUTS, digest, encode, engine_files, hashes  # noqa: E402
+from manifest import INPUTS, digest, encode, engine_files, hashes, input_files  # noqa: E402
 from core import SKILL_DIR  # noqa: E402
-from storage import atomic_text, safe_destination  # noqa: E402
+from storage import atomic_text, atomic_write, safe_destination  # noqa: E402
+from privacy import private_destination  # noqa: E402
 from score import score_run  # noqa: E402
+from runner import run_command  # noqa: E402
 
 RUBRIC = ("etapes", "quantites", "durees", "materiel", "conservation")
 FROZEN_INPUTS = tuple(name for name in INPUTS if name != "plan.yaml")
@@ -36,11 +37,9 @@ def runtime_hashes(directory):
 def prepare(target, repetitions=3, case_ids=None):
     if type(repetitions) is not int or not 1 <= repetitions <= 3:
         raise BinderError("une à trois répétitions par scénario")
-    target = safe_destination(target)
+    target = private_destination(target)
     if target.exists():
         raise BinderError("destination nouvelle requise")
-    if ROOT in target.parents and (ROOT / "evals/runs") not in target.parents:
-        raise BinderError("dans le dépôt, les générations privées doivent rester sous evals/runs/")
     corpus = load_yaml(ROOT / "evals/corpus.yaml")
     cases = corpus["cas"]
     if corpus.get("version") != 1 or len(cases) != 24 or len({c["id"] for c in cases}) != 24:
@@ -52,6 +51,7 @@ def prepare(target, repetitions=3, case_ids=None):
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".eval-", dir=target.parent))
     try:
+        private_destination(stage)
         for path in [*engine_files(), SKILL_DIR / "SKILL.md", *SKILL_DIR.joinpath("references").glob("*.md")]:
             destination = stage / "runtime" / path.relative_to(SKILL_DIR)
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -78,6 +78,7 @@ def prepare(target, repetitions=3, case_ids=None):
                                                             "prompt_sha256": digest(task.encode("utf-8")),
                                                             "corpus_sha256": digest((ROOT / "evals/corpus.yaml").read_bytes()),
                                                             "protocole_sha256": digest(Path(__file__).read_bytes()),
+                                                            "runner_sha256": digest(Path(__file__).with_name("runner.py").read_bytes()),
                                                             "entrees_initiales": hashes([directory / n for n in FROZEN_INPUTS if (directory / n).exists()], directory),
                                                             "moteur_fichiers": hashes(engine_files(), SKILL_DIR),
                                                             "runtime_fichiers": runtime_hashes(stage)}))
@@ -103,9 +104,12 @@ def verify_inputs(directory, run):
         raise BinderError("moteur différent du protocole préparé")
     if run.get("corpus_sha256") != digest((ROOT / "evals/corpus.yaml").read_bytes()) or run.get("protocole_sha256") != digest(Path(__file__).read_bytes()):
         raise BinderError("corpus ou protocole différent de la préparation")
+    if run.get("runner_sha256") != digest(Path(__file__).with_name("runner.py").read_bytes()):
+        raise BinderError("runner différent de la préparation")
 
 
-def evaluate(directory):
+def evaluate(directory, reviews_dir=None):
+    directory = Path(directory)
     run = load_json(directory / "run.json")
     if run.get("statut") not in ("execute", "termine"):
         raise BinderError("génération non exécutée : aucun score ne doit être attribué")
@@ -126,19 +130,72 @@ def evaluate(directory):
               "automatique": score, "humain": None,
               "execution": {"code_agent": run.get("code_agent"), "recettes_produites": produced,
                             "sorties_manquantes": missing}}
-    human_path = directory / "human.json"
-    if human_path.exists():
-        if not produced:
-            raise BinderError("aucune recette produite : aucune évaluation humaine de génération possible")
-        human = load_json(human_path)
-        if (human.get("version") != 1 or not human.get("relecteur")
-            or set(human.get("notes", {})) != set(RUBRIC)
-            or any(type(v) is not int or not 1 <= v <= 5 for v in human["notes"].values())
-            or not isinstance(human.get("defauts_critiques"), list)):
-            raise BinderError("grille humaine incomplète ou invalide ; elle ne doit pas être remplie automatiquement")
-        result["humain"] = human
+    # Nothing in the agent's writable workspace can authorize a human review.
+    # Persist automatic results only, even when displaying an external review.
     atomic_text(directory / "evaluation.json", encode(result))
+    if reviews_dir is not None:
+        result["humain"] = human_review(directory, reviews_dir)
     return result
+
+
+def validate_human(human):
+    if (not isinstance(human, dict) or type(human.get("version")) is not int or human["version"] != 1
+        or not isinstance(human.get("relecteur"), str) or not human["relecteur"].strip()
+        or not isinstance(human.get("notes"), dict) or set(human["notes"]) != set(RUBRIC)
+        or any(type(v) is not int or not 1 <= v <= 5 for v in human["notes"].values())
+        or not isinstance(human.get("defauts_critiques"), list)
+        or any(not isinstance(v, str) for v in human["defauts_critiques"])
+        or (human.get("commentaire") is not None and not isinstance(human["commentaire"], str))):
+        raise BinderError("grille humaine incomplète ou invalide")
+
+
+def external_review_path(directory, target):
+    root = safe_destination(directory).parent
+    target = safe_destination(target)
+    if target == root or root in target.parents or target in root.parents:
+        raise BinderError("revue humaine : chemin extérieur à tout le dossier d'exécution requis")
+    return target
+
+
+def review_binding(directory):
+    paths = input_files(directory) + [directory / "run.json"]
+    paths += [directory / name for name in ("out/classeur.md", "out/manifest.json") if (directory / name).exists()]
+    return hashes(paths, directory)
+
+
+def review_record_path(directory, reviews_dir):
+    destination = external_review_path(directory, reviews_dir)
+    key = digest(str(safe_destination(directory)).encode("utf-8"))
+    return destination / (key + ".json")
+
+
+def import_human_review(directory, review_file, reviews_dir):
+    """Explicit operator action, separate from run/evaluate and agent output."""
+    directory = safe_destination(directory)
+    review_file = external_review_path(directory, review_file)
+    private_destination(external_review_path(directory, reviews_dir))
+    result = evaluate(directory)
+    if not result["execution"]["recettes_produites"]:
+        raise BinderError("aucune recette produite : aucune évaluation humaine possible")
+    human = load_json(review_file)
+    validate_human(human)
+    record = {"version": 1, "entrees": review_binding(directory), "humain": human}
+    target = review_record_path(directory, reviews_dir)
+    if target.exists():
+        raise BinderError("revue externe existante protégée ; utiliser un nouveau dossier de revues")
+    atomic_text(target, encode(record))
+    return {"version": 1, "revue_importee": True, "fichier": str(target)}
+
+
+def human_review(directory, reviews_dir):
+    path = review_record_path(directory, reviews_dir)
+    if not path.exists():
+        return None
+    record = load_json(safe_destination(path))
+    if record.get("version") != 1 or record.get("entrees") != review_binding(directory):
+        return None
+    validate_human(record.get("humain"))
+    return record["humain"]
 
 
 def execute(directory, command, model, agent, timeout=600):
@@ -146,26 +203,21 @@ def execute(directory, command, model, agent, timeout=600):
     run = load_json(directory / "run.json")
     if run.get("statut") != "prepare":
         raise BinderError("une génération enregistrée n'est pas relancée ni remplacée")
-    if not command or any(not isinstance(part, str) for part in command):
+    if not isinstance(command, list) or not command or any(not isinstance(part, str) for part in command):
         raise BinderError("commande attendue : liste JSON non vide d'arguments, sans shell")
     verify_inputs(directory, run)
     task = (directory / "task.txt").read_text(encoding="utf-8")
     args = [part.replace("{task}", task).replace("{dir}", str(directory.resolve())) for part in command]
     start = time.monotonic()
     try:
-        completed = subprocess.run(args, cwd=directory, capture_output=True, text=True, encoding="utf-8", timeout=timeout)
-        code, stdout, stderr = completed.returncode, completed.stdout, completed.stderr
-    except subprocess.TimeoutExpired as exc:
-        code, stdout, stderr = 124, exc.stdout or b"", exc.stderr or b""
-        if isinstance(stdout, bytes): stdout = stdout.decode("utf-8", errors="replace")
-        if isinstance(stderr, bytes): stderr = stderr.decode("utf-8", errors="replace")
+        code, stdout, stderr, logs = run_command(args, directory, timeout)
     except OSError as exc:
-        code, stdout, stderr = 127, "", str(exc)
+        code, stdout, stderr, logs = 127, b"", str(exc).encode("utf-8"), {}
     run.update(statut="execute", modele=model, agent=agent, duree_secondes=time.monotonic() - start,
                code_agent=code, cout_eur=None, tokens=None,
-               commande_sha256=digest(encode(command).encode("utf-8")))
+               commande_sha256=digest(encode(command).encode("utf-8")), journaux=logs)
     usages = []
-    for line in stdout.splitlines():
+    for line in stdout.decode("utf-8", errors="replace").splitlines() if not logs.get("stdout", {}).get("tronque") else []:
         try:
             event = json.loads(line)
         except ValueError:
@@ -175,13 +227,13 @@ def execute(directory, command, model, agent, timeout=600):
     if usages:
         keys = {key for usage in usages for key, value in usage.items() if type(value) is int and value >= 0}
         run["tokens"] = {key: sum(usage.get(key, 0) for usage in usages) for key in sorted(keys)}
-    atomic_text(directory / "agent.stdout.txt", stdout)
-    atomic_text(directory / "agent.stderr.txt", stderr)
+    atomic_write(directory / "agent.stdout.txt", stdout)
+    atomic_write(directory / "agent.stderr.txt", stderr)
     atomic_text(directory / "run.json", encode(run))
     return evaluate(directory)
 
 
-def summarize(directory):
+def summarize(directory, reviews_dir=None):
     runs = []
     for path in sorted(Path(directory).glob("*/run.json")):
         metadata = load_json(path)
@@ -189,10 +241,11 @@ def summarize(directory):
         evaluation = path.parent / "evaluation.json"
         if evaluation.exists():
             value = load_json(evaluation)
+            human = human_review(path.parent, reviews_dir) if reviews_dir is not None else None
             result.update(conforme=value["automatique"].get("conforme", False) if value["automatique"] else None,
                           recettes_produites=value.get("execution", {}).get("recettes_produites", False),
-                          relecture_humaine=value["humain"] is not None,
-                          defauts_critiques=value["humain"].get("defauts_critiques") if value["humain"] else None)
+                          relecture_humaine=human is not None,
+                          defauts_critiques=human.get("defauts_critiques") if human else None)
         runs.append(result)
     return {"version": 1, "generations_preparees": len(runs),
             "tentatives_lancees": sum(r["statut"] != "prepare" for r in runs),
@@ -202,7 +255,7 @@ def summarize(directory):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("prepare", "run", "evaluate", "summarize"))
+    parser.add_argument("command", choices=("prepare", "run", "evaluate", "summarize", "review"))
     parser.add_argument("--dir", type=Path, required=True)
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--case", dest="cases", action="append", help="limiter la préparation à un identifiant de scénario")
@@ -210,11 +263,17 @@ def main(argv=None):
     parser.add_argument("--model")
     parser.add_argument("--agent")
     parser.add_argument("--timeout", type=int, default=600)
+    parser.add_argument("--review-file", type=Path)
+    parser.add_argument("--reviews-dir", type=Path)
     args = parser.parse_args(argv)
     try:
         if args.command == "prepare": result = prepare(args.dir, args.repetitions, args.cases)
-        elif args.command == "evaluate": result = evaluate(args.dir)
-        elif args.command == "summarize": result = summarize(args.dir)
+        elif args.command == "evaluate": result = evaluate(args.dir, args.reviews_dir)
+        elif args.command == "summarize": result = summarize(args.dir, args.reviews_dir)
+        elif args.command == "review":
+            if args.review_file is None or args.reviews_dir is None:
+                raise BinderError("review nécessite --review-file et --reviews-dir hors de l'espace d'exécution")
+            result = import_human_review(args.dir, args.review_file, args.reviews_dir)
         else:
             if not args.agent_command or not args.model or not args.agent or not 1 <= args.timeout <= 3600:
                 raise BinderError("agent, modèle, commande explicite et délai entre 1 et 3600 s requis")

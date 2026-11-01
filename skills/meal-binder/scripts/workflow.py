@@ -15,7 +15,8 @@ from pathlib import Path
 import yaml
 
 from checks import analyse, required_budget_unverified
-from core import BinderError, DataError, SKILL_DIR, load_json
+from core import BinderError, DataError, load_json
+from privacy import private_destination
 from manifest import encode, input_files, make_manifest, hashes, snapshot
 from storage import atomic_batch, atomic_text, safe_destination
 
@@ -45,15 +46,9 @@ def journal(directory, action, details):
 
 
 def create_workspace(target, *, source=None, identifier=None, profession="nutrition"):
-    target = safe_destination(target)
+    target = private_destination(target)
     if target.exists():
         raise BinderError("dossier cible existant : création ou duplication refusée")
-    # Les exceptions publiques examples/ ne doivent jamais accueillir un dossier client.
-    repository = SKILL_DIR.parent.parent
-    if (repository / ".git").exists() and repository in target.parents:
-        relative = target.relative_to(repository)
-        if relative.parts[0] not in ("dossiers", "archives"):
-            raise BinderError("dans le dépôt, créer les dossiers privés sous dossiers/ ou archives/")
     identifier = identifier or "dossier_" + uuid.uuid4().hex[:12]
     if not re.fullmatch(r"[a-z][a-z0-9_-]{2,63}", identifier):
         raise BinderError("identifiant pseudonyme attendu : 3 à 64 caractères a-z, chiffres, _ ou -")
@@ -67,6 +62,7 @@ def create_workspace(target, *, source=None, identifier=None, profession="nutrit
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".dossier-", dir=target.parent))
     try:
+        private_destination(stage)
         if source:
             for path in files:
                 if path.name == "professional.yaml":
@@ -105,6 +101,7 @@ def review_status(directory):
 
 def record_review(directory, reviewer, note, decision="revu"):
     directory = Path(directory)
+    private_destination(directory / "out")
     if not re.fullmatch(r"[a-z][a-z0-9_-]{2,63}", reviewer):
         raise BinderError("identifiant pseudonyme de relecteur requis")
     if decision not in ("revu", "a_revoir"):

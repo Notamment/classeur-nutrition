@@ -14,6 +14,7 @@ from checks import analyse, required_budget_unverified
 from core import BinderError, DataError, load_json, load_yaml
 from manifest import encode, hashes, input_files
 from storage import atomic_batch, safe_destination
+from privacy import private_destination
 from workflow import journal, locked, review_status
 
 COMMANDS = {"scale", "replace", "lock-recipe", "unlock-recipe", "save-recipe", "library", "favorite"}
@@ -189,7 +190,7 @@ def main(argv):
                     data = yaml.safe_dump(result).encode("utf-8")
                 else:
                     name = _name(args.name)
-                    target = safe_destination(args.dir / "bibliotheque" / (name + ".json"))
+                    target = private_destination(args.dir / "bibliotheque") / (name + ".json")
                     if args.command == "favorite":
                         result = load_json(target); result["favori"] = args.value == "oui"
                     else:

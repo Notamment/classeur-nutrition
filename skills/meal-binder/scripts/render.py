@@ -6,6 +6,7 @@ from dataclasses import replace
 
 from core import fmt_qty, week_order
 from profiles import nutrition_mode, nutrition_targets, requirement, week_title
+from recipe_views import recipe_views, used_foods
 
 CAT_LABEL = {"vegetarien": "végétarien", "poisson": "poisson", "viande": "viande", "mixte": "MIXTE"}
 STATUS = ("conforme", "estimation", "non vérifié", "non conforme")
@@ -68,8 +69,9 @@ def store_for(food, stores: dict) -> str:
 
 # ---------------------------------------------------------------- blocs
 
-def recipe_block(ctx, rid: str, issues: list) -> list:
-    r, rc, p = ctx.recipes[rid], ctx.calcs[rid], ctx.profile
+def recipe_block(ctx, rid: str, issues: list, *, view=None) -> list:
+    r, rc = (view.recipe, view.calc) if view else (ctx.recipes[rid], ctx.calcs[rid])
+    p = ctx.profile
     nutrition = nutrition_mode(p) != "desactive"
     cat = CAT_LABEL.get(rc.categorie, rc.categorie)
     if rc.especes_poisson:
@@ -79,6 +81,9 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
             esc(", ".join(r.get("appareils") or []))]
     out = [f"### {rid} — {esc(r.get('nom'))}", "", " · ".join(x for x in head if x), ""]
     metadata = ctx.adaptations.get(rid, {})
+    if view and ctx.catalogs:
+        from adaptation import recipe_metadata
+        metadata = recipe_metadata(r, ctx.catalogs)[0]
     if metadata.get("difficulte"):
         out += [f"**Difficulté estimée** — {metadata['difficulte']} ; " + " ; ".join(esc(s) for s in metadata["raisons"]) + ".", ""]
     elif p["repas"].get("difficulte_max") or r.get("execution"):
@@ -113,7 +118,7 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
         out.append(f"- **Adaptation** — {esc(r['adaptation'])}")
     if r.get("gamelle"):
         out.append(f"- **Gamelle** — {esc(r['gamelle'])}")
-    alts = ctx.alts.get(rid) or []
+    alts = view.alternatives if view else (ctx.alts.get(rid) or [])
     if alts:
         out += ["", "**Alternatives poisson** (achats non inclus)", "",
                 "| Poisson | Quantité | " + ("Prot./portion | kcal | " if nutrition else "") + "Poids servi | Note |",
@@ -135,7 +140,7 @@ def recipe_block(ctx, rid: str, issues: list) -> list:
         out.append("")
     out.append(f"- **Références** — culinaire : {esc(refs.get('culinaire') or 'non renseignée')}"
                + (f" ; nutrition : {esc(nut)}" if nutrition else "") + ".")
-    errs = [i for i in issues if i.where == rid and i.level == "erreur"]
+    errs = [i for i in issues if (i.where == rid or (view and i.where.startswith(rid + ":"))) and i.level == "erreur"]
     if errs:
         out.append("- **Non conforme** — " + " ; ".join(f"{i.code} : {esc(i.msg)}" for i in errs) + ".")
     return out + [""]
@@ -316,7 +321,7 @@ def shared_block(ctx, shops, final_stock) -> list:
 
 def hypotheses_block(ctx, shops) -> list:
     out = ["## Hypothèses et éléments non vérifiés", ""]
-    ph = sorted({n for rc in ctx.calcs.values() for n in rc.placeholders})
+    ph = sorted({n for view in recipe_views(ctx, include_sources=True) for n in view.calc.placeholders})
     if ph and nutrition_mode(ctx.profile) != "desactive":
         out.append(f"- Valeurs nutritionnelles **provisoires** (`source=placeholder`) : {', '.join(ph)}. "
                    "Remplacer par Ciqual ou l'étiquette (`build_foods.py`).")
@@ -533,7 +538,7 @@ def products_block(ctx):
         return []
     from products import product_report
     report = product_report(ctx.workdir, ctx.foods)
-    used = {line.food.id for calc in ctx.calcs.values() for line in calc.lines}
+    used = used_foods(ctx, include_sources=True)
     notes = []
     out = ["## Produits et prix déclarés", "", f"Date de référence : {report['date_reference']}.", "",
            "| Aliment | Référence | Fournisseur | Prix observé | Date | Composition |", "|---|---|---|---|---|---|"]
@@ -552,13 +557,30 @@ def products_block(ctx):
 def schedule_block(ctx):
     if not ctx.schedule:
         return []
-    out = ["## Planning opérationnel", "", "Les fiches ci-dessus gardent leurs portions sources. Les services ont leurs portions explicites.", "",
+    out = ["## Planning opérationnel", "", "Les fiches hebdomadaires gardent leurs portions sources. Les fiches de service ci-dessous donnent les quantités recalculées pour chaque service.", "",
            "| Service | Plat | Préparation | Service prévu | Portions | Caisse connue EUR | Budget vérifiable |",
            "|---|---|---|---|---:|---:|---|"]
     for job in ctx.schedule["services"]:
         out.append(f"| {esc(job['id'])} | {esc(job['plat'])} | {esc(job['preparation'])} | {esc(job['service'])} | {job['portions']} | {fr(job['caisse_connue'], 2)} | {'oui' if job['budget_verifiable'] else 'non'} |")
     out += ["", *["- " + esc(s) for s in ctx.schedule["limites"]], ""]
+    for view in recipe_views(ctx):
+        out += [f"**Service {esc(view.identifier)}** — {esc(view.origin)} ; {view.calc.portions} portions ; "
+                f"préparation {esc(view.preparation)} ; service {esc(view.service)}.", ""]
+        out += recipe_block(ctx, view.identifier, ctx.issues, view=view)
     return out
+
+
+def sources_block(ctx):
+    from sources import load_sources
+    used = used_foods(ctx, include_sources=True)
+    registry = load_sources(ctx.workdir)
+    rows = [(fid, item) for fid, item in sorted(registry.items()) if fid in used]
+    if not rows:
+        return []
+    out = ["## Sources des aliments utilisés", ""]
+    out += [f"- {esc(ctx.foods[fid].nom)} : {esc(item['source'])} ; édition {esc(item['edition'])} ; licence {esc(item['licence'])}."
+            for fid, item in rows]
+    return out + [""]
 
 
 def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None) -> str:
@@ -581,12 +603,12 @@ def render_classeur(ctx, shops, final_stock, extra_issues, *, generated_on=None)
     shop_by_week = {ws.semaine: ws for ws in shops}
     for w in ctx.weeks:
         out += week_blocks(ctx, w, shop_by_week[w.get("semaine")], issues)
-    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + products_block(ctx) + schedule_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + shared_block(ctx, shops, final_stock) + products_block(ctx) + schedule_block(ctx) + sources_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)
 
 
 def render_audit(ctx, shops, *, generated_on=None) -> str:
     out = [f"# Audit — {esc(ctx.profile['projet']['titre'])}", "",
            f"Généré le {generated_on or dt.date.today().isoformat()} par meal-binder. Classeur non réécrit.", ""]
-    out += index_block(ctx) + products_block(ctx) + schedule_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
+    out += index_block(ctx) + products_block(ctx) + schedule_block(ctx) + sources_block(ctx) + hypotheses_block(ctx, shops) + audit_block(ctx, shops)
     return "\n".join(out)

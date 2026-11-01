@@ -12,6 +12,7 @@ from core import BinderError
 from manifest import encode, make_manifest
 from storage import atomic_batch, safe_destination
 from workflow import locked, review_status
+from recipe_views import recipe_views, used_foods
 
 MARKER = "meal-binder:export:v1"
 
@@ -45,8 +46,8 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
         body = [f"<h1>{title}</h1><p class='etat'>{e(state)}</p>",
                 "<p>Les valeurs et durées sont des estimations. La revue humaine ne certifie ni les données ni les allergènes.</p>"]
         rows = [["recette", "plat", "aliment", "quantite", "unite", "etat"]]
-        for rid, r in sorted(ctx.recipes.items()):
-            c = ctx.calcs[rid]
+        for view in recipe_views(ctx):
+            rid, r, c = view.identifier, view.recipe, view.calc
             body.append(f"<section><h2>{e(rid)} — {e(r['nom'])}</h2><p>{c.portions} portions ; durée déclarée : {e(r['temps_total_min'])} min.</p><ul>")
             for line in c.lines:
                 body.append(f"<li>{e(line.qty)} {e(line.unit)} {e(line.food.nom)} ({e(line.etat)})</li>")
@@ -65,7 +66,7 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
         # identifiant professionnel, commentaire de revue, tarif ou stock côté client.
         from sources import load_sources
         registry = load_sources(directory)
-        used = {line.food.id for calc in ctx.calcs.values() for line in calc.lines}
+        used = used_foods(ctx)
         sources = sorted({(v["source"], v["edition"], v["licence"]) for fid, v in registry.items() if fid in used})
         body.append("<h2>Sources et limites</h2>")
         body.extend(f"<p>{e(source)} — édition {e(edition)} — {e(licence)}</p>" for source, edition, licence in sources)
@@ -90,7 +91,7 @@ def export(directory, *, audience="client", formats=("html",), draft=False):
             body.extend(f"<li>{e(i.level)} / {e(i.kind)} / {e(i.requirement)} : {e(i.where)} — {e(i.code)} : {e(i.msg)}</li>" for i in ctx.issues)
             body.append("</ul>")
         if ctx.schedule:
-            body.append("<h2>Calendrier des services</h2><p>Les fiches donnent les quantités pour leurs portions sources. Le calendrier indique les portions de chaque service ; consulter la production pour les achats recalculés.</p><ul>")
+            body.append("<h2>Calendrier des services</h2><p>Chaque fiche donne les quantités recalculées pour les portions du service identifié, composants compris.</p><ul>")
             for job in ctx.schedule["services"]:
                 body.append(f"<li>{e(job['service'])} — {e(job['plat'])} : {job['portions']} portions.</li>")
                 if audience == "production":

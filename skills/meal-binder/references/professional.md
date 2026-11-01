@@ -18,7 +18,12 @@ Le rapport de sélection passe à `version: 2` ; son ordre de classement est inc
 
 Le rendu et l'audit écrivent en UTF-8/LF par remplacement atomique. Un document
 préexistant non reconnu comme un rendu de meal-binder est protégé. Les liens
-symboliques de sortie sont refusés. Une sélection remplace seulement une sortie
+symboliques, points de réanalyse Windows (jonctions comprises) et segments `..`
+de sortie sont refusés. Les écritures atomiques POSIX ouvrent chaque répertoire
+sans suivre de lien et conservent son descripteur jusqu'au remplacement. Sous
+Windows, les chemins sont revérifiés mais un répertoire modifiable par un autre
+acteur ne fournit pas de protection complète contre les courses ; travailler
+dans un emplacement dont les droits d'écriture sont maîtrisés. Une sélection remplace seulement une sortie
 portant son marqueur `GENERATED`. Si remplacement et restauration échouent,
 la sauvegarde `.selection-backup-*` est conservée dans `out/` pour récupération.
 
@@ -30,8 +35,8 @@ sont validées. Les calculs et les appréciations humaines doivent rester distin
 ```bash
 python skills/meal-binder/scripts/binder.py diagnose --dir mon-classeur --json
 python skills/meal-binder/scripts/binder.py render --dir mon-classeur --date 2026-01-02
-python skills/meal-binder/scripts/binder.py snapshot --dir mon-classeur --output ../archive-classeur --date 2026-01-02
-python skills/meal-binder/scripts/binder.py verify-snapshot --dir ../archive-classeur
+python skills/meal-binder/scripts/binder.py snapshot --dir mon-classeur --output archives/classeur_v1 --date 2026-01-02
+python skills/meal-binder/scripts/binder.py verify-snapshot --dir archives/classeur_v1
 ```
 
 `diagnose` fournit un rapport JSON `version: 2`. Le rendu et l'audit ajoutent
@@ -122,8 +127,12 @@ python skills/meal-binder/scripts/binder.py archive --dir dossiers/client_001 --
 
 `init` crée un profil v2 neutre ; l'agent complète ensuite le profil et les semaines.
 Les dossiers sont locaux et privés, identifiés par pseudonymes ; aucun fichier
-de client ne doit être publié. Dans le checkout Git, la création est limitée
-aux dossiers ignorés `dossiers/` et `archives/`. À l'extérieur, choisir un emplacement
+de client ne doit être publié. Le dépôt contenant la destination est détecté,
+y compris pour un worktree et un moteur installé ailleurs. Le dossier entier
+et ses fichiers doivent y être ignorés, sans fichier déjà suivi ni exception
+publique comme `examples/`. Cette règle est partagée par création, duplication,
+archives, recherche et bibliothèque privée. Utiliser par exemple un sous-dossier
+de `dossiers/` ou `archives/`. À l'extérieur d'un dépôt, choisir un emplacement
 privé approprié. Une cible existante n'est jamais remplacée. `clone` ne copie
 ni les anciennes revues, ni le journal, ni les notes non déclarées comme entrées.
 

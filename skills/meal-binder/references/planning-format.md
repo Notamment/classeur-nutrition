@@ -6,6 +6,14 @@ ni les quotas ni les défauts. `classeur-nutrition schedule --dir <dossier>` don
 son rapport JSON ; les mêmes contrôles alimentent analyse, sélection, rendu,
 audit, revue et évaluation lorsque le fichier existe.
 
+Les recettes des composants sont validées avec le schéma du profil dès le
+chargement, avant toute lecture de durée ou d'équipement. Une donnée mal typée
+produit un diagnostic JSON `schema_recette` localisé et le code de sortie 1.
+Le document soumis à revue contient une fiche complète par service : ingrédients
+redimensionnés, étapes, limites et sources, y compris pour les composants.
+Les exports utilisent ces mêmes fiches, identifiées par service/occurrence ;
+deux composants portant le même identifiant de recette restent distincts.
+
 Exemple fictif pour un dossier contenant `S01-R01` :
 
 ```yaml

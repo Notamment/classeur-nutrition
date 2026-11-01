@@ -12,7 +12,8 @@ revue liée à la version, adaptation des portions et bibliothèque privée. Les
 exports HTML/PDF/CSV distinguent client et production. Un calendrier facultatif
 gère services, préparations, composants et lots datés ; une recherche bornée
 compare les compromis de recettes fournies. Ces fonctions de développement
-restent à valider en pilote professionnel et en CI distante.
+restent à valider en pilote professionnel. La CI vérifie aussi les protections
+du paquet installé depuis un répertoire extérieur au checkout.
 
 ## Configurer son classeur
 

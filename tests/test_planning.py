@@ -1,5 +1,6 @@
 """Planning explicite : portions par service, stocks datés, matériels et budget."""
 import copy
+import json
 import unittest
 
 import yaml
@@ -28,6 +29,23 @@ def lot(identifier="lot_test", **changes):
 
 
 class TestPlanning(unittest.TestCase):
+    def test_component_types_are_validated_before_any_business_access(self):
+        from test_regressions import cli
+        changes = [{"temps_total_min": "trente"}, {"appareils": 42}, {"ingredients": "carotte"},
+                   {"etapes": None}, {"temps_actif_min": float("nan")}]
+        for change in changes:
+            with self.subTest(change=change), workspace(recipes=[basic()]) as d:
+                data = schedule(d, composants={"garniture": {"portions": 2, "recette": basic() | change}})
+                data["services"][0]["plats"] = [{"composant": "garniture", "portions": 4, "preparation": "prep"}]
+                schedule(d, **data)
+                for command in ("schedule", "render"):
+                    result = cli(d, command)
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    payload = json.loads(result.stdout)
+                    issues = payload["ecarts"] if isinstance(payload, dict) else payload
+                    self.assertTrue(any(i["code"] == "schema_recette" and "garniture" in i["where"] for i in issues))
+                    self.assertNotIn("Traceback", result.stderr)
+
     def test_per_service_portions_do_not_modify_legacy_profile(self):
         with workspace(recipes=[basic()]) as d:
             local_foods(d, prices=True)

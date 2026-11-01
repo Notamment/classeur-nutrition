@@ -45,7 +45,7 @@ from core import BinderError, DataError, Issue, load_foods, load_profile, utf8_s
 from render import render_audit, render_classeur  # noqa: E402
 from profiles import list_presets, load_resolved, nutrition_mode, week_title  # noqa: E402
 from storage import write_render  # noqa: E402
-from storage import atomic_text  # noqa: E402
+from storage import atomic_text, safe_destination  # noqa: E402
 from manifest import analysis_payload, encode, make_manifest, snapshot, verify_snapshot  # noqa: E402
 
 
@@ -115,8 +115,8 @@ def main(argv=None) -> int:
     ap.add_argument("--output", type=Path, help="destination nouvelle d'une archive autonome")
     ap.add_argument("--edition", choices=["ciqual2025"], help="jeu de données optionnel à activer explicitement")
     a = ap.parse_args(argv)
-    wd = Path(a.dir).resolve()
     try:
+        wd = safe_destination(a.dir)
         if a.command == "use-data":
             from core import SKILL_DIR
             if a.edition is None:

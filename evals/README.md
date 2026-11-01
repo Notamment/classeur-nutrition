@@ -25,6 +25,13 @@ une commande sous forme de liste JSON : `protocol.py run --dir <cas> --agent <no
 pour la consigne et `{dir}` pour le chemin. Aucun shell n'est lancé implicitement.
 Configurer le modèle, les autorisations et les limites de coût dans l'agent choisi
 avant exécution. Le délai par défaut est de 600 s, réglable via `--timeout`.
+Le runner lance une session/groupe POSIX ou un Job Object Windows (rattaché
+avant de laisser démarrer l'agent), arrête ses processus au timeout et nettoie
+les workers restants à la fin. Les deux flux sont drainés en continu ; chaque
+journal conserve au plus 1 Mio. `run.json.journaux` indique les octets lus,
+conservés et la troncature. Des logs tronqués ne donnent pas un total partiel de tokens.
+Ce mécanisme ne remplace pas un sandbox système : les processus volontairement
+détachés du groupe POSIX ou lancés par un service externe nécessitent une isolation externe.
 
 Le protocole garde modèle, agent, durée mesurée, code de sortie et empreintes
 du moteur, corpus et consigne. Un agent ne peut pas modifier les profils, stocks
@@ -36,9 +43,23 @@ non observés restent `null`, jamais zéro. Sans recette produite, le champ
 `automatique` reste `null` : un échec d'environnement n'est pas un score de
 qualité du modèle. Le bilan distingue tentatives lancées et générations produites.
 
-`evaluate --dir <cas>` recalcule le score automatique. La revue humaine reste
-séparée : copier `human.template.json` en `human.json`, puis renseigner un relecteur,
-les cinq notes de 1 à 5 et une liste de défauts critiques après relecture réelle.
+`evaluate --dir <cas>` recalcule uniquement le score automatique. Tout `human.json`
+ou champ humain placé dans `evaluation.json` par l'agent est ignoré, y compris
+par `summarize`. Après l'exécution et une relecture réelle, l'opérateur copie
+la grille vide `human.template.json` **hors de tout le dossier d'exécution**,
+renseigne le relecteur, les cinq notes et les défauts, puis l'importe explicitement :
+
+```bash
+python evals/protocol.py review --dir evals/runs/pilote/N10-1 --review-file /chemin/prive/grille.json --reviews-dir /chemin/prive/revues
+python evals/protocol.py summarize --dir evals/runs/pilote --reviews-dir /chemin/prive/revues
+```
+
+L'import conserve la revue dans ce répertoire externe et la lie aux empreintes
+des entrées, de l'exécution et du document. Une modification invalide son décompte.
+Le stockage des revues doit être inaccessible à l'agent via ses permissions ou
+son sandbox ; cette CLI n'installe pas cette isolation et ne prouve pas l'identité
+d'un humain partageant le même compte système. Le runner n'importe jamais de
+revue lui-même. Sans `--reviews-dir`, aucune revue humaine n'est comptée.
 Aucune grille humaine n'est remplie par le protocole. Publier uniquement un bilan
 anonymisé ; aucune performance réelle n'est revendiquée tant que les générations
 et relectures n'ont pas eu lieu. Les tests du runner utilisent des agents factices

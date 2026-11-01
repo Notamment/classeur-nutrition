@@ -11,6 +11,7 @@ from pathlib import Path, PurePosixPath
 
 from core import BinderError, SKILL_DIR, load_json
 from storage import atomic_text, safe_destination
+from privacy import private_destination
 from version import ENGINE_VERSION, DIAGNOSTICS_VERSION
 
 INPUTS = ("profile.yaml", "pantry.yaml", "stores.yaml", "plan.yaml", "foods.local.csv",
@@ -79,7 +80,7 @@ def make_manifest(ctx, date=None):
 
 def snapshot(ctx, target, date=None):
     """Une archive inclut seulement les entrées déclarées et le moteur calculant."""
-    target = safe_destination(target)
+    target = private_destination(target)
     source = Path(ctx.workdir).resolve()
     if target.exists() or target == source or target in source.parents or source in target.parents:
         raise BinderError("archive : destination nouvelle et extérieure au dossier de travail requise")
@@ -89,6 +90,7 @@ def snapshot(ctx, target, date=None):
     target.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=".snapshot-", dir=target.parent))
     try:
+        private_destination(stage)
         for relative in (*manifest["entrees"], *manifest["pieces_jointes"]):
             destination = stage / relative
             destination.parent.mkdir(parents=True, exist_ok=True)

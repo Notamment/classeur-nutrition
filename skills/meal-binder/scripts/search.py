@@ -18,6 +18,7 @@ from planning import scaled
 from schemas import FOOD_ID, RECIPE_ID, arr, obj
 from selection import LABELS, _measurements, _ranking
 from storage import safe_destination
+from privacy import private_destination
 from workflow import locked
 
 FORMAT = obj({"version": {"kind": "integer", "minimum": 1, "values": [1]},
@@ -40,13 +41,9 @@ def search(directory, *, max_candidates=100, keep=3, output=None):
     if type(max_candidates) is not int or not 1 <= max_candidates <= 200 or type(keep) is not int or not 1 <= keep <= 10:
         raise BinderError("bornes requises : 1 à 200 essais, 1 à 10 résultats")
     directory = safe_destination(directory)
-    target = safe_destination(output or directory / "out/recherche")
+    target = private_destination(output or directory / "out/recherche")
     if target.exists() or target == directory or target in directory.parents:
         raise BinderError("destination de recherche nouvelle requise")
-    from core import SKILL_DIR
-    repository = SKILL_DIR.parent.parent
-    if (repository / ".git").exists() and repository in target.parents and (directory / "out") not in target.parents:
-        raise BinderError("dans le dépôt, les propositions privées doivent rester sous out/ du dossier")
     with locked(directory):
         baseline = analyse(directory, complete=True)
         if baseline.profile["version"] != 2:
@@ -140,6 +137,7 @@ def search(directory, *, max_candidates=100, keep=3, output=None):
         target.parent.mkdir(parents=True, exist_ok=True)
         stage = Path(tempfile.mkdtemp(prefix=".recherche-", dir=target.parent))
         try:
+            private_destination(stage)
             (stage / "rapport.json").write_text(encode(result), encoding="utf-8")
             # Dossier autonome utilisable avec select ; aucune revue transférée.
             for path in input_files(directory):
